@@ -61,10 +61,10 @@ rust_library(
     }),
     version = "0.18.0",
     deps = [
-        "@cargo_vendor__bitflags-2.9.4//:bitflags",
-        "@cargo_vendor__crc32fast-1.5.0//:crc32fast",
+        "@cargo_vendor__bitflags-2.9.1//:bitflags",
+        "@cargo_vendor__crc32fast-1.4.2//:crc32fast",
         "@cargo_vendor__fdeflate-0.3.7//:fdeflate",
-        "@cargo_vendor__flate2-1.1.2//:flate2",
-        "@cargo_vendor__miniz_oxide-0.8.9//:miniz_oxide",
+        "@cargo_vendor__flate2-1.1.1//:flate2",
+        "@cargo_vendor__miniz_oxide-0.8.8//:miniz_oxide",
     ],
 )

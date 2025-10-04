@@ -4,58 +4,15 @@ expression: get_boxes!(output)
 snapshot_kind: text
 ---
 [
-    Ftyp(
-        Ftyp {
-            header: BoxHeader {
-                box_type: b"ftyp",
-            },
-            major_brand: Unknown(
-                [
-                    105,
-                    115,
-                    111,
-                    109,
-                ],
+    UnknownBox {
+        header: BoxHeader {
+            size: Short(
+                32,
             ),
-            minor_version: 512,
-            compatible_brands: [
-                Unknown(
-                    [
-                        105,
-                        115,
-                        111,
-                        109,
-                    ],
-                ),
-                Unknown(
-                    [
-                        105,
-                        115,
-                        111,
-                        50,
-                    ],
-                ),
-                Avc1,
-                Mp41,
-            ],
+            box_type: FourCc(
+                "ftyp",
+            ),
         },
-    ),
-    Unknown(
-        (
-            BoxHeader {
-                box_type: b"free",
-            },
-            b"",
-        ),
-    ),
-    Mdat(
-        Mdat {
-            header: BoxHeader {
-                box_type: b"mdat",
-            },
-            data: [
-                b"\xe3\xb0\xc4B\x98\xfc\x1c\x14\x9a\xfb\xf4\xc8\x99o\xb9$'\xaeA\xe4d\x9b\x93L\xa4\x95\x99\x1bxR\xb8U",
-            ],
-        },
-    ),
+        data.len: 40,
+    },
 ]

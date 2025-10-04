@@ -9,9 +9,15 @@ scuffle_package(
         ":Cargo.toml",
     ],
     crate_name = "scuffle-av1",
-    proc_macro_deps = ["//crates/changelog"],
+    proc_macro_deps = [
+        "//crates/changelog",
+        "//crates/isobmff/derive",
+    ],
     test = scuffle_test(
         insta = True,
     ),
-    deps = ["//crates/bytes-util"],
+    deps = [
+        "//crates/bytes-util",
+        "//crates/isobmff",
+    ],
 )

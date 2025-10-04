@@ -1,0 +1,349 @@
+---
+source: crates/isobmff/src/conformance_tests.rs
+expression: redeserialized_file
+snapshot_kind: text
+---
+IsobmffFile {
+    ftyp: Some(
+        FileTypeBox {
+            major_brand: Brand([51, 103, 112, 53]),
+            minor_version: 0,
+            compatible_brands: [
+                Brand::IsoM,
+                Brand([51, 103, 112, 53]),
+                Brand([51, 103, 112, 52]),
+                Brand::Mp41,
+                Brand([109, 112, 52, 50]),
+            ],
+        },
+    ),
+    etyp: [],
+    otyp: [],
+    pdin: None,
+    moov: Some(
+        MovieBox {
+            mvhd: MovieHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                creation_time: 3234950105,
+                modification_time: 3234950105,
+                timescale: 600,
+                duration: 3600,
+                rate: 1,
+                volume: 1,
+                reserved1: 0,
+                reserved2: 0,
+                matrix: [
+                    65536,
+                    0,
+                    0,
+                    0,
+                    65536,
+                    0,
+                    0,
+                    0,
+                    1073741824,
+                ],
+                pre_defined: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                ],
+                next_track_id: 2,
+            },
+            meta: None,
+            trak: [
+                TrackBox {
+                    tkhd: TrackHeaderBox {
+                        version: 0,
+                        flags: TrackHeaderBoxFlags(
+                            TrackEnabled,
+                        ),
+                        creation_time: 3234950105,
+                        modification_time: 3234950105,
+                        track_id: 1,
+                        reserved1: 0,
+                        duration: 3600,
+                        reserved2: 0,
+                        layer: 0,
+                        alternate_group: 0,
+                        volume: 0,
+                        reserved3: 0,
+                        matrix: [
+                            65536,
+                            0,
+                            0,
+                            0,
+                            65536,
+                            0,
+                            0,
+                            0,
+                            1073741824,
+                        ],
+                        width: 400,
+                        height: 60,
+                    },
+                    tref: None,
+                    trgr: None,
+                    edts: None,
+                    ttyp: None,
+                    meta: None,
+                    mdia: MediaBox {
+                        mdhd: MediaHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            creation_time: 3234950105,
+                            modification_time: 3234950105,
+                            timescale: 1000,
+                            duration: 6000,
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            pre_defined: 0,
+                        },
+                        hdlr: HandlerBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            pre_defined: 0,
+                            handler_type: HandlerType::Text,
+                            reserved: [
+                                0,
+                                0,
+                                0,
+                            ],
+                            name: Utf8String(
+                                "GPAC Streaming Text Handler",
+                            ),
+                        },
+                        elng: None,
+                        minf: MediaInformationBox {
+                            vmhd: None,
+                            smhd: None,
+                            hmhd: None,
+                            sthd: None,
+                            vvhd: None,
+                            unknown_boxes: [
+                                UnknownBox {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            12,
+                                        ),
+                                        box_type: FourCc(
+                                            "nmhd",
+                                        ),
+                                    },
+                                    data.len: 4,
+                                },
+                            ],
+                            dinf: DataInformationBox {
+                                dref: DataReferenceBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    url: [
+                                        DataEntryUrlBox {
+                                            full_header: FullBoxHeader {
+                                                version: 0,
+                                                flags: U24Be(
+                                                    1,
+                                                ),
+                                            },
+                                            location: None,
+                                        },
+                                    ],
+                                    urn: [],
+                                    imda: [],
+                                    snim: [],
+                                    unknown_boxes: [],
+                                },
+                            },
+                            stbl: SampleTableBox {
+                                stsd: SampleDescriptionBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 2,
+                                    boxes: [
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    64,
+                                                ),
+                                                box_type: FourCc(
+                                                    "tx3g",
+                                                ),
+                                            },
+                                            data.len: 56,
+                                        },
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    64,
+                                                ),
+                                                box_type: FourCc(
+                                                    "tx3g",
+                                                ),
+                                            },
+                                            data.len: 56,
+                                        },
+                                    ],
+                                },
+                                stts: TimeToSampleBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    entries: [
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 3,
+                                            sample_delta: 2000,
+                                        },
+                                    ],
+                                },
+                                ctts: None,
+                                cslg: None,
+                                stsc: SampleToChunkBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 2,
+                                    entries.len: 2,
+                                },
+                                stsz: Some(
+                                    SampleSizeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        sample_size: 0,
+                                        sample_count: 3,
+                                        entry_size.len: 3,
+                                    },
+                                ),
+                                stz2: None,
+                                stco: Some(
+                                    ChunkOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 2,
+                                        chunk_offset.len: 2,
+                                    },
+                                ),
+                                co64: None,
+                                stss: None,
+                                stsh: None,
+                                padb: None,
+                                stdp: None,
+                                sdtp: None,
+                                sbgp: [],
+                                sgpd: [],
+                                subs: [],
+                                saiz: [],
+                                saio: [],
+                                csgp: [],
+                            },
+                        },
+                        unknown_boxes: [],
+                    },
+                    unknown_boxes: [],
+                    udta: None,
+                },
+            ],
+            mvex: None,
+            unknown_boxes: [],
+            udta: Some(
+                UserDataBox {
+                    cprt: [
+                        CopyrightBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            notice: Utf8String(
+                                "ENST IsoMedia Conformance Files - ENST (c) 2006 - Rights released for ISO Conformance use",
+                            ),
+                        },
+                    ],
+                    tsel: None,
+                    kind: [],
+                    strk: [],
+                    ludt: [],
+                    unknown_boxes: [],
+                },
+            ),
+        },
+    ),
+    moof: [],
+    mdat: [
+        MediaDataBox {
+            data.len: 43,
+        },
+    ],
+    imda: [],
+    meta: None,
+    styp: [],
+    sidx: [],
+    ssix: [],
+    prft: [],
+    unknown_boxes: [
+        UnknownBox {
+            header: BoxHeader {
+                size: Short(
+                    51,
+                ),
+                box_type: FourCc(
+                    "free",
+                ),
+            },
+            data.len: 43,
+        },
+    ],
+    mfra: None,
+}

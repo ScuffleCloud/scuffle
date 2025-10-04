@@ -40,6 +40,14 @@ jobs:
         with:
           name: bazel-diff-impacted-targets
 
+      - name: Download ISOBMFF conformance samples
+        shell: bash
+        run: |
+          mkdir -p ./assets/isobmff_conformance
+          curl -Lo ./assets/isobmff_conformance/files.json https://github.com/MPEGGroup/FileFormatConformance/releases/download/r20250526/files.json
+          curl -Lo ./assets/isobmff_conformance/conformance-files.tar.gz https://github.com/MPEGGroup/FileFormatConformance/releases/download/r20250526/conformance-files.tar.gz
+          tar xf ./assets/isobmff_conformance/conformance-files.tar.gz --directory=./assets/isobmff_conformance
+
       - name: Run Tests
         id: run
         env:

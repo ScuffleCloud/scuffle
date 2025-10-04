@@ -1,0 +1,26 @@
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
+
+cargo_toml()
+
+scuffle_package(
+    compile_data = [
+        ":CHANGELOG.md",
+        ":Cargo.toml",
+    ],
+    crate_name = "isobmff",
+    test = scuffle_test(
+        data = [
+            "@scuffle_assets//:mp4",
+        ],
+        env = {
+            "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
+        },
+        insta = True,
+    ),
+    proc_macro_deps = ["//crates/changelog", "//crates/isobmff/derive"],
+    deps = [
+        "//crates/bytes-util",
+        "//crates/nutype-enum",
+    ],
+)

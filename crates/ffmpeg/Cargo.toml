@@ -21,9 +21,9 @@ bytes = { optional = true, version = "1" }
 crossbeam-channel = { optional = true, version = "0.5.13" }
 document-features = { optional = true, version = "0.2" }
 libc = "0.2"
-nutype-enum = { path = "../nutype-enum", version = "0.1.4" }
+nutype-enum = { path = "../nutype-enum", version = "0.1.5" }
 rusty_ffmpeg = "0.16.4"
-scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.1" }
 thiserror = "2.0"
 tokio = { features = ["sync"], optional = true, version = "1" }
 tracing = { optional = true, version = "0.1" }
@@ -32,8 +32,9 @@ va_list = "0.2"
 [dev-dependencies]
 bytes = "1"
 insta = { features = ["filters"], version = "1.42" }
+isobmff = { path = "../isobmff", version = "0.1.0" }
 rand = "0.9"
-scuffle-mp4 = { path = "../mp4" }
+scuffle-bytes-util = { path = "../bytes-util", version = "0.1.5" }
 sha2 = "0.10"
 tempfile = "3.15"
 tracing-subscriber = "0.3"

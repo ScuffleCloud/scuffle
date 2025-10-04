@@ -74,10 +74,10 @@ rust_library(
     }),
     version = "0.10.73",
     deps = [
-        "@cargo_vendor__bitflags-2.9.4//:bitflags",
+        "@cargo_vendor__bitflags-2.9.1//:bitflags",
         "@cargo_vendor__cfg-if-1.0.3//:cfg_if",
         "@cargo_vendor__foreign-types-0.3.2//:foreign_types",
-        "@cargo_vendor__libc-0.2.175//:libc",
+        "@cargo_vendor__libc-0.2.176//:libc",
         "@cargo_vendor__once_cell-1.21.3//:once_cell",
         "@cargo_vendor__openssl-0.10.73//:build_script_build",
         "@cargo_vendor__openssl-sys-0.9.109//:openssl_sys",

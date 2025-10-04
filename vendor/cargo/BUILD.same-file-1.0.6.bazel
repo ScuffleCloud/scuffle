@@ -62,10 +62,10 @@ rust_library(
     version = "1.0.6",
     deps = select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@cargo_vendor__winapi-util-0.1.11//:winapi_util",  # cfg(windows)
+            "@cargo_vendor__winapi-util-0.1.9//:winapi_util",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@cargo_vendor__winapi-util-0.1.11//:winapi_util",  # cfg(windows)
+            "@cargo_vendor__winapi-util-0.1.9//:winapi_util",  # cfg(windows)
         ],
         "//conditions:default": [],
     }),

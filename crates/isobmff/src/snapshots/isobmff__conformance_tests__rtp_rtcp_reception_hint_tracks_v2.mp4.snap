@@ -1,0 +1,2707 @@
+---
+source: crates/isobmff/src/conformance_tests.rs
+expression: redeserialized_file
+snapshot_kind: text
+---
+IsobmffFile {
+    ftyp: Some(
+        FileTypeBox {
+            major_brand: Brand::IsoM,
+            minor_version: 0,
+            compatible_brands: [
+                Brand::IsoM,
+                Brand::Avc1,
+            ],
+        },
+    ),
+    etyp: [],
+    otyp: [],
+    pdin: None,
+    moov: Some(
+        MovieBox {
+            mvhd: MovieHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                creation_time: 3541044198,
+                modification_time: 3541044198,
+                timescale: 600,
+                duration: 9600,
+                rate: 1,
+                volume: 1,
+                reserved1: 0,
+                reserved2: 0,
+                matrix: [
+                    65536,
+                    0,
+                    0,
+                    0,
+                    65536,
+                    0,
+                    0,
+                    0,
+                    1073741824,
+                ],
+                pre_defined: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                ],
+                next_track_id: 7,
+            },
+            meta: None,
+            trak: [
+                TrackBox {
+                    tkhd: TrackHeaderBox {
+                        version: 0,
+                        flags: TrackHeaderBoxFlags(
+                            TrackEnabled,
+                        ),
+                        creation_time: 3541044198,
+                        modification_time: 3541044198,
+                        track_id: 1,
+                        reserved1: 0,
+                        duration: 8880,
+                        reserved2: 0,
+                        layer: 0,
+                        alternate_group: 0,
+                        volume: 1,
+                        reserved3: 0,
+                        matrix: [
+                            65536,
+                            0,
+                            0,
+                            0,
+                            65536,
+                            0,
+                            0,
+                            0,
+                            1073741824,
+                        ],
+                        width: 0,
+                        height: 0,
+                    },
+                    tref: None,
+                    trgr: None,
+                    edts: None,
+                    ttyp: None,
+                    meta: None,
+                    mdia: MediaBox {
+                        mdhd: MediaHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            creation_time: 3541044198,
+                            modification_time: 3541044198,
+                            timescale: 8000,
+                            duration: 118400,
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            pre_defined: 0,
+                        },
+                        hdlr: HandlerBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            pre_defined: 0,
+                            handler_type: HandlerType::Audio,
+                            reserved: [
+                                0,
+                                0,
+                                0,
+                            ],
+                            name: Utf8String(
+                                "L-SMASH Audio Handler",
+                            ),
+                        },
+                        elng: None,
+                        minf: MediaInformationBox {
+                            vmhd: None,
+                            smhd: Some(
+                                SoundMediaHeaderBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    balance: 0,
+                                    reserved: 0,
+                                },
+                            ),
+                            hmhd: None,
+                            sthd: None,
+                            vvhd: None,
+                            unknown_boxes: [],
+                            dinf: DataInformationBox {
+                                dref: DataReferenceBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    url: [
+                                        DataEntryUrlBox {
+                                            full_header: FullBoxHeader {
+                                                version: 0,
+                                                flags: U24Be(
+                                                    1,
+                                                ),
+                                            },
+                                            location: None,
+                                        },
+                                    ],
+                                    urn: [],
+                                    imda: [],
+                                    snim: [],
+                                    unknown_boxes: [],
+                                },
+                            },
+                            stbl: SampleTableBox {
+                                stsd: SampleDescriptionBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    boxes: [
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    36,
+                                                ),
+                                                box_type: FourCc(
+                                                    "agsm",
+                                                ),
+                                            },
+                                            data.len: 28,
+                                        },
+                                    ],
+                                },
+                                stts: TimeToSampleBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    entries: [
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 740,
+                                            sample_delta: 160,
+                                        },
+                                    ],
+                                },
+                                ctts: None,
+                                cslg: None,
+                                stsc: SampleToChunkBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 2,
+                                    entries.len: 2,
+                                },
+                                stsz: Some(
+                                    SampleSizeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        sample_size: 33,
+                                        sample_count: 740,
+                                        entry_size.len: 0,
+                                    },
+                                ),
+                                stz2: None,
+                                stco: Some(
+                                    ChunkOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 29,
+                                        chunk_offset.len: 29,
+                                    },
+                                ),
+                                co64: None,
+                                stss: Some(
+                                    SyncSampleBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 0,
+                                        sample_number: [],
+                                    },
+                                ),
+                                stsh: None,
+                                padb: None,
+                                stdp: None,
+                                sdtp: None,
+                                sbgp: [],
+                                sgpd: [],
+                                subs: [],
+                                saiz: [],
+                                saio: [],
+                                csgp: [],
+                            },
+                        },
+                        unknown_boxes: [],
+                    },
+                    unknown_boxes: [],
+                    udta: None,
+                },
+                TrackBox {
+                    tkhd: TrackHeaderBox {
+                        version: 0,
+                        flags: TrackHeaderBoxFlags(
+                            TrackEnabled,
+                        ),
+                        creation_time: 3541044198,
+                        modification_time: 3541044198,
+                        track_id: 2,
+                        reserved1: 0,
+                        duration: 8868,
+                        reserved2: 0,
+                        layer: 0,
+                        alternate_group: 0,
+                        volume: 0,
+                        reserved3: 0,
+                        matrix: [
+                            65536,
+                            0,
+                            0,
+                            0,
+                            65536,
+                            0,
+                            0,
+                            0,
+                            1073741824,
+                        ],
+                        width: 0,
+                        height: 0,
+                    },
+                    tref: None,
+                    trgr: None,
+                    edts: None,
+                    ttyp: None,
+                    meta: None,
+                    mdia: MediaBox {
+                        mdhd: MediaHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            creation_time: 3541044198,
+                            modification_time: 3541044198,
+                            timescale: 8000,
+                            duration: 118240,
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            pre_defined: 0,
+                        },
+                        hdlr: HandlerBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            pre_defined: 0,
+                            handler_type: HandlerType::Hint,
+                            reserved: [
+                                0,
+                                0,
+                                0,
+                            ],
+                            name: Utf8String(
+                                "L-SMASH RTP Handler",
+                            ),
+                        },
+                        elng: None,
+                        minf: MediaInformationBox {
+                            vmhd: None,
+                            smhd: None,
+                            hmhd: Some(
+                                HintMediaHeaderBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    max_pdu_size: 12,
+                                    avg_pdu_size: 65520,
+                                    maxbitrate: 27040,
+                                    avgbitrate: 26000,
+                                    reserved: 0,
+                                },
+                            ),
+                            sthd: None,
+                            vvhd: None,
+                            unknown_boxes: [],
+                            dinf: DataInformationBox {
+                                dref: DataReferenceBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    url: [
+                                        DataEntryUrlBox {
+                                            full_header: FullBoxHeader {
+                                                version: 0,
+                                                flags: U24Be(
+                                                    1,
+                                                ),
+                                            },
+                                            location: None,
+                                        },
+                                    ],
+                                    urn: [],
+                                    imda: [],
+                                    snim: [],
+                                    unknown_boxes: [],
+                                },
+                            },
+                            stbl: SampleTableBox {
+                                stsd: SampleDescriptionBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    boxes: [
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    57,
+                                                ),
+                                                box_type: FourCc(
+                                                    "rrtp",
+                                                ),
+                                            },
+                                            data.len: 49,
+                                        },
+                                    ],
+                                },
+                                stts: TimeToSampleBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    entries: [
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 739,
+                                            sample_delta: 160,
+                                        },
+                                    ],
+                                },
+                                ctts: None,
+                                cslg: None,
+                                stsc: SampleToChunkBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 2,
+                                    entries.len: 2,
+                                },
+                                stsz: Some(
+                                    SampleSizeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        sample_size: 65,
+                                        sample_count: 739,
+                                        entry_size.len: 0,
+                                    },
+                                ),
+                                stz2: None,
+                                stco: Some(
+                                    ChunkOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 29,
+                                        chunk_offset.len: 29,
+                                    },
+                                ),
+                                co64: None,
+                                stss: Some(
+                                    SyncSampleBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 0,
+                                        sample_number: [],
+                                    },
+                                ),
+                                stsh: None,
+                                padb: None,
+                                stdp: None,
+                                sdtp: None,
+                                sbgp: [],
+                                sgpd: [],
+                                subs: [],
+                                saiz: [],
+                                saio: [],
+                                csgp: [],
+                            },
+                        },
+                        unknown_boxes: [],
+                    },
+                    unknown_boxes: [],
+                    udta: Some(
+                        UserDataBox {
+                            cprt: [],
+                            tsel: None,
+                            kind: [],
+                            strk: [],
+                            ludt: [],
+                            unknown_boxes: [
+                                UnknownBox {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            106,
+                                        ),
+                                        box_type: FourCc(
+                                            "hnti",
+                                        ),
+                                    },
+                                    data.len: 98,
+                                },
+                            ],
+                        },
+                    ),
+                },
+                TrackBox {
+                    tkhd: TrackHeaderBox {
+                        version: 0,
+                        flags: TrackHeaderBoxFlags(
+                            TrackEnabled | TrackInMovie | TrackInPreview,
+                        ),
+                        creation_time: 3541044198,
+                        modification_time: 3541044198,
+                        track_id: 3,
+                        reserved1: 0,
+                        duration: 8880,
+                        reserved2: 0,
+                        layer: 0,
+                        alternate_group: 0,
+                        volume: 0,
+                        reserved3: 0,
+                        matrix: [
+                            65536,
+                            0,
+                            0,
+                            0,
+                            65536,
+                            0,
+                            0,
+                            0,
+                            1073741824,
+                        ],
+                        width: 800,
+                        height: 600,
+                    },
+                    tref: None,
+                    trgr: None,
+                    edts: None,
+                    ttyp: None,
+                    meta: None,
+                    mdia: MediaBox {
+                        mdhd: MediaHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            creation_time: 3541044198,
+                            modification_time: 3541044198,
+                            timescale: 90000,
+                            duration: 1332000,
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            pre_defined: 0,
+                        },
+                        hdlr: HandlerBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            pre_defined: 0,
+                            handler_type: HandlerType::Video,
+                            reserved: [
+                                0,
+                                0,
+                                0,
+                            ],
+                            name: Utf8String(
+                                "L-SMASH Video Media Handler",
+                            ),
+                        },
+                        elng: None,
+                        minf: MediaInformationBox {
+                            vmhd: Some(
+                                VideoMediaHeaderBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            1,
+                                        ),
+                                    },
+                                    graphicsmode: 0,
+                                    opcolor: [
+                                        0,
+                                        0,
+                                        0,
+                                    ],
+                                },
+                            ),
+                            smhd: None,
+                            hmhd: None,
+                            sthd: None,
+                            vvhd: None,
+                            unknown_boxes: [],
+                            dinf: DataInformationBox {
+                                dref: DataReferenceBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    url: [
+                                        DataEntryUrlBox {
+                                            full_header: FullBoxHeader {
+                                                version: 0,
+                                                flags: U24Be(
+                                                    1,
+                                                ),
+                                            },
+                                            location: None,
+                                        },
+                                    ],
+                                    urn: [],
+                                    imda: [],
+                                    snim: [],
+                                    unknown_boxes: [],
+                                },
+                            },
+                            stbl: SampleTableBox {
+                                stsd: SampleDescriptionBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    boxes: [
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    153,
+                                                ),
+                                                box_type: FourCc(
+                                                    "avc1",
+                                                ),
+                                            },
+                                            data.len: 145,
+                                        },
+                                    ],
+                                },
+                                stts: TimeToSampleBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 148,
+                                    entries: [
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                    ],
+                                },
+                                ctts: None,
+                                cslg: None,
+                                stsc: SampleToChunkBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 2,
+                                    entries.len: 2,
+                                },
+                                stsz: Some(
+                                    SampleSizeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        sample_size: 0,
+                                        sample_count: 222,
+                                        entry_size.len: 222,
+                                    },
+                                ),
+                                stz2: None,
+                                stco: Some(
+                                    ChunkOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 28,
+                                        chunk_offset.len: 28,
+                                    },
+                                ),
+                                co64: None,
+                                stss: Some(
+                                    SyncSampleBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 1,
+                                        sample_number: [
+                                            1,
+                                        ],
+                                    },
+                                ),
+                                stsh: None,
+                                padb: None,
+                                stdp: None,
+                                sdtp: None,
+                                sbgp: [],
+                                sgpd: [],
+                                subs: [],
+                                saiz: [],
+                                saio: [],
+                                csgp: [],
+                            },
+                        },
+                        unknown_boxes: [],
+                    },
+                    unknown_boxes: [],
+                    udta: None,
+                },
+                TrackBox {
+                    tkhd: TrackHeaderBox {
+                        version: 0,
+                        flags: TrackHeaderBoxFlags(
+                            TrackEnabled,
+                        ),
+                        creation_time: 3541044198,
+                        modification_time: 3541044198,
+                        track_id: 4,
+                        reserved1: 0,
+                        duration: 8922,
+                        reserved2: 0,
+                        layer: 0,
+                        alternate_group: 0,
+                        volume: 0,
+                        reserved3: 0,
+                        matrix: [
+                            65536,
+                            0,
+                            0,
+                            0,
+                            65536,
+                            0,
+                            0,
+                            0,
+                            1073741824,
+                        ],
+                        width: 0,
+                        height: 0,
+                    },
+                    tref: None,
+                    trgr: None,
+                    edts: None,
+                    ttyp: None,
+                    meta: None,
+                    mdia: MediaBox {
+                        mdhd: MediaHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            creation_time: 3541044198,
+                            modification_time: 3541044198,
+                            timescale: 90000,
+                            duration: 1338300,
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            pre_defined: 0,
+                        },
+                        hdlr: HandlerBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            pre_defined: 0,
+                            handler_type: HandlerType::Hint,
+                            reserved: [
+                                0,
+                                0,
+                                0,
+                            ],
+                            name: Utf8String(
+                                "L-SMASH RTP Handler",
+                            ),
+                        },
+                        elng: None,
+                        minf: MediaInformationBox {
+                            vmhd: None,
+                            smhd: None,
+                            hmhd: Some(
+                                HintMediaHeaderBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    max_pdu_size: 16,
+                                    avg_pdu_size: 32473,
+                                    maxbitrate: 635536,
+                                    avgbitrate: 443552,
+                                    reserved: 0,
+                                },
+                            ),
+                            sthd: None,
+                            vvhd: None,
+                            unknown_boxes: [],
+                            dinf: DataInformationBox {
+                                dref: DataReferenceBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    url: [
+                                        DataEntryUrlBox {
+                                            full_header: FullBoxHeader {
+                                                version: 0,
+                                                flags: U24Be(
+                                                    1,
+                                                ),
+                                            },
+                                            location: None,
+                                        },
+                                    ],
+                                    urn: [],
+                                    imda: [],
+                                    snim: [],
+                                    unknown_boxes: [],
+                                },
+                            },
+                            stbl: SampleTableBox {
+                                stsd: SampleDescriptionBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    boxes: [
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    57,
+                                                ),
+                                                box_type: FourCc(
+                                                    "rrtp",
+                                                ),
+                                            },
+                                            data.len: 49,
+                                        },
+                                    ],
+                                },
+                                stts: TimeToSampleBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 140,
+                                    entries: [
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 7200,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 4500,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 18900,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 4500,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 4,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 18000,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 4500,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 4500,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 4500,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 5,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 7200,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 54900,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 5,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 7200,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 7200,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 5,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 5,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 7200,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 4500,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 12600,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 11700,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 7200,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 7200,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 7200,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 4500,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 7200,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 6300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 5400,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 6300,
+                                        },
+                                    ],
+                                },
+                                ctts: None,
+                                cslg: None,
+                                stsc: SampleToChunkBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 8,
+                                    entries.len: 8,
+                                },
+                                stsz: Some(
+                                    SampleSizeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        sample_size: 0,
+                                        sample_count: 208,
+                                        entry_size.len: 208,
+                                    },
+                                ),
+                                stz2: None,
+                                stco: Some(
+                                    ChunkOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 27,
+                                        chunk_offset.len: 27,
+                                    },
+                                ),
+                                co64: None,
+                                stss: Some(
+                                    SyncSampleBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 0,
+                                        sample_number: [],
+                                    },
+                                ),
+                                stsh: None,
+                                padb: None,
+                                stdp: None,
+                                sdtp: None,
+                                sbgp: [],
+                                sgpd: [],
+                                subs: [],
+                                saiz: [],
+                                saio: [],
+                                csgp: [],
+                            },
+                        },
+                        unknown_boxes: [],
+                    },
+                    unknown_boxes: [],
+                    udta: Some(
+                        UserDataBox {
+                            cprt: [],
+                            tsel: None,
+                            kind: [],
+                            strk: [],
+                            ludt: [],
+                            unknown_boxes: [
+                                UnknownBox {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            219,
+                                        ),
+                                        box_type: FourCc(
+                                            "hnti",
+                                        ),
+                                    },
+                                    data.len: 211,
+                                },
+                            ],
+                        },
+                    ),
+                },
+                TrackBox {
+                    tkhd: TrackHeaderBox {
+                        version: 0,
+                        flags: TrackHeaderBoxFlags(
+                            TrackEnabled,
+                        ),
+                        creation_time: 3541044198,
+                        modification_time: 3541044198,
+                        track_id: 5,
+                        reserved1: 0,
+                        duration: 9594,
+                        reserved2: 0,
+                        layer: 0,
+                        alternate_group: 0,
+                        volume: 0,
+                        reserved3: 0,
+                        matrix: [
+                            65536,
+                            0,
+                            0,
+                            0,
+                            65536,
+                            0,
+                            0,
+                            0,
+                            1073741824,
+                        ],
+                        width: 0,
+                        height: 0,
+                    },
+                    tref: Some(
+                        TrackReferenceBox {
+                            track_reference_type: [
+                                UnknownBox {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            12,
+                                        ),
+                                        box_type: FourCc(
+                                            "cdsc",
+                                        ),
+                                    },
+                                    data.len: 4,
+                                },
+                            ],
+                        },
+                    ),
+                    trgr: None,
+                    edts: None,
+                    ttyp: None,
+                    meta: None,
+                    mdia: MediaBox {
+                        mdhd: MediaHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            creation_time: 3541044198,
+                            modification_time: 3541044198,
+                            timescale: 90000,
+                            duration: 1439100,
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            pre_defined: 0,
+                        },
+                        hdlr: HandlerBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            pre_defined: 0,
+                            handler_type: HandlerType::Hint,
+                            reserved: [
+                                0,
+                                0,
+                                0,
+                            ],
+                            name: Utf8String(
+                                "L-SMASH RTCP track Handler",
+                            ),
+                        },
+                        elng: None,
+                        minf: MediaInformationBox {
+                            vmhd: None,
+                            smhd: None,
+                            hmhd: None,
+                            sthd: None,
+                            vvhd: None,
+                            unknown_boxes: [
+                                UnknownBox {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            12,
+                                        ),
+                                        box_type: FourCc(
+                                            "nmhd",
+                                        ),
+                                    },
+                                    data.len: 4,
+                                },
+                            ],
+                            dinf: DataInformationBox {
+                                dref: DataReferenceBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    url: [
+                                        DataEntryUrlBox {
+                                            full_header: FullBoxHeader {
+                                                version: 0,
+                                                flags: U24Be(
+                                                    1,
+                                                ),
+                                            },
+                                            location: None,
+                                        },
+                                    ],
+                                    urn: [],
+                                    imda: [],
+                                    snim: [],
+                                    unknown_boxes: [],
+                                },
+                            },
+                            stbl: SampleTableBox {
+                                stsd: SampleDescriptionBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    boxes: [
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    24,
+                                                ),
+                                                box_type: FourCc(
+                                                    "rtcp",
+                                                ),
+                                            },
+                                            data.len: 16,
+                                        },
+                                    ],
+                                },
+                                stts: TimeToSampleBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 4,
+                                    entries: [
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 270000,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 312300,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 1,
+                                            sample_delta: 306000,
+                                        },
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 275400,
+                                        },
+                                    ],
+                                },
+                                ctts: None,
+                                cslg: None,
+                                stsc: SampleToChunkBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    entries.len: 1,
+                                },
+                                stsz: Some(
+                                    SampleSizeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        sample_size: 216,
+                                        sample_count: 5,
+                                        entry_size.len: 0,
+                                    },
+                                ),
+                                stz2: None,
+                                stco: Some(
+                                    ChunkOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 5,
+                                        chunk_offset.len: 5,
+                                    },
+                                ),
+                                co64: None,
+                                stss: Some(
+                                    SyncSampleBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 0,
+                                        sample_number: [],
+                                    },
+                                ),
+                                stsh: None,
+                                padb: None,
+                                stdp: None,
+                                sdtp: None,
+                                sbgp: [],
+                                sgpd: [],
+                                subs: [],
+                                saiz: [],
+                                saio: [],
+                                csgp: [],
+                            },
+                        },
+                        unknown_boxes: [],
+                    },
+                    unknown_boxes: [],
+                    udta: None,
+                },
+                TrackBox {
+                    tkhd: TrackHeaderBox {
+                        version: 0,
+                        flags: TrackHeaderBoxFlags(
+                            TrackEnabled,
+                        ),
+                        creation_time: 3541044198,
+                        modification_time: 3541044198,
+                        track_id: 6,
+                        reserved1: 0,
+                        duration: 9600,
+                        reserved2: 0,
+                        layer: 0,
+                        alternate_group: 0,
+                        volume: 0,
+                        reserved3: 0,
+                        matrix: [
+                            65536,
+                            0,
+                            0,
+                            0,
+                            65536,
+                            0,
+                            0,
+                            0,
+                            1073741824,
+                        ],
+                        width: 0,
+                        height: 0,
+                    },
+                    tref: Some(
+                        TrackReferenceBox {
+                            track_reference_type: [
+                                UnknownBox {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            12,
+                                        ),
+                                        box_type: FourCc(
+                                            "cdsc",
+                                        ),
+                                    },
+                                    data.len: 4,
+                                },
+                            ],
+                        },
+                    ),
+                    trgr: None,
+                    edts: None,
+                    ttyp: None,
+                    meta: None,
+                    mdia: MediaBox {
+                        mdhd: MediaHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            creation_time: 3541044198,
+                            modification_time: 3541044198,
+                            timescale: 8000,
+                            duration: 128000,
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            pre_defined: 0,
+                        },
+                        hdlr: HandlerBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            pre_defined: 0,
+                            handler_type: HandlerType::Hint,
+                            reserved: [
+                                0,
+                                0,
+                                0,
+                            ],
+                            name: Utf8String(
+                                "L-SMASH RTCP track Handler",
+                            ),
+                        },
+                        elng: None,
+                        minf: MediaInformationBox {
+                            vmhd: None,
+                            smhd: None,
+                            hmhd: None,
+                            sthd: None,
+                            vvhd: None,
+                            unknown_boxes: [
+                                UnknownBox {
+                                    header: BoxHeader {
+                                        size: Short(
+                                            12,
+                                        ),
+                                        box_type: FourCc(
+                                            "nmhd",
+                                        ),
+                                    },
+                                    data.len: 4,
+                                },
+                            ],
+                            dinf: DataInformationBox {
+                                dref: DataReferenceBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    url: [
+                                        DataEntryUrlBox {
+                                            full_header: FullBoxHeader {
+                                                version: 0,
+                                                flags: U24Be(
+                                                    1,
+                                                ),
+                                            },
+                                            location: None,
+                                        },
+                                    ],
+                                    urn: [],
+                                    imda: [],
+                                    snim: [],
+                                    unknown_boxes: [],
+                                },
+                            },
+                            stbl: SampleTableBox {
+                                stsd: SampleDescriptionBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    boxes: [
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    24,
+                                                ),
+                                                box_type: FourCc(
+                                                    "rtcp",
+                                                ),
+                                            },
+                                            data.len: 16,
+                                        },
+                                    ],
+                                },
+                                stts: TimeToSampleBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    entries: [
+                                        TimeToSampleBoxEntry {
+                                            sample_count: 2,
+                                            sample_delta: 64000,
+                                        },
+                                    ],
+                                },
+                                ctts: None,
+                                cslg: None,
+                                stsc: SampleToChunkBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    entries.len: 1,
+                                },
+                                stsz: Some(
+                                    SampleSizeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        sample_size: 216,
+                                        sample_count: 2,
+                                        entry_size.len: 0,
+                                    },
+                                ),
+                                stz2: None,
+                                stco: Some(
+                                    ChunkOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 2,
+                                        chunk_offset.len: 2,
+                                    },
+                                ),
+                                co64: None,
+                                stss: Some(
+                                    SyncSampleBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 0,
+                                        sample_number: [],
+                                    },
+                                ),
+                                stsh: None,
+                                padb: None,
+                                stdp: None,
+                                sdtp: None,
+                                sbgp: [],
+                                sgpd: [],
+                                subs: [],
+                                saiz: [],
+                                saio: [],
+                                csgp: [],
+                            },
+                        },
+                        unknown_boxes: [],
+                    },
+                    unknown_boxes: [],
+                    udta: None,
+                },
+            ],
+            mvex: None,
+            unknown_boxes: [],
+            udta: Some(
+                UserDataBox {
+                    cprt: [],
+                    tsel: None,
+                    kind: [],
+                    strk: [],
+                    ludt: [],
+                    unknown_boxes: [
+                        UnknownBox {
+                            header: BoxHeader {
+                                size: Short(
+                                    173,
+                                ),
+                                box_type: FourCc(
+                                    "hnti",
+                                ),
+                            },
+                            data.len: 165,
+                        },
+                    ],
+                },
+            ),
+        },
+    ),
+    moof: [],
+    mdat: [
+        MediaDataBox {
+            data.len: 1758409,
+        },
+    ],
+    imda: [],
+    meta: None,
+    styp: [],
+    sidx: [],
+    ssix: [],
+    prft: [],
+    unknown_boxes: [
+        UnknownBox {
+            header: BoxHeader {
+                size: Short(
+                    8,
+                ),
+                box_type: FourCc(
+                    "free",
+                ),
+            },
+            data.len: 0,
+        },
+    ],
+    mfra: None,
+}

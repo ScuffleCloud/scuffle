@@ -1,52 +1,52 @@
 bazel_dep(name = "rules_rust")
 git_override(
     module_name = "rules_rust",
-    commit = "9a78b05bec03a8801add0f96b56f5d8d79f817bc",
+    commit = "cc53497740b8b669fd14a9ac4020481f03d859f9",
     remote = "https://github.com/ScuffleCloud/rules_rust.git",
 )
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-cargo_bazel_url = "https://github.com/ScuffleCloud/rules_rust/releases/download/commit-9a78b05bec03a8801add0f96b56f5d8d79f817bc/"
+cargo_bazel_url = "https://github.com/ScuffleCloud/rules_rust/releases/download/commit-cc53497740b8b669fd14a9ac4020481f03d859f9/"
 
 http_archive(
     name = "cargo-bazel-darwin-aarch64",
-    sha256 = "2fbdc164633918478bb5f43cd50d7cb2257f413c8b99a1881dbc22179f8cb799",
+    sha256 = "480265a7fbcca51befd03b9ce23698bd0298017fb4067724f1d3e08816dc3fbe",
     strip_prefix = "cargo-bazel-darwin-aarch64",
     url = cargo_bazel_url + "cargo-bazel-darwin-aarch64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-darwin-x86_64",
-    sha256 = "763c4ede18af68174d53737472a848d9621aab775888336f07a06b3d36ef7449",
+    sha256 = "8bf80c04db008479f34f78509f1d30f691207f2298b8b6a5f1b0634c3831bb0e",
     strip_prefix = "cargo-bazel-darwin-x86_64",
     url = cargo_bazel_url + "cargo-bazel-darwin-x86_64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-linux-aarch64",
-    sha256 = "6b3aefc3cbb19f7d3c75b7f5a0b185fabde6a2fa12a2ea267efd81f3101f2b3a",
+    sha256 = "253ba829c73ba07bf282a77c04bbedfcba8762fd23470c81465844a16c9e43ae",
     strip_prefix = "cargo-bazel-linux-aarch64",
     url = cargo_bazel_url + "cargo-bazel-linux-aarch64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-linux-x86_64",
-    sha256 = "904cfef225494e3b979136a2664e1088d88970511c852963e8eb467bd23792c3",
+    sha256 = "6dd83aa83746f97ecc00f481d83c6ef1cf099be6f6ad296b1f8071ebea84b337",
     strip_prefix = "cargo-bazel-linux-x86_64",
     url = cargo_bazel_url + "cargo-bazel-linux-x86_64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-windows-aarch64",
-    sha256 = "2ff540706432e3d95b5fafcced068fc20e3a4b35a5a50be225d30d3d025ff824",
+    sha256 = "5d545012db20d638126ed0ac3be23ab1b6cab31e710328a362472ffa6a1ba702",
     strip_prefix = "cargo-bazel-windows-aarch64",
     url = cargo_bazel_url + "cargo-bazel-windows-aarch64.tar.zst",
 )
 
 http_archive(
     name = "cargo-bazel-windows-x86_64",
-    sha256 = "20ce88e3c0638bc4e79a5cb9a10a3d531ba3bc89856290d0fd29f5fa00d7f575",
+    sha256 = "2b82d83e8f7ced88c5d2b72c4dbff888e7efeee15bc03ef793b1aff4056f2829",
     strip_prefix = "cargo-bazel-windows-x86_64",
     url = cargo_bazel_url + "cargo-bazel-windows-x86_64.tar.zst",
 )
@@ -306,6 +306,7 @@ use_repo(
     "cargo_vendor__target-spec-3.5.0",
     "cargo_vendor__target-triple-0.1.4",
     "cargo_vendor__tempfile-3.22.0",
+    "cargo_vendor__testcontainers-0.25.0",
     "cargo_vendor__thiserror-2.0.16",
     "cargo_vendor__tokio-1.47.1",
     "cargo_vendor__tokio-rustls-0.26.2",

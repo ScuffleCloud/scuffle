@@ -66,6 +66,13 @@ impl<G: core_traits::Global> pb::scufflecloud::core::v1::users_service_server::U
         Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
+    async fn update_webauthn_credential(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::UpdateWebauthnCredentialRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::WebauthnCredential>, tonic::Status> {
+        Operation::<G>::run(req).await.map(tonic::Response::new)
+    }
+
     async fn delete_webauthn_credential(
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::DeleteWebauthnCredentialRequest>,
@@ -98,6 +105,13 @@ impl<G: core_traits::Global> pb::scufflecloud::core::v1::users_service_server::U
         &self,
         req: tonic::Request<pb::scufflecloud::core::v1::ListTotpCredentialsRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::TotpCredentialsList>, tonic::Status> {
+        Operation::<G>::run(req).await.map(tonic::Response::new)
+    }
+
+    async fn update_totp_credential(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::UpdateTotpCredentialRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::TotpCredential>, tonic::Status> {
         Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 

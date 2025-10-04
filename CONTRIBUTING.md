@@ -32,27 +32,20 @@ sudo update-locale LANG=en_US.UTF-8
 
 If someone knows how to make our build system fully hermetic, please let us know!
 
-You should be able to build the project in a docker container with the following command:
+## Docker
 
-```bash
-docker run --rm -it ubuntu:22.04 bash -c '
-apt update
-apt install wget git bash libc6-dbg locales -y
+Some of our tests require docker to be running and installed on your system, please follow the instructions [here](https://docs.docker.com/get-docker/) to install docker.
 
-locale-gen en_US.UTF-8
-update-locale LANG=en_US.UTF-8
-export LANG="en_US.UTF-8"
+We also require you to use the containerd backend for docker <https://docs.docker.com/engine/storage/containerd>.
 
-wget https://github.com/bazelbuild/bazelisk/releases/download/v1.26.0/bazelisk-amd64.deb
-apt install ./bazelisk-amd64.deb
+Adding the following to your `/etc/docker/daemon.json`:
 
-git clone https://github.com/scufflecloud/scuffle -b troy/bazel
-
-cd scuffle
-export PATH="$(pwd)/tools/scripts:$PATH"
-
-just test
-just grind'
+```json
+{
+    "features": {
+        "containerd-snapshotter": true
+    }
+}
 ```
 
 #### Scripts / Tools
@@ -121,19 +114,21 @@ Linting is done through bazel as well, formatting is done via `just fmt` which u
 
 ## Local Commnads
 
-| Command                 | Description                                       |
-| ----------------------- | ------------------------------------------------- |
-| `just test`             | Run all tests                                     |
-| `just grind`            | Run tests with valgrind                           |
-| `just lint`             | Lint the code & try auto-fix linting errors       |
-| `just fmt`              | Format the code                                   |
-| `just deny`             | Check that all dependencies have allowed licenses |
-| `just docs`             | Build the docs                                    |
-| `just docs-serve`       | Serve the docs locally                            |
-| `just vendor`           | Vendor the dependencies                           |
-| `just clear-tool-cache` | Clear the tool cache                              |
-| `pnpm dev`              | Start all frontends dev servers                   |
-| `pnpm dev:dashboard`    | Start the dashboard dev server                    |
+| Command                   | Description                                       |
+| ------------------------- | ------------------------------------------------- |
+| `just test`               | Run all tests                                     |
+| `just grind`              | Run tests with valgrind                           |
+| `just lint`               | Lint the code & try auto-fix linting errors       |
+| `just fmt`                | Format the code                                   |
+| `just deny`               | Check that all dependencies have allowed licenses |
+| `just docs`               | Build the docs                                    |
+| `just docs-serve`         | Serve the docs locally                            |
+| `just vendor`             | Vendor the dependencies                           |
+| `just clear-tool-cache`   | Clear the tool cache                              |
+| `just sync-readme`        | Sync the readme for all crates                    |
+| `just sync-diesel-schema` | Sync the diesel schema for all crates             |
+| `pnpm dev`                | Start all frontends dev servers                   |
+| `pnpm dev:dashboard`      | Start the dashboard dev server                    |
 
 ## CLA
 

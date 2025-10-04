@@ -10,10 +10,7 @@ use core_db_types::schema::{
     user_emails, user_sessions, users,
 };
 use core_traits::EmailServiceClient;
-use diesel::{
-    BoolExpressionMethods, ExpressionMethods, JoinOnDsl, NullableExpressionMethods, OptionalExtension, QueryDsl,
-    SelectableHelper,
-};
+use diesel::{BoolExpressionMethods, ExpressionMethods, JoinOnDsl, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use ext_traits::{DisplayExt, OptionExt, ResultExt};
 use geo_ip::maxminddb;
@@ -119,7 +116,7 @@ pub(crate) async fn get_user_by_email(
     email: &str,
 ) -> Result<Option<User>, tonic::Status> {
     let user = users::dsl::users
-        .inner_join(user_emails::dsl::user_emails.on(users::dsl::primary_email.eq(user_emails::dsl::email.nullable())))
+        .inner_join(user_emails::dsl::user_emails.on(users::dsl::id.eq(user_emails::dsl::user_id)))
         .filter(user_emails::dsl::email.eq(&email))
         .select(User::as_select())
         .first::<User>(db)

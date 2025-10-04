@@ -67,6 +67,8 @@ pub enum Action {
     CompleteCreateWebauthnCredential,
     #[display("create_webauthn_challenge")]
     CreateWebauthnChallenge,
+    #[display("update_webauthn_credential")]
+    UpdateWebauthnCredential,
     #[display("delete_webauthn_credential")]
     DeleteWebauthnCredential,
     #[display("list_webauthn_credentials")]
@@ -76,6 +78,8 @@ pub enum Action {
     CreateTotpCredential,
     #[display("complete_create_totp_credential")]
     CompleteCreateTotpCredential,
+    #[display("update_totp_credential")]
+    UpdateTotpCredential,
     #[display("delete_totp_credential")]
     DeleteTotpCredential,
     #[display("list_totp_credentials")]

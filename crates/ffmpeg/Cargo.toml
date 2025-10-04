@@ -22,7 +22,6 @@ crossbeam-channel = { optional = true, version = "0.5.13" }
 document-features = { optional = true, version = "0.2" }
 libc = "0.2"
 nutype-enum = { path = "../nutype-enum", version = "0.1.4" }
-rand = "0.9"
 rusty_ffmpeg = "0.16.4"
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 thiserror = "2.0"
@@ -33,6 +32,7 @@ va_list = "0.2"
 [dev-dependencies]
 bytes = "1"
 insta = { features = ["filters"], version = "1.42" }
+rand = "0.9"
 scuffle-mp4 = { path = "../mp4" }
 sha2 = "0.10"
 tempfile = "3.15"

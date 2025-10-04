@@ -4,14 +4,6 @@ default:
     just --list
 
 # this should be kept in sync with
-# .github/workflows/cargo-update-pr.yaml
-
-bzlmod:
-    # https://github.com/bazelbuild/bazel/issues/20477
-    bazel shutdown
-    bazel mod deps
-
-# this should be kept in sync with
 # .github/workflows/ci-check-fmt.yaml
 
 fmt:
@@ -100,9 +92,13 @@ generate-mtls-certs:
         -copy_extensions copy
 
 alias coverage := test
+alias sync-rdme := sync-readme
 
-sync-rdme:
+sync-readme:
     bazel run //tools/cargo/sync-readme:fix
+
+sync-diesel-schema:
+    bazel run //tools/diesel-schema:fix
 
 test *targets="//...":
     #!/usr/bin/env bash

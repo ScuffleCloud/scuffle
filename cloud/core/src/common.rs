@@ -252,6 +252,7 @@ pub(crate) async fn mfa_options(
 pub(crate) async fn create_session<G: core_traits::Global>(
     global: &Arc<G>,
     tx: &mut impl diesel_async::AsyncConnection<Backend = diesel::pg::Pg>,
+    dashboard_origin: &url::Url,
     user: &User,
     device: pb::scufflecloud::core::v1::Device,
     ip_info: &IpAddressInfo,
@@ -322,7 +323,7 @@ pub(crate) async fn create_session<G: core_traits::Global>(
             .into_tonic_internal_err("failed to lookup geoip info")?
             .map(Into::into)
             .unwrap_or_default();
-        let email = core_emails::new_device_email(global.dashboard_origin(), ip_info.ip_address, geo_info)
+        let email = core_emails::new_device_email(dashboard_origin, ip_info.ip_address, geo_info)
             .into_tonic_internal_err("failed to render email")?;
         let email = email_to_pb(global, primary_email.clone(), user.preferred_name.clone(), email);
 

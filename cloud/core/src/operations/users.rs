@@ -278,7 +278,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             .into_tonic_internal_err("failed to insert email registration request")?;
 
         // Send email
-        let email = core_emails::add_new_email_email(global.dashboard_origin(), code_base64, timeout)
+        let email = core_emails::add_new_email_email(&self.dashboard_origin::<G>()?, code_base64, timeout)
             .into_tonic_internal_err("failed to render add new email email")?;
         let email = common::email_to_pb(global, resource.email.clone(), user.preferred_name, email);
 

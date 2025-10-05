@@ -582,6 +582,7 @@ _NORMAL_DEPENDENCIES = {
                 "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
                 "tonic-types": Label("@cargo_vendor//:tonic-types-0.14.2"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
+                "url": Label("@cargo_vendor//:url-2.5.7"),
             },
         },
     },

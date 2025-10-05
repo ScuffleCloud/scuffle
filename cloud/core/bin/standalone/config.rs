@@ -4,6 +4,25 @@ use std::path::PathBuf;
 use anyhow::Context;
 use fred::prelude::ClientLike;
 
+#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
+#[serde(rename_all = "snake_case", tag = "type", content = "url")]
+pub enum DashboardOrigin {
+    #[default]
+    Static(
+        #[default("https://dashboard.scuffle.cloud".parse().unwrap())]
+        url::Url,
+    ),
+    FromRequest,
+}
+
+#[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
+pub struct WebauthnConfig {
+    #[default = "scuffle.cloud"]
+    pub rp_id: String,
+    #[default("https://dashboard.scuffle.cloud".parse().unwrap())]
+    pub rp_origin: url::Url,
+}
+
 const fn days(days: u64) -> std::time::Duration {
     hours(days * 24)
 }

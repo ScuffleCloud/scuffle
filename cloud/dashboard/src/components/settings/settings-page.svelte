@@ -9,6 +9,7 @@
     import { useTotpAuth } from "$lib/two-factor/toptAuth.svelte";
     import { useWebauthnAuth } from "$lib/two-factor/webAuthn.svelte";
     import type { UserSettings } from "$msw/mocks/settings";
+    import { createQuery } from "@tanstack/svelte-query";
     import TwoFactorSettingsCard, {
         type MfaMethod,
     } from "./two-factor-settings-card.svelte";
@@ -22,27 +23,23 @@
     const user = authState().user;
     let userSettings = $state(settings);
 
-    // Load in user information on mfa stuff
-    async function webAuthList() {
-        if (!user) return;
+    const toptListQuery = createQuery(() => ({
+        queryKey: ["totp-list"],
+        queryFn: () =>
+            usersServiceClient.listTotpCredentials({
+                id: user!.id,
+            }),
+        enabled: !!user,
+    }));
 
-        const listCredentials = usersServiceClient
-            .listWebauthnCredentials({
-                id: user.id,
-            });
-        const response = await listCredentials.response;
-        console.log("response", response);
-    }
-
-    async function totpList() {
-        if (!user) return;
-        const listCredentials = usersServiceClient
-            .listTotpCredentials({
-                id: user.id,
-            });
-        const response = await listCredentials.response;
-        console.log("response", response);
-    }
+    const webauthnListQuery = createQuery(() => ({
+        queryKey: ["webauthn-list"],
+        queryFn: () =>
+            usersServiceClient.listWebauthnCredentials({
+                id: user!.id,
+            }),
+        enabled: !!user,
+    }));
 
     const activeMethods = $state([
         {
@@ -54,10 +51,6 @@
         { id: "2", name: "Passkey", type: "WEBAUTH" },
         { id: "3", name: "Passkey", type: "WEBAUTH" },
     ]);
-
-    // Do the 2fa locally without hardening code structures because I don't know where it will go
-    // Lets generate some UUID here for the name of the key. No reason to store it in the database
-    // because we can just generate it on the fly.
 
     const webauthnAuth = useWebauthnAuth();
 
@@ -158,15 +151,37 @@
 
     let totpCredentialName = $state("");
     let totpCode = $state("");
+
+    const hasAnyError = $derived(
+        toptListQuery.isError || webauthnListQuery.isError,
+    );
+
+    const isLoading = $derived(
+        toptListQuery.isLoading || webauthnListQuery.isLoading
+            || hasAnyError,
+    );
+
+    let errorShown = $state(false);
+
+    $effect(() => {
+        if (hasAnyError && !errorShown) {
+            errorShown = true;
+        }
+        if (toptListQuery.isSuccess && webauthnListQuery.isSuccess) {
+            errorShown = false;
+        }
+    });
+
+    // All cards should be stuck in loading until all queries pass
 </script>
 
 <div class="settings-page">
     <!-- WEBAUTHN -->
     <div class="two-factor-auth">
         Here:
-        <button onclick={() => webAuthList()}>
+        <!-- <button onclick={() => webAuthList()}>
             Load WebAuthn Credentials
-        </button>
+        </button> -->
         <br>
         2fa information here testing flows:
         <br>
@@ -189,9 +204,9 @@
     </div>
     <!-- TOPT -->
     <div class="two-factor-auth">
-        <button onclick={() => totpList()}>
+        <!-- <button onclick={() => totpList()}>
             Load TOTP Credentials
-        </button>
+        </button> -->
         <br>
         Here:
         <button onclick={() => totpAuth.initiateTotpSetup()}>
@@ -241,10 +256,14 @@
         subtitle="(2FA)"
         icon={IconShield}
     >
-        <TwoFactorSettingsCard methods={activeMethods as MfaMethod[]} />
+        <TwoFactorSettingsCard
+            methods={activeMethods as MfaMethod[]}
+            {isLoading}
+        />
         <SettingsCard
             title="Recovery Codes"
             description="Generate backup codes to access your account if you lose your authenticator device."
+            {isLoading}
         >
             <button
                 class="action-button action-secondary"
@@ -273,6 +292,7 @@
         <SettingsCard
             title="Email Notifications"
             description="Receive notifications about important account activities via email."
+            {isLoading}
         >
             <Switch
                 checked={userSettings.notifications.email.enabled}

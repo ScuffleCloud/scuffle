@@ -15,9 +15,10 @@
     // When something is updated we can just refetch the webauthn list. Methods will come from a tanstack query I guess
     interface Props {
         methods: MfaMethod[];
+        isLoading?: boolean;
     }
 
-    let { methods }: Props = $props();
+    let { methods, isLoading }: Props = $props();
 
     const enabled = $derived(methods.length > 0);
 
@@ -71,6 +72,7 @@
         variant: enabled ? "enabled" : "disabled",
     }}
     description="Enables a second layer of security, by requiring at least two methods of authentication for signing in."
+    {isLoading}
 >
     <div class="divider">
         Active authentication methods

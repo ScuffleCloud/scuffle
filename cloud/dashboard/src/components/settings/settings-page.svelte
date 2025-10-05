@@ -242,7 +242,6 @@
         icon={IconShield}
     >
         <TwoFactorSettingsCard methods={activeMethods as MfaMethod[]} />
-
         <SettingsCard
             title="Recovery Codes"
             description="Generate backup codes to access your account if you lose your authenticator device."

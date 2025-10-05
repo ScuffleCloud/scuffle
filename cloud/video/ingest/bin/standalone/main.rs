@@ -21,6 +21,12 @@ struct Global {
     open_telemetry: opentelemetry::OpenTelemetry,
 }
 
+impl ingest_traits::ConfigInterface for Global {
+    fn rtmp_bind(&self) -> std::net::SocketAddr {
+        self.config.rtmp_bind
+    }
+}
+
 impl ingest_traits::Global for Global {}
 
 impl scuffle_signal::SignalConfig for Global {}

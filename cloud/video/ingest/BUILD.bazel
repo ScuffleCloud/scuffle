@@ -9,6 +9,7 @@ deps = [
     "//crates/context",
     "//crates/settings",
     "//crates/signal",
+    "//crates/rtmp",
     "//cloud/video/ingest/traits",
 ]
 

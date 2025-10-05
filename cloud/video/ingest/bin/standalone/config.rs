@@ -7,6 +7,8 @@ pub(crate) struct Config {
     pub service_name: String,
     #[default = "info"]
     pub level: String,
+    #[default("[::]:1935".parse().unwrap())]
+    pub rtmp_bind: SocketAddr,
     pub telemetry: Option<TelemetryConfig>,
 }
 

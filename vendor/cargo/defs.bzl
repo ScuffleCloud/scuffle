@@ -638,6 +638,7 @@ _NORMAL_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
                 "serde": Label("@cargo_vendor//:serde-1.0.228"),
+                "tokio": Label("@cargo_vendor//:tokio-1.47.1"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
             },

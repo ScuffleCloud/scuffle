@@ -31,10 +31,6 @@
         auth.initialize();
     });
 
-    // $effect(() => {
-    //     $inspect(auth.userSessionToken);
-    // });
-
     const isOAuthCallbackRoute = $derived(
         OAUTH_CALLBACK_ROUTES.some(route =>
             page.url.pathname.startsWith(route)

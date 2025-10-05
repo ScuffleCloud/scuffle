@@ -8,10 +8,19 @@
             variant: "enabled" | "disabled" | "warning";
         };
         description?: string;
+        isLoading?: boolean;
+        skeletonHeight?: string;
         children?: Snippet;
     }
 
-    const { title, status, description, children }: Props = $props();
+    const {
+        title,
+        status,
+        description,
+        isLoading = false,
+        skeletonHeight = "200px",
+        children
+    }: Props = $props();
 
     function getStatusClass(
         variant: "enabled" | "disabled" | "warning",
@@ -28,23 +37,31 @@
 </script>
 
 <div class="card">
-    <div class="card-header">
-        <div class="card-title-row">
-            <h4 class="card-title">{title}</h4>
-            {#if status}
-                <span class="status-badge {getStatusClass(status.variant)}">
-                    {status.label}
-                </span>
-            {/if}
+    {#if isLoading}
+        <div class="skeleton-container" style="height: {skeletonHeight}">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-description"></div>
+            <div class="skeleton skeleton-content"></div>
         </div>
-    </div>
+    {:else}
+        <div class="card-header">
+            <div class="card-title-row">
+                <h4 class="card-title">{title}</h4>
+                {#if status}
+                    <span class="status-badge {getStatusClass(status.variant)}">
+                        {status.label}
+                    </span>
+                {/if}
+            </div>
+        </div>
 
-    {#if description}
-        <p class="card-description">{description}</p>
-    {/if}
+        {#if description}
+            <p class="card-description">{description}</p>
+        {/if}
 
-    {#if children}
-        {@render children()}
+        {#if children}
+            {@render children()}
+        {/if}
     {/if}
 </div>
 
@@ -109,5 +126,48 @@
       font-size: 1rem;
       font-weight: 500;
       line-height: 1.5rem;
+    }
+
+    /* TODO: Assess how accurate this is and if we want to reuse elsewhere */
+    .skeleton-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .skeleton {
+      background: linear-gradient(
+        90deg,
+        var(--colors-gray40) 0%,
+        var(--colors-gray50) 50%,
+        var(--colors-gray40) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s ease-in-out infinite;
+      border-radius: 0.25rem;
+    }
+
+    .skeleton-title {
+      height: 1.5rem;
+      width: 60%;
+    }
+
+    .skeleton-description {
+      height: 1rem;
+      width: 80%;
+    }
+
+    .skeleton-content {
+      flex: 1;
+      min-height: 3rem;
+    }
+
+    @keyframes skeleton-loading {
+      0% {
+        background-position: 200% 0;
+      }
+      100% {
+        background-position: -200% 0;
+      }
     }
 </style>

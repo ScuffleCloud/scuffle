@@ -102,7 +102,7 @@ rust_library(
             "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
-            "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__tokio-rustls-0.26.4//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
         ],
@@ -123,7 +123,7 @@ rust_library(
             "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
-            "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__tokio-rustls-0.26.4//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
         ],
@@ -144,7 +144,7 @@ rust_library(
             "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
-            "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__tokio-rustls-0.26.4//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
         ],
@@ -171,7 +171,7 @@ rust_library(
             "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
-            "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__tokio-rustls-0.26.4//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
         ],
@@ -192,7 +192,7 @@ rust_library(
             "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
-            "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__tokio-rustls-0.26.4//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
         ],
@@ -213,7 +213,7 @@ rust_library(
             "@cargo_vendor__rustls-native-certs-0.8.1//:rustls_native_certs",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tokio-1.47.1//:tokio",  # cfg(not(target_arch = "wasm32"))
-            "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
+            "@cargo_vendor__tokio-rustls-0.26.4//:tokio_rustls",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-0.5.2//:tower",  # cfg(not(target_arch = "wasm32"))
             "@cargo_vendor__tower-http-0.6.6//:tower_http",  # cfg(not(target_arch = "wasm32"))
         ],

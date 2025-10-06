@@ -309,7 +309,7 @@ use_repo(
     "cargo_vendor__testcontainers-0.25.0",
     "cargo_vendor__thiserror-2.0.16",
     "cargo_vendor__tokio-1.47.1",
-    "cargo_vendor__tokio-rustls-0.26.2",
+    "cargo_vendor__tokio-rustls-0.26.4",
     "cargo_vendor__tokio-stream-0.1.17",
     "cargo_vendor__tokio-test-0.4.4",
     "cargo_vendor__tokio-util-0.7.16",

@@ -6,7 +6,9 @@
 #![deny(clippy::mod_module_files)]
 
 mod config;
+mod rtmps;
 
 pub use config::*;
+pub use rtmps::*;
 
-pub trait Global: ConfigInterface + Send + Sync + 'static {}
+pub trait Global: ConfigInterface + RtmpsInterface + Send + Sync + 'static {}

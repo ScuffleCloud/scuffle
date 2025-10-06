@@ -1642,14 +1642,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "tokio-rustls-0.26.2",
-    actual = "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",
+    name = "tokio-rustls-0.26.4",
+    actual = "@cargo_vendor__tokio-rustls-0.26.4//:tokio_rustls",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "tokio-rustls",
-    actual = "@cargo_vendor__tokio-rustls-0.26.2//:tokio_rustls",
+    actual = "@cargo_vendor__tokio-rustls-0.26.4//:tokio_rustls",
     tags = ["manual"],
 )
 

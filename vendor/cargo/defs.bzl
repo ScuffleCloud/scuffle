@@ -639,12 +639,18 @@ _NORMAL_DEPENDENCIES = {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
                 "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "tokio": Label("@cargo_vendor//:tokio-1.47.1"),
+                "tokio-rustls": Label("@cargo_vendor//:tokio-rustls-0.26.4"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
             },
         },
     },
     "cloud/video/ingest/traits": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
+            },
+        },
     },
     "crates/aac": {
         _REQUIRED_FEATURE: {
@@ -925,7 +931,7 @@ _NORMAL_DEPENDENCIES = {
         "tls-rustls": {
             _COMMON_CONDITION: {
                 "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
-                "tokio-rustls": Label("@cargo_vendor//:tokio-rustls-0.26.2"),
+                "tokio-rustls": Label("@cargo_vendor//:tokio-rustls-0.26.4"),
             },
         },
         "tower": {
@@ -1522,6 +1528,10 @@ _NORMAL_ALIASES = {
         },
     },
     "cloud/video/ingest/traits": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
     },
     "crates/aac": {
         _REQUIRED_FEATURE: {
@@ -10551,12 +10561,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__tokio-rustls-0.26.2",
-        sha256 = "8e727b36a1a0e8b74c376ac2211e40c2c8af09fb4013c60d910495810f008e9b",
+        name = "cargo_vendor__tokio-rustls-0.26.4",
+        sha256 = "1729aa945f29d91ba541258c8df89027d5792d85a8841fb65e8bf0f4ede4ef61",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/tokio-rustls/0.26.2/download"],
-        strip_prefix = "tokio-rustls-0.26.2",
-        build_file = Label("//vendor/cargo:BUILD.tokio-rustls-0.26.2.bazel"),
+        urls = ["https://static.crates.io/crates/tokio-rustls/0.26.4/download"],
+        strip_prefix = "tokio-rustls-0.26.4",
+        build_file = Label("//vendor/cargo:BUILD.tokio-rustls-0.26.4.bazel"),
     )
 
     maybe(
@@ -11961,7 +11971,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__testcontainers-0.25.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__thiserror-2.0.16", is_dev_dep = False),
         struct(repo = "cargo_vendor__tokio-1.47.1", is_dev_dep = False),
-        struct(repo = "cargo_vendor__tokio-rustls-0.26.2", is_dev_dep = False),
+        struct(repo = "cargo_vendor__tokio-rustls-0.26.4", is_dev_dep = False),
         struct(repo = "cargo_vendor__tokio-util-0.7.16", is_dev_dep = False),
         struct(repo = "cargo_vendor__toml-0.9.7", is_dev_dep = False),
         struct(repo = "cargo_vendor__toml_edit-0.23.6", is_dev_dep = False),

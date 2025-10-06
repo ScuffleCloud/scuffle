@@ -12,6 +12,7 @@ repository = "https://github.com/scufflecloud/scuffle"
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
+rustls = { default-features = false, version = "0.23.21" }
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

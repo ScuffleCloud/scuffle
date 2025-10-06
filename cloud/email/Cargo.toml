@@ -29,7 +29,7 @@ pb = { package = "scufflecloud-proto", path = "../proto" }
 prost = "0.14"
 reqsign = { version = "0.18", default-features = false, features = ["aws"] }
 reqwest = { features = ["rustls-tls-native-roots-no-provider"], version = "0.12", default-features = false }
-rustls = { default-features = false, version = "0.23", features = ["aws_lc_rs"] }
+rustls = "0.23"
 scuffle-bootstrap = { path = "../../crates/bootstrap" }
 scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../crates/bootstrap-telemetry" }
 scuffle-context = { path = "../../crates/context" }

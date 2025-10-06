@@ -152,11 +152,6 @@ common --repository_cache=~/.cache/scuffle/bazel/repo
 common --experimental_repository_cache_hardlinks
 
 ###############################################################################
-## Docker configuration
-###############################################################################
-common --extra_toolchains=@rules_img_tool//toolchain:all
-
-###############################################################################
 ## Custom user flags
 ##
 ## This should always be the last thing in the `.bazelrc` file to ensure

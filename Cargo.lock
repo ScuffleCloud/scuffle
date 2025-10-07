@@ -6125,6 +6125,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "scufflecloud-video-api"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "scuffle-bootstrap",
+ "scuffle-bootstrap-telemetry",
+ "scuffle-context",
+ "scuffle-settings",
+ "scuffle-signal",
+ "scufflecloud-video-api-traits",
+ "serde",
+ "serde_derive",
+ "smart-default",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "scufflecloud-video-api-traits"
+version = "0.1.0"
+
+[[package]]
 name = "security-framework"
 version = "3.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

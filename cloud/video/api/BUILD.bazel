@@ -1,0 +1,35 @@
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package")
+
+cargo_toml()
+
+deps = [
+    "//crates/bootstrap",
+    "//crates/bootstrap-telemetry",
+    "//crates/context",
+    "//crates/settings",
+    "//crates/signal",
+    "//cloud/video/api/traits",
+]
+
+aliases = {
+    "//cloud/video/api/traits": "video_api_traits",
+}
+
+scuffle_package(
+    aliases = aliases,
+    crate_name = "scufflecloud-video-api",
+    deps = deps,
+)
+
+scuffle_package(
+    name = "bin",
+    srcs = glob([
+        "bin/standalone/**/*.rs",
+    ]),
+    aliases = aliases,
+    crate_name = "scufflecloud-video-api-standalone",
+    crate_type = "bin",
+    readme = False,
+    deps = deps + [":api"],
+)

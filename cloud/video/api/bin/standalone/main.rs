@@ -21,7 +21,7 @@ struct Global {
     open_telemetry: opentelemetry::OpenTelemetry,
 }
 
-impl ingest_traits::Global for Global {}
+impl video_api_traits::Global for Global {}
 
 impl scuffle_signal::SignalConfig for Global {}
 
@@ -35,7 +35,7 @@ impl scuffle_bootstrap_telemetry::TelemetryConfig for Global {
     }
 
     fn http_server_name(&self) -> &str {
-        "scufflecloud-ingest-telemetry"
+        "scufflecloud-video-api-telemetry"
     }
 
     fn opentelemetry(&self) -> Option<&opentelemetry::OpenTelemetry> {
@@ -68,6 +68,6 @@ impl scuffle_bootstrap::Global for Global {
 scuffle_bootstrap::main! {
     Global {
         scuffle_signal::SignalSvc,
-        scufflecloud_ingest::services::IngestSvc::<Global>::default(),
+        scufflecloud_video_api::services::VideoApiSvc::<Global>::default(),
     }
 }

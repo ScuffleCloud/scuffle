@@ -1,0 +1,54 @@
+#!/usr/bin/env dotslash
+{
+  "name": "protoc",
+  "platforms": {
+    "linux-x86_64": {
+      "hash": "sha256",
+      "digest": "e9c129c176bb7df02546c4cd6185126ca53c89e7d2f09511e209319704b5dd7e",
+      "size": 3550399,
+      "path": "protoc",
+      "providers": [
+        {
+          "url": "https://github.com/protocolbuffers/protobuf/releases/download/v32.1/protoc-32.1-linux-x86_64.zip"
+        }
+      ],
+      "format": "zip"
+    },
+    "macos-x86_64": {
+      "hash": "sha256",
+      "digest": "f9caa5b4d0b537acffb0ffd7d53225511a5574ef903fca550ea9e7600987f13b",
+      "size": 2639849,
+      "path": "protoc",
+      "providers": [
+        {
+          "url": "https://github.com/protocolbuffers/protobuf/releases/download/v32.1/protoc-32.1-osx-x86_64.zip"
+        }
+      ],
+      "format": "zip"
+    },
+    "macos-aarch64": {
+      "hash": "sha256",
+      "digest": "95a1e03847cf7057b2db1b68fb92685c3cd9d14e777a879475663adc13989cd7",
+      "size": 5107924,
+      "path": "protoc",
+      "providers": [
+        {
+          "url": "https://github.com/protocolbuffers/protobuf/releases/download/v32.1/protoc-32.1-osx-universal_binary.zip"
+        }
+      ],
+      "format": "zip"
+    },
+    "windows-x86_64": {
+      "hash": "sha256",
+      "digest": "69569cbc178cd5785ecb7d93569913110677eafeb4b8f82970c361fad4c7cd66",
+      "size": 3416415,
+      "path": "protoc",
+      "providers": [
+        {
+          "url": "https://github.com/protocolbuffers/protobuf/releases/download/v32.1/protoc-32.1-win64.zip"
+        }
+      ],
+      "format": "zip"
+    }
+  }
+}

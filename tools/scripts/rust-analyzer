@@ -1,0 +1,67 @@
+#!/usr/bin/env dotslash
+
+{
+  "name": "rust-analyzer",
+  "platforms": {
+    "macos-aarch64": {
+      "size": 10565461,
+      "hash": "sha256",
+      "digest": "a0c9c32ed4cafc642548476f055bbaf486a4e5d21bcd1720f7a5331bb54ac58a",
+      "format": "tar.zst",
+      "path": "rust-analyzer-darwin-aarch64/rust-analyzer",
+      "providers": [
+        {
+          "url": "https://github.com/ScuffleCloud/rust-analyzer/releases/download/commit-602498a1fbe88277470a28354921a59fd30ba802/rust-analyzer-darwin-aarch64.tar.zst"
+        }
+      ]
+    },
+    "macos-x86_64": {
+      "size": 10924796,
+      "hash": "sha256",
+      "digest": "6dc6089b8aa3ed4570a18cfa6d6c6175a39bbe3c2f4985f8b521cb276dda63fd",
+      "format": "tar.zst",
+      "path": "rust-analyzer-darwin-x86_64/rust-analyzer",
+      "providers": [
+        {
+          "url": "https://github.com/ScuffleCloud/rust-analyzer/releases/download/commit-602498a1fbe88277470a28354921a59fd30ba802/rust-analyzer-darwin-x86_64.tar.zst"
+        }
+      ]
+    },
+    "linux-aarch64": {
+      "size": 11392610,
+      "hash": "sha256",
+      "digest": "1dbb57192db64df8b15980ce611dfb685517a552d2ba1277c912c0ba1e94df68",
+      "format": "tar.zst",
+      "path": "rust-analyzer-linux-aarch64/rust-analyzer",
+      "providers": [
+        {
+          "url": "https://github.com/ScuffleCloud/rust-analyzer/releases/download/commit-602498a1fbe88277470a28354921a59fd30ba802/rust-analyzer-linux-aarch64.tar.zst"
+        }
+      ]
+    },
+    "linux-x86_64": {
+      "size": 11437637,
+      "hash": "sha256",
+      "digest": "d02fba255e9d52ca6998cc8ffcdea91e3ae5c0bdc05a85991c8a06463087822d",
+      "format": "tar.zst",
+      "path": "rust-analyzer-linux-x86_64/rust-analyzer",
+      "providers": [
+        {
+          "url": "https://github.com/ScuffleCloud/rust-analyzer/releases/download/commit-602498a1fbe88277470a28354921a59fd30ba802/rust-analyzer-linux-x86_64.tar.zst"
+        }
+      ]
+    },
+    "windows-x86_64": {
+      "size": 9931509,
+      "hash": "sha256",
+      "digest": "fd09b56c105b6e80019c70e60522875f3c5450a29fcd4ec6904a9d0db7159956",
+      "format": "tar.zst",
+      "path": "rust-analyzer-windows-x86_64/rust-analyzer",
+      "providers": [
+        {
+          "url": "https://github.com/ScuffleCloud/rust-analyzer/releases/download/commit-602498a1fbe88277470a28354921a59fd30ba802/rust-analyzer-windows-x86_64.tar.zst"
+        }
+      ]
+    }
+  }
+}

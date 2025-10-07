@@ -1,0 +1,72 @@
+#!/usr/bin/env dotslash
+{
+  "name": "pnpm",
+  "platforms": {
+    "linux-aarch64": {
+      "hash": "sha256",
+      "digest": "a4e24d3b1171dce6a7c35f7fc75e6ce20f4d9932318ac892d7508b19af298d89",
+      "size": 61993165,
+      "path": "pnpm",
+      "providers": [
+        {
+          "url": "https://github.com/pnpm/pnpm/releases/download/v10.18.1/pnpm-linux-arm64"
+        }
+      ]
+    },
+    "linux-x86_64": {
+      "hash": "sha256",
+      "digest": "6f8ae185edfb0ef1ed4fd94f399b9b8a990eab5636aaeac9b0d3556ce0143e27",
+      "size": 65967869,
+      "path": "pnpm",
+      "providers": [
+        {
+          "url": "https://github.com/pnpm/pnpm/releases/download/v10.18.1/pnpm-linux-x64"
+        }
+      ]
+    },
+    "macos-aarch64": {
+      "hash": "sha256",
+      "digest": "82eab0623e8bfd29fdbb386da51a17edcbed666eaee4125068b91db922993853",
+      "size": 62669712,
+      "path": "pnpm",
+      "providers": [
+        {
+          "url": "https://github.com/pnpm/pnpm/releases/download/v10.18.1/pnpm-macos-arm64"
+        }
+      ]
+    },
+    "macos-x86_64": {
+      "hash": "sha256",
+      "digest": "e296136c535695e1d0d44b8664e0374c96aa2407a857ed64e9b5b35cd77a83ce",
+      "size": 70027424,
+      "path": "pnpm",
+      "providers": [
+        {
+          "url": "https://github.com/pnpm/pnpm/releases/download/v10.18.1/pnpm-macos-x64"
+        }
+      ]
+    },
+    "windows-aarch64": {
+      "hash": "sha256",
+      "digest": "ce77420bdf308e1f4ed803b68cd8251c675b9851d6ae1267731e111b40216c51",
+      "size": 40623913,
+      "path": "pnpm",
+      "providers": [
+        {
+          "url": "https://github.com/pnpm/pnpm/releases/download/v10.18.1/pnpm-win-arm64.exe"
+        }
+      ]
+    },
+    "windows-x86_64": {
+      "hash": "sha256",
+      "digest": "a30c43f4a48ea317a5a3ecf8486f27de9e0cfdc2768d4870e23005a3254f3009",
+      "size": 53177177,
+      "path": "pnpm",
+      "providers": [
+        {
+          "url": "https://github.com/pnpm/pnpm/releases/download/v10.18.1/pnpm-win-x64.exe"
+        }
+      ]
+    }
+  }
+}

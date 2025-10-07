@@ -1,0 +1,66 @@
+#!/usr/bin/env dotslash
+{
+  "name": "cargo-deny",
+  "platforms": {
+    "macos-aarch64": {
+      "hash": "sha256",
+      "digest": "bf95a666c6f91dde978f4703621d3c877ee5f64aa28404cd837b70e9dfdc1f3a",
+      "size": 6992858,
+      "path": "cargo",
+      "providers": [
+        {
+          "url": "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.18.5/cargo-deny-0.18.5-aarch64-apple-darwin.tar.gz"
+        }
+      ],
+      "format": "tar.gz"
+    },
+    "linux-aarch64": {
+      "hash": "sha256",
+      "digest": "b31f5b9140a8a842228285186ac66b6b3c12e5a866060bce246554d9fc1ffabf",
+      "size": 7233557,
+      "path": "cargo",
+      "providers": [
+        {
+          "url": "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.18.5/cargo-deny-0.18.5-aarch64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "format": "tar.gz"
+    },
+    "macos-x86_64": {
+      "hash": "sha256",
+      "digest": "c83dcab58da77aeef639d324a0718b0d2a325821fcf89c78fc1abd7830229c89",
+      "size": 7391009,
+      "path": "cargo",
+      "providers": [
+        {
+          "url": "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.18.5/cargo-deny-0.18.5-x86_64-apple-darwin.tar.gz"
+        }
+      ],
+      "format": "tar.gz"
+    },
+    "windows-x86_64": {
+      "hash": "sha256",
+      "digest": "6fb561015a964443dd2f64229aae2dc263c42cbddeaffe36e1bbb5a5939986f3",
+      "size": 7663946,
+      "path": "cargo",
+      "providers": [
+        {
+          "url": "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.18.5/cargo-deny-0.18.5-x86_64-pc-windows-msvc.tar.gz"
+        }
+      ],
+      "format": "tar.gz"
+    },
+    "linux-x86_64": {
+      "hash": "sha256",
+      "digest": "3e139780452310f922239f683b5c14f7d8f6f9b97fcc08d30696e1b90158527c",
+      "size": 7737961,
+      "path": "cargo",
+      "providers": [
+        {
+          "url": "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.18.5/cargo-deny-0.18.5-x86_64-unknown-linux-musl.tar.gz"
+        }
+      ],
+      "format": "tar.gz"
+    }
+  }
+}

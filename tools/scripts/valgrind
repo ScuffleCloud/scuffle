@@ -1,0 +1,30 @@
+#!/usr/bin/env dotslash
+{
+  "name": "valgrind-builds",
+  "platforms": {
+    "linux-aarch64": {
+      "hash": "sha256",
+      "digest": "bba3da90da6f8a65c22f4ef7221b3581957515f93c84c1cc21aa41831e07fdbe",
+      "size": 54536707,
+      "path": "valgrind",
+      "providers": [
+        {
+          "url": "https://github.com/ScuffleCloud/valgrind-builds/releases/download/latest/valgrind-3.23.0-Linux-aarch64.tar.gz"
+        }
+      ],
+      "format": "tar.gz"
+    },
+    "linux-x86_64": {
+      "hash": "sha256",
+      "digest": "677d137b21820868a9f6ae901109beebbaec970d360dfe21d783b44e705ef7f2",
+      "size": 64599594,
+      "path": "valgrind",
+      "providers": [
+        {
+          "url": "https://github.com/ScuffleCloud/valgrind-builds/releases/download/latest/valgrind-3.23.0-Linux-x86_64.tar.gz"
+        }
+      ],
+      "format": "tar.gz"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+name: Install dotslash
+description: Installs the dotslash binary for the runner's architecture
+inputs:
+  version:
+    description: "The version of dotslash to install (default: latest)"
+    required: false
+    default: latest
+  install-path:
+    description: "Directory to install the dotslash binary (default: /usr/local/bin)"
+    required: false
+    default: /usr/local/bin
+
+runs:
+  using: composite
+  steps:
+    - name: Install dotslash
+      shell: bash
+      run: |
+        ARCH=$(uname -m)
+        VERSION="${{ inputs.version }}"
+        INSTALL_PATH="${{ inputs.install-path }}"
+        RELEASE_URL="https://github.com/facebook/dotslash/releases/${VERSION}/download/dotslash-ubuntu-22.04.${ARCH}.tar.gz"
+        if [ "$VERSION" = "latest" ]; then
+          RELEASE_URL="https://github.com/facebook/dotslash/releases/latest/download/dotslash-ubuntu-22.04.${ARCH}.tar.gz"
+        fi
+        curl -LSfs "$RELEASE_URL" | tar -xz -C "$INSTALL_PATH"
+        chmod +x "$INSTALL_PATH/dotslash"
+        dotslash --version

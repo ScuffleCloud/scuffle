@@ -1,6 +1,6 @@
 <!-- dprint-ignore-file -->
 <!-- sync-readme title [[ -->
-# scufflecloud-ingest-traits
+# scufflecloud-video-api-traits
 <!-- sync-readme ]] -->
 
 <!-- sync-readme badge [[ -->

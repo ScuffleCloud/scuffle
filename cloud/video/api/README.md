@@ -1,6 +1,6 @@
 <!-- dprint-ignore-file -->
 <!-- sync-readme title [[ -->
-# scufflecloud-ingest
+# scufflecloud-video-api
 <!-- sync-readme ]] -->
 
 <!-- sync-readme badge [[ -->
@@ -11,7 +11,7 @@
 ---
 
 <!-- sync-readme rustdoc [[ -->
-Video ingest server for <https://scuffle.cloud/>.
+Video API server for <https://scuffle.cloud/>.
 
 ### License
 

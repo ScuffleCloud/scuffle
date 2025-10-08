@@ -17,25 +17,16 @@ bazel_dep(name = "bazel_features", version = "1.32.0")
 bazel_dep(name = "bazel_env.bzl", version = "0.5.0", dev_dependency = True)
 
 include("//misc/toolchains:docker.MODULE.bazel")
-
 include("//misc/toolchains:protobuf.MODULE.bazel")
-
 include("//misc/toolchains:clang.MODULE.bazel")
-
 include("//misc/toolchains:rust.MODULE.bazel")
-
 include("//misc/toolchains:js.MODULE.bazel")
-
 include("//misc/toolchains:ffmpeg.MODULE.bazel")
-
 include("//misc/toolchains:ibazel.MODULE.bazel")
-
 include("//misc/toolchains:shfmt.MODULE.bazel")
-
 include("//misc/toolchains:bazel-diff.MODULE.bazel")
-
 include("//misc/toolchains:valgrind.MODULE.bazel")
-
 include("//misc/toolchains:assets.MODULE.bazel")
 
 include("//misc/toolchains:openssl.MODULE.bazel")
+include("//misc/toolchains:diesel.MODULE.bazel")

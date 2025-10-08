@@ -1,8 +1,19 @@
-load("//misc/utils:exec_alias_rules.bzl", "exec_transition_alias_opt")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
-exec_transition_alias_opt(
+alias(
+    name = "diesel_file",
+    actual = select({
+        "//misc/platforms:linux-aarch64": "@diesel-linux-aarch64//:diesel",
+        "//misc/platforms:linux-x86_64": "@diesel-linux-x86_64//:diesel",
+        "//misc/platforms:macos-aarch64": "@diesel-macos-aarch64//:diesel",
+        "//misc/platforms:macos-x86_64": "@diesel-macos-x86_64//:diesel",
+    }),
+    tags = ["manual"],
+)
+
+sh_binary(
     name = "diesel",
-    actual = "@bindeps//:diesel_cli__diesel",
+    srcs = [":diesel_file"],
     tags = ["manual"],
     visibility = ["//visibility:public"],
 )

@@ -26,8 +26,5 @@ jobs:
       - name: Vendor Cargo
         run: bazel run //vendor:cargo_vendor
 
-      - name: Vendor Bindeps
-        run: bazel run //vendor:bindeps
-
       - name: Exit on change
         run: git diff --exit-code

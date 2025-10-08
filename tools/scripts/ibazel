@@ -1,0 +1,61 @@
+#!/usr/bin/env dotslash
+{
+  "name": "ibazel",
+  "platforms": {
+    "macos-x86_64": {
+      "hash": "sha256",
+      "digest": "ad30c44210bb0bf8663aaf29e2820dcfa0be75fe3bd81218bf7b70fbaba849b9",
+      "size": 8365336,
+      "path": "ibazel",
+      "providers": [
+        {
+          "url": "https://github.com/bazelbuild/bazel-watcher/releases/download/v0.26.10/ibazel_darwin_amd64"
+        }
+      ]
+    },
+    "macos-aarch64": {
+      "hash": "sha256",
+      "digest": "3e3e609e3447204289b36c0f279f4d155e583f3289eb1ff9dcb92eae8c3fc505",
+      "size": 8054722,
+      "path": "ibazel",
+      "providers": [
+        {
+          "url": "https://github.com/bazelbuild/bazel-watcher/releases/download/v0.26.10/ibazel_darwin_arm64"
+        }
+      ]
+    },
+    "linux-x86_64": {
+      "hash": "sha256",
+      "digest": "83e7f76cbcbc721dc544b88edc25edc777faa8b95475a301d4d01fb6bed54b00",
+      "size": 8233112,
+      "path": "ibazel",
+      "providers": [
+        {
+          "url": "https://github.com/bazelbuild/bazel-watcher/releases/download/v0.26.10/ibazel_linux_amd64"
+        }
+      ]
+    },
+    "linux-aarch64": {
+      "hash": "sha256",
+      "digest": "c535714662b8704a3ae55cd5b3cdf6c1939f5ba6ba82eb96cdac54b75ac28ffa",
+      "size": 7930008,
+      "path": "ibazel",
+      "providers": [
+        {
+          "url": "https://github.com/bazelbuild/bazel-watcher/releases/download/v0.26.10/ibazel_linux_arm64"
+        }
+      ]
+    },
+    "windows-x86_64": {
+      "hash": "sha256",
+      "digest": "50bbf4d9b10ffb2bc7a29f96c03b72e434bbf2deaa4a3a6b201b5196fa2586f9",
+      "size": 8471552,
+      "path": "ibazel",
+      "providers": [
+        {
+          "url": "https://github.com/bazelbuild/bazel-watcher/releases/download/v0.26.10/ibazel_windows_amd64.exe"
+        }
+      ]
+    }
+  }
+}

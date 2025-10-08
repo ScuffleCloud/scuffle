@@ -13,7 +13,6 @@ fmt:
     buf format -w --disable-symlinks --debug
     just --unstable --fmt
     shfmt -w .
-    git ls-files "*.cedar" | xargs ls 2>/dev/null | xargs -I {} cedar format -w -p {}
 
 lint:
     bazel run //tools/cargo/clippy:fix
@@ -120,7 +119,6 @@ alias vendor := lockfile
 lockfile:
     cargo update --workspace
     bazel run //vendor:cargo_vendor
-    bazel run //vendor:bindeps
     pnpm install --lockfile-only
 
 grind *targets="//...":

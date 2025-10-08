@@ -1,6 +1,6 @@
 <!-- dprint-ignore-file -->
 <!-- sync-readme title [[ -->
-# diesel_migration_test
+# diesel_migration_copy
 <!-- sync-readme ]] -->
 
 <!-- sync-readme badge -->
@@ -8,6 +8,5 @@
 ---
 
 <!-- sync-readme rustdoc [[ -->
-A very small binary which diffs the input with the rendered output and fails if they are different.
-Which allows this to be checked via a bazel test.
+A very small binary which copies the input to the build workspace directory.
 <!-- sync-readme ]] -->

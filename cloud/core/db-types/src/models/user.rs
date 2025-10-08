@@ -25,6 +25,6 @@ pub struct NewUser<'a> {
     pub first_name: Option<Cow<'a, str>>,
     pub last_name: Option<Cow<'a, str>>,
     pub password_hash: Option<Cow<'a, str>>,
-    pub email: Option<Cow<'a, str>>,
+    pub primary_email: Option<Cow<'a, str>>,
     pub avatar_url: Option<Cow<'a, str>>,
 }

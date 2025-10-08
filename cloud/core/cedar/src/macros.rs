@@ -1,6 +1,6 @@
 macro_rules! cedar_entity {
-    ($ty:ident) => {
-        $crate::macros::cedar_entity_id!($ty);
+    ($ty:ident, $id:ty) => {
+        $crate::macros::cedar_entity_id!($ty, $id);
 
         impl $crate::CedarEntity for $ty {}
     };
@@ -9,17 +9,17 @@ macro_rules! cedar_entity {
 pub(crate) use cedar_entity;
 
 macro_rules! cedar_entity_id {
-    ($ty:ident) => {
-        impl $crate::CedarIdentifiable for ::core_db_types::id::Id<$ty> {
+    ($ty:ident, $id:ty) => {
+        impl $crate::CedarIdentifiable for $id {
             const ENTITY_TYPE: $crate::EntityTypeName = $crate::entity_type_name!(stringify!($ty));
 
             fn entity_id(&self) -> cedar_policy::EntityId {
-                cedar_policy::EntityId::new(self.unprefixed().to_string())
+                cedar_policy::EntityId::new(self.ulid().to_string())
             }
         }
 
         impl $crate::CedarEntityId for $ty {
-            type Id<'a> = ::core_db_types::id::Id<$ty>;
+            type Id<'a> = $id;
 
             #[allow(refining_impl_trait)]
             fn id(&self) -> &Self::Id<'_> {

@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
 use argon2::{Argon2, PasswordVerifier};
-use core_db_types::id::Id;
 use core_db_types::models::{
     MfaRecoveryCode, MfaWebauthnCredential, Organization, OrganizationId, User, UserEmail, UserId, UserSession,
+    UserSessionTokenId,
 };
 use core_db_types::schema::{
     mfa_recovery_codes, mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, organizations,
@@ -268,7 +268,7 @@ pub(crate) async fn create_session<G: core_traits::Global>(
     } else {
         chrono::Utc::now() + global.timeout_config().user_session
     };
-    let token_id = Id::new();
+    let token_id = UserSessionTokenId::new();
     let token_expires_at = chrono::Utc::now() + global.timeout_config().user_session_token;
 
     let token = generate_random_bytes().into_tonic_internal_err("failed to generate token")?;

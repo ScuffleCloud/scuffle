@@ -486,7 +486,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
         let (response, state) = global
             .webauthn()
             .start_passkey_registration(
-                resource.id.into(),
+                resource.id.ulid().into(),
                 &user_name,
                 user_display_name.as_ref().unwrap_or(&user_name),
                 Some(exclude_credentials),

@@ -1,10 +1,10 @@
-use core_db_types::models::{NewUserEmailRequest, User, UserEmail, UserGoogleAccount};
+use core_db_types::models::{NewUserEmailRequest, NewUserEmailRequestId, User, UserEmail, UserGoogleAccount, UserId};
 use ext_traits::OptionExt;
 
 use crate::macros::{cedar_entity, cedar_entity_id};
 use crate::{CedarIdentifiable, EntityTypeName, JsonEntityUid, entity_type_name};
 
-cedar_entity_id!(User);
+cedar_entity_id!(User, UserId);
 
 impl crate::CedarEntity for User {
     async fn parents(
@@ -34,7 +34,7 @@ impl crate::CedarIdentifiable for UserEmail {
 
 impl crate::CedarEntity for UserEmail {}
 
-cedar_entity!(NewUserEmailRequest);
+cedar_entity!(NewUserEmailRequest, NewUserEmailRequestId);
 
 impl crate::CedarIdentifiable for UserGoogleAccount {
     const ENTITY_TYPE: EntityTypeName = entity_type_name!("UserGoogleAccount");

@@ -1,7 +1,7 @@
-use core_db_types::models::{MfaTotpCredential, MfaWebauthnCredential};
+use core_db_types::models::{MfaTotpCredential, MfaTotpCredentialId, MfaWebauthnCredential, MfaWebauthnCredentialId};
 
 use crate::macros::cedar_entity;
 
-cedar_entity!(MfaTotpCredential);
+cedar_entity!(MfaTotpCredential, MfaTotpCredentialId);
 
-cedar_entity!(MfaWebauthnCredential);
+cedar_entity!(MfaWebauthnCredential, MfaWebauthnCredentialId);

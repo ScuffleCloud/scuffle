@@ -621,6 +621,18 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "cloud/video/api": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
+                "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
+            },
+        },
+    },
+    "cloud/video/api/traits": {
+    },
     "cloud/video/ingest": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1482,6 +1494,14 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "cloud/video/api": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "cloud/video/api/traits": {
+    },
     "cloud/video/ingest": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1955,6 +1975,10 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "cloud/proto": {
     },
+    "cloud/video/api": {
+    },
+    "cloud/video/api/traits": {
+    },
     "cloud/video/ingest": {
     },
     "cloud/video/ingest/traits": {
@@ -2256,6 +2280,10 @@ _NORMAL_DEV_ALIASES = {
     },
     "cloud/proto": {
     },
+    "cloud/video/api": {
+    },
+    "cloud/video/api/traits": {
+    },
     "cloud/video/ingest": {
     },
     "cloud/video/ingest/traits": {
@@ -2520,6 +2548,16 @@ _PROC_MACRO_DEPENDENCIES = {
         },
     },
     "cloud/proto": {
+    },
+    "cloud/video/api": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
+            },
+        },
+    },
+    "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
         _REQUIRED_FEATURE: {
@@ -2933,6 +2971,10 @@ _PROC_MACRO_ALIASES = {
     },
     "cloud/proto": {
     },
+    "cloud/video/api": {
+    },
+    "cloud/video/api/traits": {
+    },
     "cloud/video/ingest": {
     },
     "cloud/video/ingest/traits": {
@@ -3085,6 +3127,10 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "cloud/id": {
     },
     "cloud/proto": {
+    },
+    "cloud/video/api": {
+    },
+    "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
     },
@@ -3243,6 +3289,10 @@ _PROC_MACRO_DEV_ALIASES = {
     "cloud/id": {
     },
     "cloud/proto": {
+    },
+    "cloud/video/api": {
+    },
+    "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
     },
@@ -3484,6 +3534,10 @@ _BUILD_DEPENDENCIES = {
             },
         },
     },
+    "cloud/video/api": {
+    },
+    "cloud/video/api/traits": {
+    },
     "cloud/video/ingest": {
     },
     "cloud/video/ingest/traits": {
@@ -3641,6 +3695,10 @@ _BUILD_ALIASES = {
             },
         },
     },
+    "cloud/video/api": {
+    },
+    "cloud/video/api/traits": {
+    },
     "cloud/video/ingest": {
     },
     "cloud/video/ingest/traits": {
@@ -3790,6 +3848,10 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "cloud/proto": {
     },
+    "cloud/video/api": {
+    },
+    "cloud/video/api/traits": {
+    },
     "cloud/video/ingest": {
     },
     "cloud/video/ingest/traits": {
@@ -3931,6 +3993,10 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "cloud/proto": {
     },
+    "cloud/video/api": {
+    },
+    "cloud/video/api/traits": {
+    },
     "cloud/video/ingest": {
     },
     "cloud/video/ingest/traits": {
@@ -4071,6 +4137,10 @@ _FEATURE_FLAGS = {
     "cloud/id": {
     },
     "cloud/proto": {
+    },
+    "cloud/video/api": {
+    },
+    "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
     },
@@ -4442,6 +4512,10 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "cloud/proto": {
     },
+    "cloud/video/api": {
+    },
+    "cloud/video/api/traits": {
+    },
     "cloud/video/ingest": {
     },
     "cloud/video/ingest/traits": {
@@ -4625,6 +4699,8 @@ _VERSIONS = {
     "cloud/geo-ip": "0.1.0",
     "cloud/id": "0.1.0",
     "cloud/proto": "0.1.0",
+    "cloud/video/api": "0.1.0",
+    "cloud/video/api/traits": "0.1.0",
     "cloud/video/ingest": "0.1.0",
     "cloud/video/ingest/traits": "0.1.0",
     "crates/aac": "0.1.4",

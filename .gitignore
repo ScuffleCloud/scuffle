@@ -43,3 +43,6 @@ MODULE.bazel.lock
 
 # Turbo
 .turbo/
+
+# diesel
+.diesel_lock

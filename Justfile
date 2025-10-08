@@ -101,9 +101,6 @@ alias sync-rdme := sync-readme
 sync-readme:
     bazel run //tools/cargo/sync-readme:fix
 
-sync-diesel-schema:
-    bazel run //tools/diesel-schema:fix
-
 test *targets="//...":
     #!/usr/bin/env bash
     set -exuo pipefail

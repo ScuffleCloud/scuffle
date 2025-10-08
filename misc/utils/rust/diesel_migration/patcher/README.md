@@ -1,6 +1,6 @@
 <!-- dprint-ignore-file -->
 <!-- sync-readme title [[ -->
-# diesel_schema_fixer
+# diesel_migration_patcher
 <!-- sync-readme ]] -->
 
 <!-- sync-readme badge -->

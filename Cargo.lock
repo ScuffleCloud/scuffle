@@ -1569,6 +1569,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "diesel_migration_copy"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "camino",
+ "clap",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "diesel_migration_patcher"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "camino",
+ "clap",
+ "env_logger 0.11.8",
+ "log",
+ "serde",
+ "serde_derive",
+ "serde_json",
+]
+
+[[package]]
 name = "diesel_migration_runner"
 version = "0.0.0"
 dependencies = [
@@ -1595,18 +1620,6 @@ dependencies = [
  "serde",
  "serde_json",
  "similar",
-]
-
-[[package]]
-name = "diesel_schema_fixer"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "camino",
- "clap",
- "env_logger 0.11.8",
- "log",
- "serde_json",
 ]
 
 [[package]]

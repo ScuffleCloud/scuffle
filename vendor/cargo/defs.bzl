@@ -631,6 +631,14 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "cloud/video/api/db-types": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "diesel": Label("@cargo_vendor//:diesel-2.2.12"),
+                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+            },
+        },
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -1518,6 +1526,12 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "cloud/video/api/db-types": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -2005,6 +2019,8 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -2312,6 +2328,8 @@ _NORMAL_DEV_ALIASES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -2586,6 +2604,13 @@ _PROC_MACRO_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
+            },
+        },
+    },
+    "cloud/video/api/db-types": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
             },
         },
     },
@@ -3012,6 +3037,8 @@ _PROC_MACRO_ALIASES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -3170,6 +3197,8 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "cloud/proto": {
     },
     "cloud/video/api": {
+    },
+    "cloud/video/api/db-types": {
     },
     "cloud/video/api/traits": {
     },
@@ -3334,6 +3363,8 @@ _PROC_MACRO_DEV_ALIASES = {
     "cloud/proto": {
     },
     "cloud/video/api": {
+    },
+    "cloud/video/api/db-types": {
     },
     "cloud/video/api/traits": {
     },
@@ -3581,6 +3612,8 @@ _BUILD_DEPENDENCIES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -3744,6 +3777,8 @@ _BUILD_ALIASES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -3899,6 +3934,8 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -4046,6 +4083,8 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -4192,6 +4231,8 @@ _FEATURE_FLAGS = {
     "cloud/proto": {
     },
     "cloud/video/api": {
+    },
+    "cloud/video/api/db-types": {
     },
     "cloud/video/api/traits": {
     },
@@ -4569,6 +4610,8 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -4757,6 +4800,7 @@ _VERSIONS = {
     "cloud/id": "0.1.0",
     "cloud/proto": "0.1.0",
     "cloud/video/api": "0.1.0",
+    "cloud/video/api/db-types": "0.1.0",
     "cloud/video/api/traits": "0.1.0",
     "cloud/video/ingest": "0.1.0",
     "cloud/video/ingest/traits": "0.1.0",

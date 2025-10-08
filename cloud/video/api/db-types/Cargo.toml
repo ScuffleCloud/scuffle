@@ -1,0 +1,25 @@
+[package]
+name = "scufflecloud-video-api-db-types"
+version = "0.1.0"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+edition = "2024"
+license = "AGPL-3.0"
+publish = false
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[dependencies]
+core-db-types = { path = "../../../core/db-types", package = "scufflecloud-core-db-types" }
+diesel = { version = "2", default-features = false }
+id = { path = "../../../id", package = "scufflecloud-id" }
+serde = "1"
+serde_derive = "1"
+
+[package.metadata.sync-readme.badges]
+docs-rs = false
+crates-io = false
+license = true
+codecov = true

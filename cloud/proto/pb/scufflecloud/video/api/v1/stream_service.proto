@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package scufflecloud.video.api.v1;
+
+import "scufflecloud/constraints.proto";
+import "scufflecloud/video/api/v1/stream.proto";
+import "tinc/annotations.proto";
+
+// A service for managing video streams.
+service StreamService {
+  option (tinc.service).prefix = "/v1/streams";
+
+  // Create a new stream.
+  rpc Create(StreamCreateRequest) returns (Stream) {
+    option (tinc.method).endpoint = {post: "/"};
+  }
+
+  // Get a stream by ID.
+  rpc Get(StreamGetRequest) returns (Stream) {
+    option (tinc.method).endpoint = {get: "/{id}"};
+  }
+
+  // Update a stream by ID.
+  rpc Update(StreamUpdateRequest) returns (Stream) {
+    option (tinc.method).endpoint = {patch: "/{id}"};
+  }
+
+  // Delete a stream by ID.
+  rpc Delete(StreamDeleteRequest) returns (Stream) {
+    option (tinc.method).endpoint = {delete: "/{id}"};
+  }
+
+  // List all streams with optional sorting and pagination.
+  rpc List(StreamListRequest) returns (StreamListResponse) {
+    option (tinc.method).endpoint = {get: "/"};
+  }
+}
+
+// The request message for `StreamService.Create`.
+message StreamCreateRequest {
+  // The name of the stream. If not provided, a randomly generated name will be used.
+  optional string name = 1 [(tinc.field).constraint.string = {
+    min_len: 1
+    max_len: 255
+  }];
+}
+
+// The request message for `StreamService.Get`.
+message StreamGetRequest {
+  // The ID of the stream to retrieve.
+  string id = 1 [(string_constraint).id = true];
+}
+
+// The request message for `StreamService.Update`.
+message StreamUpdateRequest {
+  // The ID of the stream to update.
+  string id = 1 [(string_constraint).id = true];
+  // The new name of the stream. If not provided, the name will remain unchanged.
+  optional string name = 2 [(tinc.field).constraint.string = {
+    min_len: 1
+    max_len: 255
+  }];
+}
+
+// The request message for `StreamService.Delete`.
+message StreamDeleteRequest {
+  // The ID of the stream to delete.
+  string id = 1 [(string_constraint).id = true];
+}
+
+// The request message for `StreamService.List`.
+message StreamListRequest {
+  // Sorting options for the list of streams.
+  message Sorting {
+    // The field to sort by.
+    enum Field {
+      STREAM_LIST_SORTING_UNSPECIFIED = 0 [(tinc.variant).visibility = SKIP];
+      STREAM_LIST_SORTING_NAME = 1;
+    }
+
+    // The order to sort by.
+    enum Order {
+      STREAM_LIST_ORDER_UNSPECIFIED = 0 [(tinc.variant).visibility = SKIP];
+      STREAM_LIST_ORDER_ASC = 1;
+      STREAM_LIST_ORDER_DESC = 2;
+    }
+
+    // The field to sort by.
+    Field field = 1;
+    // The order to sort by.
+    Order order = 2;
+  }
+
+  // The sorting options.
+  optional Sorting sorting = 1;
+  // The maximum number of streams to return. Defaults to 20, minimum is 1, maximum is 100.
+  optional uint32 limit = 2 [(tinc.field).constraint.uint32 = {
+    gte: 1
+    lte: 100
+  }];
+  // The offset to start returning streams from. Defaults to 0.
+  optional uint32 offset = 3;
+}
+
+// The response message for `StreamService.List`.
+message StreamListResponse {
+  // The list of streams that the request matched.
+  repeated Stream streams = 1;
+}

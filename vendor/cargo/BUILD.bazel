@@ -622,6 +622,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "h3-webtransport-0.1.2",
+    actual = "@cargo_vendor__h3-webtransport-0.1.2//:h3_webtransport",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "h3-webtransport",
+    actual = "@cargo_vendor__h3-webtransport-0.1.2//:h3_webtransport",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "heck-0.5.0",
     actual = "@cargo_vendor__heck-0.5.0//:heck",
     tags = ["manual"],

@@ -1,123 +1,122 @@
-use base64::Engine;
-use ext_traits::{OptionExt, RequestExt};
-use sha2::Digest;
-
-use crate::google_api;
+use pb::scufflecloud::core::v1::sessions_service_server::SessionsService;
+use pb::scufflecloud::core::v1::{
+    ApproveUserSessionRequestByCodeRequest, CompleteLoginWithGoogleRequest, CompleteLoginWithGoogleResponse,
+    CompleteLoginWithMagicLinkRequest, CompleteUserSessionRequestRequest, CreateUserSessionRequestRequest,
+    GetUserSessionRequestByCodeRequest, GetUserSessionRequestRequest, LoginWithEmailAndPasswordRequest,
+    LoginWithGoogleRequest, LoginWithGoogleResponse, LoginWithMagicLinkRequest, LoginWithWebauthnRequest,
+    NewUserSessionToken, UserSession, UserSessionRequest, ValidateMfaForUserSessionRequest,
+};
 use crate::http_ext::CoreRequestExt;
-use crate::operations::Operation;
-use crate::operations::user_sessions::{InvalidateUserSessionRequest, RefreshUserSessionRequest};
 use crate::services::CoreSvc;
 
 #[async_trait::async_trait]
-impl<G: core_traits::Global> pb::scufflecloud::core::v1::sessions_service_server::SessionsService for CoreSvc<G> {
+impl<G: core_traits::Global> SessionsService for CoreSvc<G> {
     async fn login_with_magic_link(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::LoginWithMagicLinkRequest>,
+        req: tonic::Request<LoginWithMagicLinkRequest>,
     ) -> Result<tonic::Response<()>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 
     async fn complete_login_with_magic_link(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithMagicLinkRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
+        req: tonic::Request<CompleteLoginWithMagicLinkRequest>,
+    ) -> Result<tonic::Response<NewUserSessionToken>, tonic::Status> {
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 
     async fn login_with_email_and_password(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::LoginWithEmailAndPasswordRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
+        req: tonic::Request<LoginWithEmailAndPasswordRequest>,
+    ) -> Result<tonic::Response<NewUserSessionToken>, tonic::Status> {
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 
     async fn login_with_google(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::LoginWithGoogleRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::LoginWithGoogleResponse>, tonic::Status> {
-        let global = &req.global::<G>()?;
-        let dashboard_origin = req.dashboard_origin::<G>()?;
-        let payload = req.into_inner();
-
-        let device = payload.device.require("device")?;
-        let device_fingerprint = sha2::Sha256::digest(&device.public_key_data);
-        let state = base64::prelude::BASE64_URL_SAFE.encode(device_fingerprint);
-
-        let authorization_url = google_api::authorization_url(global, &dashboard_origin, &state);
-
-        Ok(tonic::Response::new(pb::scufflecloud::core::v1::LoginWithGoogleResponse {
-            authorization_url,
-        }))
+        req: tonic::Request<LoginWithGoogleRequest>,
+    ) -> Result<tonic::Response<LoginWithGoogleResponse>, tonic::Status> {
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 
     async fn complete_login_with_google(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::CompleteLoginWithGoogleRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
+        req: tonic::Request<CompleteLoginWithGoogleRequest>,
+    ) -> Result<tonic::Response<CompleteLoginWithGoogleResponse>, tonic::Status> {
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 
     async fn login_with_webauthn(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::LoginWithWebauthnRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
+        req: tonic::Request<LoginWithWebauthnRequest>,
+    ) -> Result<tonic::Response<NewUserSessionToken>, tonic::Status> {
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 
     async fn create_user_session_request(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::CreateUserSessionRequestRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSessionRequest>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
+        req: tonic::Request<CreateUserSessionRequestRequest>,
+    ) -> Result<tonic::Response<UserSessionRequest>, tonic::Status> {
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 
     async fn get_user_session_request(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::GetUserSessionRequestRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSessionRequest>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
+        req: tonic::Request<GetUserSessionRequestRequest>,
+    ) -> Result<tonic::Response<UserSessionRequest>, tonic::Status> {
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 
     async fn get_user_session_request_by_code(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::GetUserSessionRequestByCodeRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSessionRequest>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
+        req: tonic::Request<GetUserSessionRequestByCodeRequest>,
+    ) -> Result<tonic::Response<UserSessionRequest>, tonic::Status> {
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 
     async fn approve_user_session_request_by_code(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::ApproveUserSessionRequestByCodeRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSessionRequest>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
+        req: tonic::Request<ApproveUserSessionRequestByCodeRequest>,
+    ) -> Result<tonic::Response<UserSessionRequest>, tonic::Status> {
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 
     async fn complete_user_session_request(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::CompleteUserSessionRequestRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
+        req: tonic::Request<CompleteUserSessionRequestRequest>,
+    ) -> Result<tonic::Response<NewUserSessionToken>, tonic::Status> {
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 
     async fn validate_mfa_for_user_session(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::ValidateMfaForUserSessionRequest>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::UserSession>, tonic::Status> {
-        Operation::<G>::run(req).await.map(tonic::Response::new)
+        req: tonic::Request<ValidateMfaForUserSessionRequest>,
+    ) -> Result<tonic::Response<UserSession>, tonic::Status> {
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 
     async fn refresh_user_session(
         &self,
         req: tonic::Request<()>,
-    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::NewUserSessionToken>, tonic::Status> {
-        let (metadata, extensions, _) = req.into_parts();
-        let req = tonic::Request::from_parts(metadata, extensions, RefreshUserSessionRequest);
-        Operation::<G>::run(req).await.map(tonic::Response::new)
+    ) -> Result<tonic::Response<NewUserSessionToken>, tonic::Status> {
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 
     async fn invalidate_user_session(&self, req: tonic::Request<()>) -> Result<tonic::Response<()>, tonic::Status> {
-        let (metadata, extensions, _) = req.into_parts();
-        let req = tonic::Request::from_parts(metadata, extensions, InvalidateUserSessionRequest);
-        Operation::<G>::run(req).await.map(tonic::Response::new)
+        let _ = req;
+        Err(tonic::Status::unimplemented("not implemented"))
     }
 }

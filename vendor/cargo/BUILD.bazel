@@ -454,6 +454,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "diesel-derive-enum-3.0.0-beta.1",
+    actual = "@cargo_vendor__diesel-derive-enum-3.0.0-beta.1//:diesel_derive_enum",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "diesel-derive-enum",
+    actual = "@cargo_vendor__diesel-derive-enum-3.0.0-beta.1//:diesel_derive_enum",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "document-features-0.2.11",
     actual = "@cargo_vendor__document-features-0.2.11//:document_features",
     tags = ["manual"],

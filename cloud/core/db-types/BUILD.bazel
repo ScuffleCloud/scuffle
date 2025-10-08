@@ -1,4 +1,4 @@
-load("//misc/utils/rust:diesel_migration.bzl", "diesel_migration", "diesel_migration_test")
+load("//misc/utils/rust:diesel_migration.bzl", "diesel_migration")
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
 load("//misc/utils/rust:package.bzl", "scuffle_package")
 

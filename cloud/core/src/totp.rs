@@ -1,4 +1,5 @@
-use core_db_types::models::{MfaTotpCredential, UserId};
+use core_db_types::id::UserId;
+use core_db_types::models::MfaTotpCredential;
 use core_db_types::schema::mfa_totp_credentials;
 use diesel::{ExpressionMethods, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;

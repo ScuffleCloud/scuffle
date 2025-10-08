@@ -9,13 +9,17 @@ scuffle_package(
         ":Cargo.toml",
     ],
     crate_name = "scuffle-h264",
-    proc_macro_deps = ["//crates/changelog"],
+    proc_macro_deps = [
+        "//crates/changelog",
+        "//crates/isobmff/derive",
+    ],
     test = scuffle_test(
         insta = True,
     ),
     deps = [
         "//crates/bytes-util",
         "//crates/expgolomb",
+        "//crates/isobmff",
         "//crates/nutype-enum",
     ],
 )

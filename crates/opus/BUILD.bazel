@@ -1,0 +1,17 @@
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package")
+
+cargo_toml()
+
+scuffle_package(
+    compile_data = [
+        ":CHANGELOG.md",
+        ":Cargo.toml",
+    ],
+    crate_name = "scuffle-opus",
+    proc_macro_deps = ["//crates/changelog", "//crates/isobmff/derive"],
+    deps = [
+        "//crates/bytes-util",
+        "//crates/isobmff",
+    ],
+)

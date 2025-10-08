@@ -1,0 +1,365 @@
+---
+source: crates/isobmff/src/conformance_tests.rs
+expression: redeserialized_file
+snapshot_kind: text
+---
+IsobmffFile {
+    ftyp: Some(
+        FileTypeBox {
+            major_brand: Brand([104, 101, 105, 115]),
+            minor_version: 0,
+            compatible_brands: [
+                Brand([109, 105, 102, 49]),
+                Brand([104, 101, 105, 115]),
+                Brand([97, 118, 99, 105]),
+            ],
+        },
+    ),
+    etyp: [],
+    otyp: [],
+    pdin: None,
+    moov: None,
+    moof: [],
+    mdat: [
+        MediaDataBox {
+            data.len: 6829,
+        },
+        MediaDataBox {
+            data.len: 6636,
+        },
+        MediaDataBox {
+            data.len: 8,
+        },
+    ],
+    imda: [],
+    meta: Some(
+        MetaBox {
+            full_header: FullBoxHeader {
+                version: 0,
+                flags: U24Be(
+                    0,
+                ),
+            },
+            hdlr: HandlerBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                pre_defined: 0,
+                handler_type: HandlerType([112, 105, 99, 116]),
+                reserved: [
+                    0,
+                    0,
+                    0,
+                ],
+                name: Utf8String(
+                    "",
+                ),
+            },
+            dinf: None,
+            iloc: Some(
+                ItemLocationBox {
+                    full_header: FullBoxHeader {
+                        version: 0,
+                        flags: U24Be(
+                            0,
+                        ),
+                    },
+                    offset_size: 4,
+                    length_size: 4,
+                    base_offset_size: 4,
+                    index_size: 0,
+                    item_count: Some(
+                        2,
+                    ),
+                    items: [
+                        ItemLocationBoxItem {
+                            item_id: Some(
+                                20003,
+                            ),
+                            construction_method: None,
+                            data_reference_index: 0,
+                            base_offset: 643,
+                            extent_count: 1,
+                            extents: [
+                                ItemLocationBoxExtent {
+                                    item_reference_index: None,
+                                    extent_offset: 0,
+                                    extent_length: 6829,
+                                },
+                            ],
+                        },
+                        ItemLocationBoxItem {
+                            item_id: Some(
+                                20004,
+                            ),
+                            construction_method: None,
+                            data_reference_index: 0,
+                            base_offset: 7480,
+                            extent_count: 1,
+                            extents: [
+                                ItemLocationBoxExtent {
+                                    item_reference_index: None,
+                                    extent_offset: 0,
+                                    extent_length: 6636,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ),
+            ipro: None,
+            iinf: Some(
+                ItemInfoBox {
+                    full_header: FullBoxHeader {
+                        version: 1,
+                        flags: U24Be(
+                            0,
+                        ),
+                    },
+                    entry_count: 2,
+                    item_infos: [
+                        ItemInfoEntry {
+                            full_header: FullBoxHeader {
+                                version: 2,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            item_id: Some(
+                                20003,
+                            ),
+                            item_protection_index: 0,
+                            item_type: [
+                                97,
+                                118,
+                                99,
+                                49,
+                            ],
+                            item_name: Utf8String(
+                                "AVC Image",
+                            ),
+                            item: None,
+                            extension_type: None,
+                            extension: None,
+                        },
+                        ItemInfoEntry {
+                            full_header: FullBoxHeader {
+                                version: 2,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            item_id: Some(
+                                20004,
+                            ),
+                            item_protection_index: 0,
+                            item_type: [
+                                108,
+                                104,
+                                118,
+                                49,
+                            ],
+                            item_name: Utf8String(
+                                "L-HEVC Image",
+                            ),
+                            item: None,
+                            extension_type: None,
+                            extension: None,
+                        },
+                    ],
+                },
+            ),
+            xml: None,
+            bxml: None,
+            pitm: Some(
+                PrimaryItemBox {
+                    full_header: FullBoxHeader {
+                        version: 0,
+                        flags: U24Be(
+                            0,
+                        ),
+                    },
+                    item_id: 20003,
+                },
+            ),
+            fiin: None,
+            idat: None,
+            iref: Some(
+                ItemReferenceBox {
+                    full_header: FullBoxHeader {
+                        version: 0,
+                        flags: U24Be(
+                            0,
+                        ),
+                    },
+                    references: [
+                        SingleItemTypeReferenceBox {
+                            large: false,
+                            header: BoxHeader {
+                                size: Short(
+                                    14,
+                                ),
+                                box_type: FourCc(
+                                    "exbl",
+                                ),
+                            },
+                            from_item_id: 20004,
+                            reference_count: 1,
+                            to_item_id: [
+                                20003,
+                            ],
+                        },
+                    ],
+                },
+            ),
+            iprp: Some(
+                ItemPropertiesBox {
+                    property_container: ItemPropertyContainerBox {
+                        etyp: None,
+                        brnd: [],
+                        scrb: [],
+                        boxes: [
+                            UnknownBox {
+                                header: BoxHeader {
+                                    size: Short(
+                                        52,
+                                    ),
+                                    box_type: FourCc(
+                                        "avcC",
+                                    ),
+                                },
+                                data.len: 44,
+                            },
+                            UnknownBox {
+                                header: BoxHeader {
+                                    size: Short(
+                                        20,
+                                    ),
+                                    box_type: FourCc(
+                                        "ispe",
+                                    ),
+                                },
+                                data.len: 12,
+                            },
+                            UnknownBox {
+                                header: BoxHeader {
+                                    size: Short(
+                                        78,
+                                    ),
+                                    box_type: FourCc(
+                                        "oinf",
+                                    ),
+                                },
+                                data.len: 70,
+                            },
+                            UnknownBox {
+                                header: BoxHeader {
+                                    size: Short(
+                                        14,
+                                    ),
+                                    box_type: FourCc(
+                                        "tols",
+                                    ),
+                                },
+                                data.len: 6,
+                            },
+                            UnknownBox {
+                                header: BoxHeader {
+                                    size: Short(
+                                        147,
+                                    ),
+                                    box_type: FourCc(
+                                        "lhvC",
+                                    ),
+                                },
+                                data.len: 139,
+                            },
+                        ],
+                    },
+                    association: [
+                        ItemPropertyAssociationBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            entry_count: 2,
+                            entries: [
+                                ItemPropertyAssociationBoxEntry {
+                                    item_id: 20003,
+                                    association_count: 2,
+                                    associations: [
+                                        ItemPropertyAssociationBoxEntryAssociation {
+                                            essential: true,
+                                            property_index: 1,
+                                        },
+                                        ItemPropertyAssociationBoxEntryAssociation {
+                                            essential: false,
+                                            property_index: 2,
+                                        },
+                                    ],
+                                },
+                                ItemPropertyAssociationBoxEntry {
+                                    item_id: 20004,
+                                    association_count: 4,
+                                    associations: [
+                                        ItemPropertyAssociationBoxEntryAssociation {
+                                            essential: true,
+                                            property_index: 3,
+                                        },
+                                        ItemPropertyAssociationBoxEntryAssociation {
+                                            essential: true,
+                                            property_index: 4,
+                                        },
+                                        ItemPropertyAssociationBoxEntryAssociation {
+                                            essential: true,
+                                            property_index: 5,
+                                        },
+                                        ItemPropertyAssociationBoxEntryAssociation {
+                                            essential: false,
+                                            property_index: 2,
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ),
+            grpl: Some(
+                GroupsListBox {
+                    altr: [
+                        AltrEntityToGroupBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            entity_to_group: EntityToGroupBox {
+                                group_id: 20005,
+                                num_entities_in_group: 2,
+                                entity_id: [
+                                    20004,
+                                    20003,
+                                ],
+                            },
+                        },
+                    ],
+                    unknown_boxes: [],
+                },
+            ),
+            unknown_boxes: [],
+        },
+    ),
+    styp: [],
+    sidx: [],
+    ssix: [],
+    prft: [],
+    unknown_boxes: [],
+    mfra: None,
+}

@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::fmt::Debug;
 use std::hash::Hash;
 
 use bytes::Bytes;
@@ -7,7 +8,7 @@ use bytes::Bytes;
 pub(crate) mod serde;
 
 /// A [`Cow`] type for bytes.
-#[derive(Debug, Clone, Eq)]
+#[derive(Clone, Eq)]
 pub enum BytesCow<'a> {
     /// A borrowed [`Bytes`] object.
     Slice(&'a [u8]),
@@ -17,6 +18,35 @@ pub enum BytesCow<'a> {
     Vec(Vec<u8>),
     /// An owned [`Bytes`] object.
     Bytes(Bytes),
+}
+
+impl Debug for BytesCow<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Taken from `bytes::Bytes` implementation
+        // https://github.com/tokio-rs/bytes/blob/f29e93951da599095f54d57667c1988960ceff71/src/fmt/debug.rs
+        write!(f, "b\"")?;
+        for &b in self.as_bytes() {
+            // https://doc.rust-lang.org/reference/tokens.html#byte-escapes
+            if b == b'\n' {
+                write!(f, "\\n")?;
+            } else if b == b'\r' {
+                write!(f, "\\r")?;
+            } else if b == b'\t' {
+                write!(f, "\\t")?;
+            } else if b == b'\\' || b == b'"' {
+                write!(f, "\\{}", b as char)?;
+            } else if b == b'\0' {
+                write!(f, "\\0")?;
+            // ASCII printable
+            } else if (0x20..0x7f).contains(&b) {
+                write!(f, "{}", b as char)?;
+            } else {
+                write!(f, "\\x{b:02x}")?;
+            }
+        }
+        write!(f, "\"")?;
+        Ok(())
+    }
 }
 
 impl Default for BytesCow<'_> {
@@ -77,6 +107,60 @@ impl<'a> BytesCow<'a> {
             Self::Vec(bytes) => bytes.as_slice(),
             Self::Bytes(bytes) => bytes.as_ref(),
         }
+    }
+
+    /// Returns the length of this [`BytesCow`].
+    pub fn len(&self) -> usize {
+        match self {
+            Self::Slice(slice) => slice.len(),
+            Self::StaticSlice(slice) => slice.len(),
+            Self::Vec(bytes) => bytes.len(),
+            Self::Bytes(bytes) => bytes.len(),
+        }
+    }
+
+    /// Returns `true` if this [`BytesCow`] is empty.
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Self::Slice(slice) => slice.is_empty(),
+            Self::StaticSlice(slice) => slice.is_empty(),
+            Self::Vec(bytes) => bytes.is_empty(),
+            Self::Bytes(bytes) => bytes.is_empty(),
+        }
+    }
+
+    /// Pads the bytes to a [`u64`].
+    ///
+    /// The bytes are expected to be in big-endian order.
+    ///
+    /// # Panics
+    ///
+    /// The caller must ensure that the length of the bytes is less than or equal to 8,
+    /// otherwise this function will panic.
+    pub fn pad_to_u64_be(&self) -> u64 {
+        assert!(self.len() <= 8);
+
+        // We copy the bytes into an 8 byte array and convert it to a u64
+        let mut buf = [0u8; 8];
+        buf[8 - self.len()..].copy_from_slice(self.as_bytes());
+        u64::from_be_bytes(buf)
+    }
+
+    /// Pads the bytes to a [`u32`].
+    ///
+    /// The bytes are expected to be in big-endian order.
+    ///
+    /// # Panics
+    ///
+    /// The caller must ensure that the length of the bytes is less than or equal to 4,
+    /// otherwise this function will panic.
+    pub fn pad_to_u32_be(&self) -> u32 {
+        assert!(self.len() <= 4);
+
+        // We copy the bytes into a 4 byte array and convert it to a u32
+        let mut buf = [0u8; 4];
+        buf[4 - self.len()..].copy_from_slice(self.as_bytes());
+        u32::from_be_bytes(buf)
     }
 }
 

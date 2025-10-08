@@ -1237,6 +1237,30 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "misc/utils/rust/diesel_migration/copy": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "clap": Label("@cargo_vendor//:clap-4.5.47"),
+                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
+            },
+        },
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "clap": Label("@cargo_vendor//:clap-4.5.47"),
+                "env_logger": Label("@cargo_vendor//:env_logger-0.11.8"),
+                "log": Label("@cargo_vendor//:log-0.4.28"),
+                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
+            },
+        },
+    },
     "misc/utils/rust/diesel_migration/runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1390,18 +1414,6 @@ _NORMAL_DEPENDENCIES = {
         },
     },
     "tools/cargo/sync-readme": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "clap": Label("@cargo_vendor//:clap-4.5.47"),
-                "env_logger": Label("@cargo_vendor//:env_logger-0.11.8"),
-                "log": Label("@cargo_vendor//:log-0.4.28"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
-            },
-        },
-    },
-    "tools/diesel-schema": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
@@ -1840,6 +1852,18 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "misc/utils/rust/diesel_migration/copy": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "misc/utils/rust/diesel_migration/runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1919,12 +1943,6 @@ _NORMAL_ALIASES = {
         },
     },
     "tools/cargo/sync-readme": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "tools/diesel-schema": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
@@ -2201,6 +2219,10 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "misc/utils/rust/clippy": {
     },
+    "misc/utils/rust/diesel_migration/copy": {
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+    },
     "misc/utils/rust/diesel_migration/runner": {
     },
     "misc/utils/rust/diesel_migration/test": {
@@ -2228,8 +2250,6 @@ _NORMAL_DEV_DEPENDENCIES = {
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
-    },
-    "tools/diesel-schema": {
     },
 }
 
@@ -2436,6 +2456,10 @@ _NORMAL_DEV_ALIASES = {
     },
     "misc/utils/rust/clippy": {
     },
+    "misc/utils/rust/diesel_migration/copy": {
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+    },
     "misc/utils/rust/diesel_migration/runner": {
     },
     "misc/utils/rust/diesel_migration/test": {
@@ -2463,8 +2487,6 @@ _NORMAL_DEV_ALIASES = {
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
-    },
-    "tools/diesel-schema": {
     },
 }
 
@@ -2843,6 +2865,15 @@ _PROC_MACRO_DEPENDENCIES = {
             },
         },
     },
+    "misc/utils/rust/diesel_migration/copy": {
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+            },
+        },
+    },
     "misc/utils/rust/diesel_migration/runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -2905,8 +2936,6 @@ _PROC_MACRO_DEPENDENCIES = {
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
-    },
-    "tools/diesel-schema": {
     },
 }
 
@@ -3031,6 +3060,10 @@ _PROC_MACRO_ALIASES = {
     },
     "misc/utils/rust/clippy": {
     },
+    "misc/utils/rust/diesel_migration/copy": {
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+    },
     "misc/utils/rust/diesel_migration/runner": {
     },
     "misc/utils/rust/diesel_migration/test": {
@@ -3058,8 +3091,6 @@ _PROC_MACRO_ALIASES = {
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
-    },
-    "tools/diesel-schema": {
     },
 }
 
@@ -3189,6 +3220,10 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     },
     "misc/utils/rust/clippy": {
     },
+    "misc/utils/rust/diesel_migration/copy": {
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+    },
     "misc/utils/rust/diesel_migration/runner": {
     },
     "misc/utils/rust/diesel_migration/test": {
@@ -3216,8 +3251,6 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
-    },
-    "tools/diesel-schema": {
     },
 }
 
@@ -3424,6 +3457,10 @@ _PROC_MACRO_DEV_ALIASES = {
     },
     "misc/utils/rust/clippy": {
     },
+    "misc/utils/rust/diesel_migration/copy": {
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+    },
     "misc/utils/rust/diesel_migration/runner": {
     },
     "misc/utils/rust/diesel_migration/test": {
@@ -3451,8 +3488,6 @@ _PROC_MACRO_DEV_ALIASES = {
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
-    },
-    "tools/diesel-schema": {
     },
 }
 
@@ -3582,6 +3617,10 @@ _BUILD_DEPENDENCIES = {
     },
     "misc/utils/rust/clippy": {
     },
+    "misc/utils/rust/diesel_migration/copy": {
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+    },
     "misc/utils/rust/diesel_migration/runner": {
     },
     "misc/utils/rust/diesel_migration/test": {
@@ -3609,8 +3648,6 @@ _BUILD_DEPENDENCIES = {
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
-    },
-    "tools/diesel-schema": {
     },
 }
 
@@ -3735,6 +3772,10 @@ _BUILD_ALIASES = {
     },
     "misc/utils/rust/clippy": {
     },
+    "misc/utils/rust/diesel_migration/copy": {
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+    },
     "misc/utils/rust/diesel_migration/runner": {
     },
     "misc/utils/rust/diesel_migration/test": {
@@ -3762,8 +3803,6 @@ _BUILD_ALIASES = {
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
-    },
-    "tools/diesel-schema": {
     },
 }
 
@@ -3876,6 +3915,10 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "misc/utils/rust/clippy": {
     },
+    "misc/utils/rust/diesel_migration/copy": {
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+    },
     "misc/utils/rust/diesel_migration/runner": {
     },
     "misc/utils/rust/diesel_migration/test": {
@@ -3903,8 +3946,6 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
-    },
-    "tools/diesel-schema": {
     },
 }
 
@@ -4017,6 +4058,10 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "misc/utils/rust/clippy": {
     },
+    "misc/utils/rust/diesel_migration/copy": {
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+    },
     "misc/utils/rust/diesel_migration/runner": {
     },
     "misc/utils/rust/diesel_migration/test": {
@@ -4044,8 +4089,6 @@ _BUILD_PROC_MACRO_ALIASES = {
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
-    },
-    "tools/diesel-schema": {
     },
 }
 
@@ -4387,6 +4430,10 @@ _FEATURE_FLAGS = {
     },
     "misc/utils/rust/clippy": {
     },
+    "misc/utils/rust/diesel_migration/copy": {
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+    },
     "misc/utils/rust/diesel_migration/runner": {
     },
     "misc/utils/rust/diesel_migration/test": {
@@ -4414,8 +4461,6 @@ _FEATURE_FLAGS = {
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
-    },
-    "tools/diesel-schema": {
     },
 }
 
@@ -4581,6 +4626,10 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "misc/utils/rust/clippy": {
     },
+    "misc/utils/rust/diesel_migration/copy": {
+    },
+    "misc/utils/rust/diesel_migration/patcher": {
+    },
     "misc/utils/rust/diesel_migration/runner": {
     },
     "misc/utils/rust/diesel_migration/test": {
@@ -4608,8 +4657,6 @@ _RESOLVED_FEATURE_FLAGS = {
     "tools/cargo/clippy": {
     },
     "tools/cargo/sync-readme": {
-    },
-    "tools/diesel-schema": {
     },
 }
 
@@ -4668,6 +4715,8 @@ _VERSIONS = {
     "misc/utils/rust/analyzer/check": "0.0.0",
     "misc/utils/rust/analyzer/discover": "0.0.0",
     "misc/utils/rust/clippy": "0.0.0",
+    "misc/utils/rust/diesel_migration/copy": "0.0.0",
+    "misc/utils/rust/diesel_migration/patcher": "0.0.0",
     "misc/utils/rust/diesel_migration/runner": "0.0.0",
     "misc/utils/rust/diesel_migration/test": "0.0.0",
     "misc/utils/rust/doc/merger": "0.0.0",
@@ -4682,7 +4731,6 @@ _VERSIONS = {
     "misc/utils/rust/test_runner/lib": "0.0.0",
     "tools/cargo/clippy": "0.0.0",
     "tools/cargo/sync-readme": "0.0.0",
-    "tools/diesel-schema": "0.0.0",
 }
 
 _CONDITIONS = {

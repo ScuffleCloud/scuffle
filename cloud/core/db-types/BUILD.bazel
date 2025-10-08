@@ -21,16 +21,8 @@ diesel_migration(
     config_file = "diesel.toml",
     data = glob([
         "migrations/**/*.sql",
-    ]) + [
-        "src/schema.patch",
-    ],
+    ]),
     database_image = "@postgres18",
-    schemas = [
-        "src/schema.rs",
-    ],
-)
-
-diesel_migration_test(
-    name = "migration_test",
-    diesel_migration = ":migration",
+    schema_file = "src/schema.rs",
+    schema_patch_file = "src/schema.patch",
 )

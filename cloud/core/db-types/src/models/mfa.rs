@@ -3,10 +3,9 @@ use std::time::SystemTime;
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
-use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
 
-pub type MfaTotpCredentialId = Id<MfaTotpCredential>;
+id::impl_id!(pub MfaTotpCredentialId, "mft_");
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::mfa_totp_credentials)]
@@ -18,10 +17,6 @@ pub struct MfaTotpCredential {
     pub name: Option<String>,
     pub secret: Vec<u8>,
     pub last_used_at: chrono::DateTime<chrono::Utc>,
-}
-
-impl PrefixedId for MfaTotpCredential {
-    const PREFIX: &'static str = "mft";
 }
 
 impl From<MfaTotpCredential> for pb::scufflecloud::core::v1::TotpCredential {
@@ -46,7 +41,7 @@ pub struct MfaTotpRegistrationSession {
     pub expires_at: chrono::DateTime<chrono::Utc>,
 }
 
-pub type MfaWebauthnCredentialId = Id<MfaWebauthnCredential>;
+id::impl_id!(pub MfaWebauthnCredentialId, "mfw_");
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::mfa_webauthn_credentials)]
@@ -62,10 +57,6 @@ pub struct MfaWebauthnCredential {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub counter: Option<i64>,
     pub last_used_at: chrono::DateTime<chrono::Utc>,
-}
-
-impl PrefixedId for MfaWebauthnCredential {
-    const PREFIX: &'static str = "mfw";
 }
 
 impl From<MfaWebauthnCredential> for pb::scufflecloud::core::v1::WebauthnCredential {
@@ -102,7 +93,7 @@ pub struct MfaWebauthnAuthenticationSession {
     pub expires_at: chrono::DateTime<chrono::Utc>,
 }
 
-pub type MfaRecoveryCodeId = Id<MfaRecoveryCode>;
+id::impl_id!(pub MfaRecoveryCodeId, "mrc_");
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug)]
 #[diesel(table_name = crate::schema::mfa_recovery_codes)]
@@ -113,8 +104,4 @@ pub struct MfaRecoveryCode {
     pub id: MfaRecoveryCodeId,
     pub user_id: UserId,
     pub code_hash: String,
-}
-
-impl PrefixedId for MfaRecoveryCode {
-    const PREFIX: &'static str = "mrc";
 }

@@ -3,10 +3,9 @@ use std::time::SystemTime;
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
-use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
 
-pub type OrganizationId = Id<Organization>;
+id::impl_id!(pub OrganizationId, "o_");
 
 #[derive(
     Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize, Clone,
@@ -24,10 +23,6 @@ pub struct Organization {
     pub owner_id: UserId,
 }
 
-impl PrefixedId for Organization {
-    const PREFIX: &'static str = "o";
-}
-
 impl From<Organization> for pb::scufflecloud::core::v1::Organization {
     fn from(value: Organization) -> Self {
         pb::scufflecloud::core::v1::Organization {
@@ -40,7 +35,7 @@ impl From<Organization> for pb::scufflecloud::core::v1::Organization {
     }
 }
 
-pub type ProjectId = Id<Project>;
+id::impl_id!(pub ProjectId, "p_");
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::projects)]
@@ -50,10 +45,6 @@ pub struct Project {
     pub id: ProjectId,
     pub name: String,
     pub organization_id: OrganizationId,
-}
-
-impl PrefixedId for Project {
-    const PREFIX: &'static str = "p";
 }
 
 impl From<Project> for pb::scufflecloud::core::v1::Project {
@@ -67,7 +58,7 @@ impl From<Project> for pb::scufflecloud::core::v1::Project {
     }
 }
 
-pub type PolicyId = Id<Policy>;
+id::impl_id!(pub PolicyId, "po_");
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::policies)]
@@ -85,11 +76,7 @@ pub struct Policy {
     pub policy: String,
 }
 
-impl PrefixedId for Policy {
-    const PREFIX: &'static str = "po";
-}
-
-pub type RoleId = Id<Role>;
+id::impl_id!(pub RoleId, "r_");
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::roles)]
@@ -103,10 +90,6 @@ pub struct Role {
     pub description: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inline_policy: Option<String>,
-}
-
-impl PrefixedId for Role {
-    const PREFIX: &'static str = "r";
 }
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, Associations, Debug)]
@@ -162,7 +145,7 @@ pub struct OrganizationMemberPolicy {
     pub policy_id: PolicyId,
 }
 
-pub type ServiceAccountId = Id<ServiceAccount>;
+id::impl_id!(pub ServiceAccountId, "sa_");
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::service_accounts)]
@@ -179,11 +162,7 @@ pub struct ServiceAccount {
     pub inline_policy: Option<String>,
 }
 
-impl PrefixedId for ServiceAccount {
-    const PREFIX: &'static str = "sa";
-}
-
-pub type ServiceAccountTokenId = Id<ServiceAccountToken>;
+id::impl_id!(pub ServiceAccountTokenId, "sat_");
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::service_account_tokens)]
@@ -200,11 +179,7 @@ pub struct ServiceAccountToken {
     pub expires_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-impl PrefixedId for ServiceAccountToken {
-    const PREFIX: &'static str = "sat";
-}
-
-pub type OrganizationInvitationId = Id<OrganizationInvitation>;
+id::impl_id!(pub OrganizationInvitationId, "oi_");
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::organization_invitations)]
@@ -220,10 +195,6 @@ pub struct OrganizationInvitation {
     pub invited_by_id: UserId,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub expires_at: Option<chrono::DateTime<chrono::Utc>>,
-}
-
-impl PrefixedId for OrganizationInvitation {
-    const PREFIX: &'static str = "oi";
 }
 
 impl From<OrganizationInvitation> for pb::scufflecloud::core::v1::OrganizationInvitation {

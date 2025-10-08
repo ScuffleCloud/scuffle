@@ -1,16 +1,26 @@
+commit = "f70af24d5bc85eff66e18377c6e02d08e69d9433"
+
 bazel_dep(name = "rules_img")
-archive_override(
+git_override(
     module_name = "rules_img",
-    sha256 = "0e7a69e8a0f453b28e384f4483b7e47ab91ac6ae9a312924e6467ea50daefa97",
-    urls = ["https://github.com/bazel-contrib/rules_img/releases/download/v0.2.5/rules_img-v0.2.5.tar.gz"],
+    commit = commit,
+    remote = "https://github.com/bazel-contrib/rules_img.git",
 )
 
 bazel_dep(name = "rules_img_tool")
 git_override(
     module_name = "rules_img_tool",
-    commit = "f97821e8103f08d08873fd6c72eae7a096197488",
+    commit = commit,
     remote = "https://github.com/bazel-contrib/rules_img.git",
-    strip_prefix = "img_tool/",
+    strip_prefix = "img_tool",
+)
+
+bazel_dep(name = "rules_img_pull_tool")
+git_override(
+    module_name = "rules_img_pull_tool",
+    commit = commit,
+    remote = "https://github.com/bazel-contrib/rules_img.git",
+    strip_prefix = "pull_tool",
 )
 
 register_toolchains("@rules_img_tool//toolchain:all")

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package scufflecloud.core.v1;
+package scufflecloud;
 
 import "google/protobuf/descriptor.proto";
 import "tinc/annotations.proto";

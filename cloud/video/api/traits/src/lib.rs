@@ -5,4 +5,8 @@
 #![deny(unreachable_pub)]
 #![deny(clippy::mod_module_files)]
 
-pub trait Global: Send + Sync + 'static {}
+mod config;
+
+pub use config::*;
+
+pub trait Global: ConfigInterface + Send + Sync + 'static {}

@@ -31,7 +31,7 @@ mod dataloaders;
 pub struct Config {
     #[default(env!("CARGO_PKG_NAME").to_string())]
     pub service_name: String,
-    #[default(SocketAddr::from(([127, 0, 0, 1], 3001)))]
+    #[default("[::]:3001".parse().unwrap())]
     pub bind: SocketAddr,
     #[default = "info"]
     pub level: String,

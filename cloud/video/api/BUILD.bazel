@@ -10,10 +10,14 @@ deps = [
     "//crates/settings",
     "//crates/signal",
     "//cloud/video/api/traits",
+    "//cloud/proto",
+    "//crates/tinc",
+    "//crates/http",
 ]
 
 aliases = {
     "//cloud/video/api/traits": "video_api_traits",
+    "//cloud/proto": "pb",
 }
 
 scuffle_package(

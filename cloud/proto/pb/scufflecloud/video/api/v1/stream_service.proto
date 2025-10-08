@@ -11,22 +11,22 @@ service StreamService {
   option (tinc.service).prefix = "/v1/streams";
 
   // Create a new stream.
-  rpc Create(StreamCreateRequest) returns (Stream) {
+  rpc Create(StreamCreateRequest) returns (StreamCreateResponse) {
     option (tinc.method).endpoint = {post: "/"};
   }
 
   // Get a stream by ID.
-  rpc Get(StreamGetRequest) returns (Stream) {
+  rpc Get(StreamGetRequest) returns (StreamGetResponse) {
     option (tinc.method).endpoint = {get: "/{id}"};
   }
 
   // Update a stream by ID.
-  rpc Update(StreamUpdateRequest) returns (Stream) {
+  rpc Update(StreamUpdateRequest) returns (StreamUpdateResponse) {
     option (tinc.method).endpoint = {patch: "/{id}"};
   }
 
   // Delete a stream by ID.
-  rpc Delete(StreamDeleteRequest) returns (Stream) {
+  rpc Delete(StreamDeleteRequest) returns (StreamDeleteResponse) {
     option (tinc.method).endpoint = {delete: "/{id}"};
   }
 
@@ -45,10 +45,22 @@ message StreamCreateRequest {
   }];
 }
 
+// The response message for `StreamService.Create`.
+message StreamCreateResponse {
+  // The created stream.
+  Stream stream = 1;
+}
+
 // The request message for `StreamService.Get`.
 message StreamGetRequest {
   // The ID of the stream to retrieve.
   string id = 1 [(string_constraint).id = true];
+}
+
+// The response message for `StreamService.Get`.
+message StreamGetResponse {
+  // The retrieved stream.
+  Stream stream = 1;
 }
 
 // The request message for `StreamService.Update`.
@@ -62,10 +74,22 @@ message StreamUpdateRequest {
   }];
 }
 
+// The response message for `StreamService.Update`.
+message StreamUpdateResponse {
+  // The updated stream.
+  Stream stream = 1;
+}
+
 // The request message for `StreamService.Delete`.
 message StreamDeleteRequest {
   // The ID of the stream to delete.
   string id = 1 [(string_constraint).id = true];
+}
+
+// The response message for `StreamService.Delete`.
+message StreamDeleteResponse {
+  // The deleted stream.
+  Stream stream = 1;
 }
 
 // The request message for `StreamService.List`.

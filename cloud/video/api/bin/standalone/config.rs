@@ -3,10 +3,12 @@ use std::net::SocketAddr;
 #[derive(serde_derive::Deserialize, smart_default::SmartDefault, Debug, Clone)]
 #[serde(default)]
 pub(crate) struct Config {
-    #[default(env!("CARGO_PKG_NAME").to_string())]
-    pub service_name: String,
+    #[default("[::]:3001".parse().unwrap())]
+    pub bind: SocketAddr,
     #[default = "info"]
     pub level: String,
+    #[default = true]
+    pub swagger_ui: bool,
     pub telemetry: Option<TelemetryConfig>,
 }
 

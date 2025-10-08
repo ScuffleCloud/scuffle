@@ -6197,17 +6197,37 @@ name = "scufflecloud-video-api"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "axum",
  "scuffle-bootstrap",
  "scuffle-bootstrap-telemetry",
  "scuffle-context",
+ "scuffle-http",
  "scuffle-settings",
  "scuffle-signal",
+ "scufflecloud-proto",
  "scufflecloud-video-api-traits",
  "serde",
  "serde_derive",
  "smart-default",
+ "swagger-ui-dist",
+ "tinc",
+ "tonic",
+ "tonic-reflection",
+ "tonic-web",
+ "tower-http",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "scufflecloud-video-api-db-types"
+version = "0.1.0"
+dependencies = [
+ "diesel",
+ "scufflecloud-core-db-types",
+ "scufflecloud-id",
+ "serde",
+ "serde_derive",
 ]
 
 [[package]]

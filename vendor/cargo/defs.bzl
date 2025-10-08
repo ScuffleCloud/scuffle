@@ -2173,6 +2173,11 @@ _NORMAL_DEV_DEPENDENCIES = {
         },
     },
     "crates/settings": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "insta": Label("@cargo_vendor//:insta-1.43.2"),
+            },
+        },
     },
     "crates/signal": {
         _REQUIRED_FEATURE: {
@@ -2435,6 +2440,10 @@ _NORMAL_DEV_ALIASES = {
         },
     },
     "crates/settings": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
     },
     "crates/signal": {
         _REQUIRED_FEATURE: {
@@ -3458,6 +3467,10 @@ _PROC_MACRO_DEV_ALIASES = {
         },
     },
     "crates/settings": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
     },
     "crates/signal": {
         _REQUIRED_FEATURE: {

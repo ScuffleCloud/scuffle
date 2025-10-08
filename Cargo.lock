@@ -5905,6 +5905,7 @@ dependencies = [
  "clap",
  "config",
  "document-features",
+ "insta",
  "minijinja",
  "scuffle-bootstrap",
  "scuffle-changelog",

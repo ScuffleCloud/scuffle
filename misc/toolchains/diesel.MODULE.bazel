@@ -8,8 +8,8 @@ http_archive(
     sha256 = "eb6ac9b6c1804a9b83d8d4521ee7f54cc02b59be06012d532ba029f9f870f621",
     strip_prefix = "diesel_cli-aarch64-apple-darwin",
     url = "{url}{file}".format(
-        url = build_url,
         file = "diesel_cli-aarch64-apple-darwin.tar.xz",
+        url = build_url,
     ),
 )
 
@@ -19,8 +19,8 @@ http_archive(
     sha256 = "a1f6005b7fae79d27d2eb1c642d800c8a2ae883b3849b39b054dee234a872e78",
     strip_prefix = "diesel_cli-aarch64-unknown-linux-gnu",
     url = "{url}{file}".format(
-        url = build_url,
         file = "diesel_cli-aarch64-unknown-linux-gnu.tar.xz",
+        url = build_url,
     ),
 )
 
@@ -30,8 +30,8 @@ http_archive(
     sha256 = "e32589d16bea3195ab7da37a32200996c3d98bff7f5644d16c8acc91ef54d2b9",
     strip_prefix = "diesel_cli-x86_64-apple-darwin",
     url = "{url}{file}".format(
-        url = build_url,
         file = "diesel_cli-x86_64-apple-darwin.tar.xz",
+        url = build_url,
     ),
 )
 
@@ -41,8 +41,8 @@ http_archive(
     sha256 = "a3ee515a8f4be8c77b864b8802d2bda7a0cc3e6a802b07942fad1a5c01d92f47",
     strip_prefix = "diesel_cli-x86_64-pc-windows-msvc",
     url = "{url}{file}".format(
-        url = build_url,
         file = "diesel_cli-x86_64-pc-windows-msvc.zip",
+        url = build_url,
     ),
 )
 
@@ -52,7 +52,7 @@ http_archive(
     sha256 = "63267a24efc591a61ed5be77c938377aed0e0829f3075be13504f42297d29c50",
     strip_prefix = "diesel_cli-x86_64-unknown-linux-gnu",
     url = "{url}{file}".format(
-        url = build_url,
         file = "diesel_cli-x86_64-unknown-linux-gnu.tar.xz",
+        url = build_url,
     ),
 )

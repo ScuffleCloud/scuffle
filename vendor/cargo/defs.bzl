@@ -625,7 +625,13 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "axum": Label("@cargo_vendor//:axum-0.8.4"),
                 "serde": Label("@cargo_vendor//:serde-1.0.228"),
+                "swagger-ui-dist": Label("@cargo_vendor//:swagger-ui-dist-5.29.0"),
+                "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
+                "tonic-reflection": Label("@cargo_vendor//:tonic-reflection-0.14.2"),
+                "tonic-web": Label("@cargo_vendor//:tonic-web-0.14.2"),
+                "tower-http": Label("@cargo_vendor//:tower-http-0.6.6"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
             },
@@ -634,8 +640,8 @@ _NORMAL_DEPENDENCIES = {
     "cloud/video/api/db-types": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "diesel": Label("@cargo_vendor//:diesel-2.2.12"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "diesel": Label("@cargo_vendor//:diesel-2.3.2"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
             },
         },
     },
@@ -2609,7 +2615,7 @@ _PROC_MACRO_DEPENDENCIES = {
     "cloud/video/api/db-types": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },

@@ -18,14 +18,23 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
 anyhow = "1"
+axum = "0.8.4"
+pb = { path = "../../proto", package = "scufflecloud-proto" }
 scuffle-bootstrap = { path = "../../../crates/bootstrap" }
 scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../../crates/bootstrap-telemetry" }
 scuffle-context = { path = "../../../crates/context" }
+scuffle-http = { features = ["tracing"], path = "../../../crates/http" }
 scuffle-settings = { features = ["all-formats", "bootstrap"], path = "../../../crates/settings" }
 scuffle-signal = { features = ["bootstrap"], path = "../../../crates/signal" }
 serde = "1"
 serde_derive = "1"
 smart-default = "0.7"
+swagger-ui-dist = "5.27.1"
+tinc = { path = "../../../crates/tinc" }
+tonic = { version = "0.14.1", features = ["tls-aws-lc"] }
+tonic-reflection = "0.14.1"
+tonic-web = "0.14.2"
+tower-http = { features = ["cors", "trace"], version = "0.6.6" }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 video-api-traits = { path = "./traits", package = "scufflecloud-video-api-traits" }

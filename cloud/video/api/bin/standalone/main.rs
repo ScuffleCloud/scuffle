@@ -21,6 +21,16 @@ struct Global {
     open_telemetry: opentelemetry::OpenTelemetry,
 }
 
+impl video_api_traits::ConfigInterface for Global {
+    fn service_bind(&self) -> std::net::SocketAddr {
+        self.config.bind
+    }
+
+    fn swagger_ui_enabled(&self) -> bool {
+        self.config.swagger_ui
+    }
+}
+
 impl video_api_traits::Global for Global {}
 
 impl scuffle_signal::SignalConfig for Global {}

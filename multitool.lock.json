@@ -1,0 +1,579 @@
+{
+    "$schema": "https://raw.githubusercontent.com/bazel-contrib/rules_multitool/main/lockfile.schema.json",
+    "buildifier": {
+        "binaries": [
+            {
+                "kind": "file",
+                "url": "https://github.com/bazelbuild/buildtools/releases/download/v8.2.1/buildifier-darwin-amd64",
+                "sha256": "9f8cffceb82f4e6722a32a021cbc9a5344b386b77b9f79ee095c61d087aaea06",
+                "os": "macos",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/bazelbuild/buildtools/releases/download/v8.2.1/buildifier-darwin-arm64",
+                "sha256": "cfab310ae22379e69a3b1810b433c4cd2fc2c8f4a324586dfe4cc199943b8d5a",
+                "os": "macos",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/bazelbuild/buildtools/releases/download/v8.2.1/buildifier-linux-amd64",
+                "sha256": "6ceb7b0ab7cf66fceccc56a027d21d9cc557a7f34af37d2101edb56b92fcfa1a",
+                "os": "linux",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/bazelbuild/buildtools/releases/download/v8.2.1/buildifier-linux-arm64",
+                "sha256": "3baa1cf7eb41d51f462fdd1fff3a6a4d81d757275d05b2dd5f48671284e9a1a5",
+                "os": "linux",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/bazelbuild/buildtools/releases/download/v8.2.1/buildifier-windows-amd64.exe",
+                "sha256": "802104da0bcda0424a397ac5be0004c372665a70289a6d5146e652ee497c0dc6",
+                "os": "windows",
+                "cpu": "x86_64"
+            }
+        ]
+    },
+    "buf": {
+        "binaries": [
+            {
+                "kind": "file",
+                "url": "https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Darwin-arm64",
+                "sha256": "4421824868b0c50dffa0b4e1ae3e708a2d72bfa5aafd384713e7d380ed2b2751",
+                "os": "macos",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Darwin-x86_64",
+                "sha256": "0a12578cdaa06ad7657ecfc7eb767b2e32930f3a888de2f48a794d78ecf8921b",
+                "os": "macos",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Linux-aarch64",
+                "sha256": "9b8e90e96b9cfa3ec6c556a70bb28b378d92f15ab4139541a58bf2a0bcae1a21",
+                "os": "linux",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Linux-x86_64",
+                "sha256": "644e6fa4a62afc2b0d425d3ac9538d2f512947c0f2e82fc95c41a5eab6729414",
+                "os": "linux",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Windows-arm64.exe",
+                "sha256": "2b121609bc58181be51cb057fd5621008df92fbdfd31211ed1ee201137ef42de",
+                "os": "windows",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Windows-x86_64.exe",
+                "sha256": "58c7a7e445c3fd4f14368a77436921c3b4577b42b7687c18cfb786d07ce3df92",
+                "os": "windows",
+                "cpu": "x86_64"
+            }
+        ]
+    },
+    "dprint": {
+        "binaries": [
+            {
+                "kind": "archive",
+                "url": "https://github.com/dprint/dprint/releases/download/0.50.2/dprint-aarch64-apple-darwin.zip",
+                "sha256": "f534bcc054947ab2a42c069b5f6027914d252729bd15c1109812313b35a662a5",
+                "file": "dprint",
+                "os": "macos",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/dprint/dprint/releases/download/0.50.2/dprint-x86_64-apple-darwin.zip",
+                "sha256": "61becbf8d1b16540e364a4f00be704266ae322ee0ff3ba66a4a21033f66a8d55",
+                "file": "dprint",
+                "os": "macos",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/dprint/dprint/releases/download/0.50.2/dprint-aarch64-unknown-linux-musl.zip",
+                "sha256": "a4982964a68aefc2720b4c79c51a57e49b32f8944c1641fd9e714503fcf01847",
+                "file": "dprint",
+                "os": "linux",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/dprint/dprint/releases/download/0.50.2/dprint-x86_64-unknown-linux-musl.zip",
+                "sha256": "4b0e7911262049ccb8e1ac5968bf7a66dc490968fe1552a123bb2d6dadf2ad95",
+                "file": "dprint",
+                "os": "linux",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/dprint/dprint/releases/download/0.50.2/dprint-x86_64-pc-windows-msvc.zip",
+                "sha256": "2dbdb57106818acd930a00bc0c2c33370bd4c7265f78a6cda000e3621f2d3c1c",
+                "file": "dprint.exe",
+                "os": "windows",
+                "cpu": "x86_64"
+            }
+        ]
+    },
+    "just": {
+        "binaries": [
+            {
+                "kind": "archive",
+                "url": "https://github.com/casey/just/releases/download/1.43.0/just-1.43.0-aarch64-apple-darwin.tar.gz",
+                "sha256": "bb0d35f6ca04709b798a19217693c16f4086170c580cc3b5c2531ad2794d2e32",
+                "file": "just",
+                "os": "macos",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/casey/just/releases/download/1.43.0/just-1.43.0-x86_64-apple-darwin.tar.gz",
+                "sha256": "687f66a6bd4d7d946ef5ff1e3efebb3d39dadad151a8c6b1de884cc93adc06a5",
+                "file": "just",
+                "os": "macos",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/casey/just/releases/download/1.43.0/just-1.43.0-aarch64-unknown-linux-musl.tar.gz",
+                "sha256": "4fcd8310081c32742eb984b1fdd0eee2e5d4d0f1be9629318012d42606ec9b3e",
+                "file": "just",
+                "os": "linux",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/casey/just/releases/download/1.43.0/just-1.43.0-x86_64-unknown-linux-musl.tar.gz",
+                "sha256": "a1bc93654f31669fd964ea3011a5e5e9676b9b6f8adcd762606e5140632ea72d",
+                "file": "just",
+                "os": "linux",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/casey/just/releases/download/1.43.0/just-1.43.0-aarch64-pc-windows-msvc.zip",
+                "sha256": "4abcc7ac09473f01b6837738e6bb4c3cdc167d6ebfa6c2cfd8b5656aa1b03d6c",
+                "file": "just.exe",
+                "os": "windows",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/casey/just/releases/download/1.43.0/just-1.43.0-x86_64-pc-windows-msvc.zip",
+                "sha256": "04be7b6d7f8419288ce75532f1962cee1756992e494e6c8063bb3ab8db21b52c",
+                "file": "just.exe",
+                "os": "windows",
+                "cpu": "x86_64"
+            }
+        ]
+    },
+    "shfmt": {
+        "binaries": [
+            {
+                "kind": "file",
+                "url": "https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_darwin_amd64",
+                "sha256": "c31548693de6584e6164b7ed5fbb7b4a083f2d937ca94b4e0ddf59aa461a85e4",
+                "os": "macos",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_darwin_arm64",
+                "sha256": "d903802e0ce3ecbc82b98512f55ba370b0d37a93f3f78de394f5b657052b33dd",
+                "os": "macos",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_linux_amd64",
+                "sha256": "d9fbb2a9c33d13f47e7618cf362a914d029d02a6df124064fff04fd688a745ea",
+                "os": "linux",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_linux_arm64",
+                "sha256": "a93c1ed5be25ce9dd0fd62c4cf0af7453740d234725877b973e6c6a8c7598500",
+                "os": "linux",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/mvdan/sh/releases/download/v3.12.0/shfmt_v3.12.0_windows_amd64.exe",
+                "sha256": "c8bda517ba1c640ce4a715c0fa665439ddbe4357ba5e9b77b0e51e70e2b9c94b",
+                "os": "windows",
+                "cpu": "x86_64"
+            }
+        ]
+    },
+    "miniserve": {
+        "binaries": [
+            {
+                "kind": "file",
+                "url": "https://github.com/svenstaro/miniserve/releases/download/v0.32.0/miniserve-0.32.0-aarch64-apple-darwin",
+                "sha256": "a34c405705f9ba4fbdbe345f02fe69089f286c6280aad8ce66d9a2dfe105f5d0",
+                "os": "macos",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/svenstaro/miniserve/releases/download/v0.32.0/miniserve-0.32.0-x86_64-apple-darwin",
+                "sha256": "262372c3b897ff0609b983730450eed6bda06fbd62a8ebdfc44463e6b64e7f5b",
+                "os": "macos",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/svenstaro/miniserve/releases/download/v0.32.0/miniserve-0.32.0-aarch64-unknown-linux-musl",
+                "sha256": "b0a2e760050f90eb04b02b399993df5a263c1b5287475771f06f1214b688ecda",
+                "os": "linux",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/svenstaro/miniserve/releases/download/v0.32.0/miniserve-0.32.0-x86_64-unknown-linux-musl",
+                "sha256": "e7d58a06b84c5c12b8e14993921198a310ba5f9537224dc1082a33d817ccd7e1",
+                "os": "linux",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/svenstaro/miniserve/releases/download/v0.32.0/miniserve-0.32.0-x86_64-pc-windows-msvc.exe",
+                "sha256": "93dc71ed5bcf70c54bc1eb4e01d41ae197e85c363485203dc820c080e99965b9",
+                "os": "windows",
+                "cpu": "x86_64"
+            }
+        ]
+    },
+    "cargo-deny": {
+        "binaries": [
+            {
+                "kind": "archive",
+                "url": "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.18.5/cargo-deny-0.18.5-aarch64-apple-darwin.tar.gz",
+                "sha256": "bf95a666c6f91dde978f4703621d3c877ee5f64aa28404cd837b70e9dfdc1f3a",
+                "file": "cargo-deny",
+                "os": "macos",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.18.5/cargo-deny-0.18.5-x86_64-apple-darwin.tar.gz",
+                "sha256": "c83dcab58da77aeef639d324a0718b0d2a325821fcf89c78fc1abd7830229c89",
+                "file": "cargo-deny",
+                "os": "macos",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.18.5/cargo-deny-0.18.5-aarch64-unknown-linux-musl.tar.gz",
+                "sha256": "b31f5b9140a8a842228285186ac66b6b3c12e5a866060bce246554d9fc1ffabf",
+                "file": "cargo-deny",
+                "os": "linux",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.18.5/cargo-deny-0.18.5-x86_64-unknown-linux-musl.tar.gz",
+                "sha256": "3e139780452310f922239f683b5c14f7d8f6f9b97fcc08d30696e1b90158527c",
+                "file": "cargo-deny",
+                "os": "linux",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.18.5/cargo-deny-0.18.5-x86_64-pc-windows-msvc.tar.gz",
+                "sha256": "6fb561015a964443dd2f64229aae2dc263c42cbddeaffe36e1bbb5a5939986f3",
+                "file": "cargo-deny.exe",
+                "os": "windows",
+                "cpu": "x86_64"
+            }
+        ]
+    },
+    "cargo-insta": {
+        "binaries": [
+            {
+                "kind": "archive",
+                "url": "https://github.com/mitsuhiko/insta/releases/download/1.43.2/cargo-insta-aarch64-apple-darwin.tar.xz",
+                "sha256": "11800f3e57b9955b8d315d07496277e3541b194acd18db6743d916090acd4946",
+                "file": "cargo-insta",
+                "os": "macos",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/mitsuhiko/insta/releases/download/1.43.2/cargo-insta-x86_64-apple-darwin.tar.xz",
+                "sha256": "03d6724b027ce4825b0cedfb0fb75bedd9edf70fc027c90f39d6a87c3f2162cd",
+                "file": "cargo-insta",
+                "os": "macos",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/mitsuhiko/insta/releases/download/1.43.2/cargo-insta-x86_64-unknown-linux-musl.tar.xz",
+                "sha256": "14db7b4a73b0182b993da8516c3fd70d9ba95dcf036d25c54f5f2813e3eb801f",
+                "file": "cargo-insta",
+                "os": "linux",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/mitsuhiko/insta/releases/download/1.43.2/cargo-insta-x86_64-pc-windows-msvc.zip",
+                "sha256": "60b208290c75def07ba727fe423d45e04521126ab8c86aed9bb4bc8a1c626eee",
+                "file": "cargo-insta.exe",
+                "os": "windows",
+                "cpu": "x86_64"
+            }
+        ]
+    },
+    "valgrind": {
+        "binaries": [
+            {
+                "kind": "archive",
+                "url": "https://github.com/ScuffleCloud/valgrind-builds/releases/download/latest/valgrind-3.23.0-Linux-aarch64.tar.gz",
+                "sha256": "bba3da90da6f8a65c22f4ef7221b3581957515f93c84c1cc21aa41831e07fdbe",
+                "file": "valgrind-3.23.0-Linux-aarch64/bin/valgrind",
+                "os": "linux",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/ScuffleCloud/valgrind-builds/releases/download/latest/valgrind-3.23.0-Linux-x86_64.tar.gz",
+                "sha256": "80e75a913c1b8cc9a88076e771880ebae180e6aa4e0d9ca32ab74b5b523a5769",
+                "file": "valgrind-3.23.0-Linux-x86_64/bin/valgrind",
+                "os": "linux",
+                "cpu": "x86_64"
+            }
+        ]
+    },
+    "protoc": {
+        "binaries": [
+            {
+                "kind": "archive",
+                "url": "https://github.com/protocolbuffers/protobuf/releases/download/v32.1/protoc-32.1-osx-universal_binary.zip",
+                "sha256": "95a1e03847cf7057b2db1b68fb92685c3cd9d14e777a879475663adc13989cd7",
+                "file": "bin/protoc",
+                "os": "macos",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/protocolbuffers/protobuf/releases/download/v32.1/protoc-32.1-osx-x86_64.zip",
+                "sha256": "f9caa5b4d0b537acffb0ffd7d53225511a5574ef903fca550ea9e7600987f13b",
+                "file": "bin/protoc",
+                "os": "macos",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/protocolbuffers/protobuf/releases/download/v32.1/protoc-32.1-linux-x86_64.zip",
+                "sha256": "e9c129c176bb7df02546c4cd6185126ca53c89e7d2f09511e209319704b5dd7e",
+                "file": "bin/protoc",
+                "os": "linux",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/protocolbuffers/protobuf/releases/download/v32.1/protoc-32.1-win64.zip",
+                "sha256": "69569cbc178cd5785ecb7d93569913110677eafeb4b8f82970c361fad4c7cd66",
+                "file": "bin/protoc.exe",
+                "os": "windows",
+                "cpu": "x86_64"
+            }
+        ]
+    },
+    "ibazel": {
+        "binaries": [
+            {
+                "kind": "file",
+                "url": "https://github.com/bazelbuild/bazel-watcher/releases/download/v0.26.10/ibazel_darwin_arm64",
+                "sha256": "3e3e609e3447204289b36c0f279f4d155e583f3289eb1ff9dcb92eae8c3fc505",
+                "os": "macos",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/bazelbuild/bazel-watcher/releases/download/v0.26.10/ibazel_darwin_amd64",
+                "sha256": "ad30c44210bb0bf8663aaf29e2820dcfa0be75fe3bd81218bf7b70fbaba849b9",
+                "os": "macos",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/bazelbuild/bazel-watcher/releases/download/v0.26.10/ibazel_linux_arm64",
+                "sha256": "c535714662b8704a3ae55cd5b3cdf6c1939f5ba6ba82eb96cdac54b75ac28ffa",
+                "os": "linux",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/bazelbuild/bazel-watcher/releases/download/v0.26.10/ibazel_linux_amd64",
+                "sha256": "83e7f76cbcbc721dc544b88edc25edc777faa8b95475a301d4d01fb6bed54b00",
+                "os": "linux",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/bazelbuild/bazel-watcher/releases/download/v0.26.10/ibazel_windows_amd64.exe",
+                "sha256": "50bbf4d9b10ffb2bc7a29f96c03b72e434bbf2deaa4a3a6b201b5196fa2586f9",
+                "os": "windows",
+                "cpu": "x86_64"
+            }
+        ]
+    },
+    "pnpm": {
+        "binaries": [
+            {
+                "kind": "file",
+                "url": "https://github.com/pnpm/pnpm/releases/download/v10.18.1/pnpm-macos-arm64",
+                "sha256": "82eab0623e8bfd29fdbb386da51a17edcbed666eaee4125068b91db922993853",
+                "os": "macos",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/pnpm/pnpm/releases/download/v10.18.1/pnpm-macos-x64",
+                "sha256": "e296136c535695e1d0d44b8664e0374c96aa2407a857ed64e9b5b35cd77a83ce",
+                "os": "macos",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/pnpm/pnpm/releases/download/v10.18.1/pnpm-linux-arm64",
+                "sha256": "a4e24d3b1171dce6a7c35f7fc75e6ce20f4d9932318ac892d7508b19af298d89",
+                "os": "linux",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/pnpm/pnpm/releases/download/v10.18.1/pnpm-linux-x64",
+                "sha256": "6f8ae185edfb0ef1ed4fd94f399b9b8a990eab5636aaeac9b0d3556ce0143e27",
+                "os": "linux",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/pnpm/pnpm/releases/download/v10.18.1/pnpm-win-arm64.exe",
+                "sha256": "ce77420bdf308e1f4ed803b68cd8251c675b9851d6ae1267731e111b40216c51",
+                "os": "windows",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "file",
+                "url": "https://github.com/pnpm/pnpm/releases/download/v10.18.1/pnpm-win-x64.exe",
+                "sha256": "a30c43f4a48ea317a5a3ecf8486f27de9e0cfdc2768d4870e23005a3254f3009",
+                "os": "windows",
+                "cpu": "x86_64"
+            }
+        ]
+    },
+    "node": {
+        "binaries": [
+            {
+                "kind": "archive",
+                "url": "https://nodejs.org/dist/v24.9.0/node-v24.9.0-darwin-arm64.tar.gz",
+                "sha256": "961024296c2a8e60daed0784f8b61e0fab5c51d197502a92eff052c72b53209b",
+                "file": "node-v24.9.0-darwin-arm64/bin/node",
+                "os": "macos",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://nodejs.org/dist/v24.9.0/node-v24.9.0-darwin-x64.tar.gz",
+                "sha256": "6c9ac12d3160538d96d456dc59a8fec1479e3f8b20bfc0d61bc809eb9ec11417",
+                "file": "node-v24.9.0-darwin-x64/bin/node",
+                "os": "macos",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://nodejs.org/dist/v24.9.0/node-v24.9.0-linux-arm64.tar.xz",
+                "sha256": "5a5b1dc4906e891a655d2f0689db664879724f2d9e63309486fd588172a052bc",
+                "file": "node-v24.9.0-linux-arm64/bin/node",
+                "os": "linux",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://nodejs.org/dist/v24.9.0/node-v24.9.0-linux-x64.tar.xz",
+                "sha256": "f52ec50e959d72d5c680d9731420b2661cd2a8070e94c7369b6ddfcd8b7278be",
+                "file": "node-v24.9.0-linux-x64/bin/node",
+                "os": "linux",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://nodejs.org/dist/v24.9.0/node-v24.9.0-win-arm64.zip",
+                "sha256": "ead06448c62743d2b872574450c6b3cf1328d87f16e8057d7cea9a797170b160",
+                "file": "node-v24.9.0-win-arm64/node.exe",
+                "os": "windows",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://nodejs.org/dist/v24.9.0/node-v24.9.0-win-x64.zip",
+                "sha256": "6873514c3e6a012917cc6f95ce48a6289253370d025f1b69db290d70feebfa6e",
+                "file": "node-v24.9.0-win-x64/node.exe",
+                "os": "windows",
+                "cpu": "x86_64"
+            }
+        ]
+    },
+    "rust-analyzer": {
+        "binaries": [
+            {
+                "kind": "archive",
+                "url": "https://github.com/ScuffleCloud/rust-analyzer/releases/download/commit-602498a1fbe88277470a28354921a59fd30ba802/rust-analyzer-darwin-aarch64.tar.zst",
+                "sha256": "a0c9c32ed4cafc642548476f055bbaf486a4e5d21bcd1720f7a5331bb54ac58a",
+                "file": "rust-analyzer-darwin-aarch64/rust-analyzer",
+                "os": "macos",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/ScuffleCloud/rust-analyzer/releases/download/commit-602498a1fbe88277470a28354921a59fd30ba802/rust-analyzer-darwin-x86_64.tar.zst",
+                "sha256": "6dc6089b8aa3ed4570a18cfa6d6c6175a39bbe3c2f4985f8b521cb276dda63fd",
+                "file": "rust-analyzer-darwin-x86_64/rust-analyzer",
+                "os": "macos",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/ScuffleCloud/rust-analyzer/releases/download/commit-602498a1fbe88277470a28354921a59fd30ba802/rust-analyzer-linux-aarch64.tar.zst",
+                "sha256": "1dbb57192db64df8b15980ce611dfb685517a552d2ba1277c912c0ba1e94df68",
+                "file": "rust-analyzer-linux-aarch64/rust-analyzer",
+                "os": "linux",
+                "cpu": "arm64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/ScuffleCloud/rust-analyzer/releases/download/commit-602498a1fbe88277470a28354921a59fd30ba802/rust-analyzer-linux-x86_64.tar.zst",
+                "sha256": "d02fba255e9d52ca6998cc8ffcdea91e3ae5c0bdc05a85991c8a06463087822d",
+                "file": "rust-analyzer-linux-x86_64/rust-analyzer",
+                "os": "linux",
+                "cpu": "x86_64"
+            },
+            {
+                "kind": "archive",
+                "url": "https://github.com/ScuffleCloud/rust-analyzer/releases/download/commit-602498a1fbe88277470a28354921a59fd30ba802/rust-analyzer-windows-x86_64.tar.zst",
+                "sha256": "fd09b56c105b6e80019c70e60522875f3c5450a29fcd4ec6904a9d0db7159956",
+                "file": "rust-analyzer-windows-x86_64/rust-analyzer.exe",
+                "os": "windows",
+                "cpu": "x86_64"
+            }
+        ]
+    }
+}

@@ -50,10 +50,7 @@ Adding the following to your `/etc/docker/daemon.json`:
 
 #### Scripts / Tools
 
-We provide a bunch of tools which we vendor by wrapping them into a Bazel rule, you can setup your `PATH` by running `bazel run //:bazel_env`.
-
-You will also need to install [DotSlash](https://dotslash-cli.com/), which is used to manage our vendored tools. You can find the installation instructions [here](https://dotslash-cli.com/docs/installation/).
-
+We provide a bunch of tools which we vendor by using [rules_multitool](https://github.com/bazel-contrib/rules_multitool). We recommend adding this directory to the front of your `PATH` (automatically done if you use [direnv](#environment-variables)).
 ### VSCode Setup
 
 If you use VSCode you can setup rust-analyzer to work by adding the following to your `settings.json`:

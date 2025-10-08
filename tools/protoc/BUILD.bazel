@@ -1,7 +1,5 @@
-load(":alias.bzl", "protoc_alias")
-
-protoc_alias(
+alias(
     name = "protoc",
-    tags = ["manual"],
+    actual = "@multitool//tools/protoc",
     visibility = ["//visibility:public"],
 )

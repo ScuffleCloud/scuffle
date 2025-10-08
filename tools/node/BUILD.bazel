@@ -1,6 +1,5 @@
 alias(
     name = "node",
-    actual = "@nodejs//:node",
-    tags = ["manual"],
+    actual = "@multitool//tools/node",
     visibility = ["//visibility:public"],
 )

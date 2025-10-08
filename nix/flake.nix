@@ -28,7 +28,6 @@
           buildInputs = [
             git
             bazelisk
-            dotslash
             stdenv
             bash
             openssl

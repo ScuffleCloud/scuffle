@@ -1,11 +1,5 @@
-load("//misc/utils:binary_wrapper.bzl", "binary_wrapper")
-
-binary_wrapper(
+alias(
     name = "buildifier",
-    binary = "@rules_rust//crate_universe/private/vendor:buildifier",
-    tags = [
-        "manual",
-        "no-cache",
-    ],
+    actual = "@multitool//tools/buildifier",
     visibility = ["//visibility:public"],
 )

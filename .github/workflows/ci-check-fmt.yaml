@@ -20,8 +20,6 @@ jobs:
         with:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
-      - uses: ./.github/actions/install-dotslash
-
       - name: Format bazel
         run: bazel run //tools/buildifier -- $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
 

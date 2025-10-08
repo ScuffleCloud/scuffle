@@ -8,11 +8,11 @@ default:
 
 fmt:
     bazel run //tools/cargo/fmt:fix
-    buildifier $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
-    dprint fmt
-    buf format -w --disable-symlinks --debug
-    just --unstable --fmt
-    shfmt -w .
+    bazel run //tools/buildifier -- $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
+    bazel run //tools/dprint -- fmt
+    bazel run //tools/buf -- format -w --disable-symlinks --debug
+    bazel run //tools/just -- --unstable --fmt
+    bazel run //tools/shfmt -- -w .
 
 lint:
     bazel run //tools/cargo/clippy:fix

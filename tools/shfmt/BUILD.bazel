@@ -1,19 +1,5 @@
-load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
-
 alias(
-    name = "shfmt_file",
-    actual = select({
-        "//misc/platforms:linux-aarch64": "@shfmt-linux-aarch64//file",
-        "//misc/platforms:linux-x86_64": "@shfmt-linux-x86_64//file",
-        "//misc/platforms:macos-aarch64": "@shfmt-macos-aarch64//file",
-        "//misc/platforms:macos-x86_64": "@shfmt-macos-x86_64//file",
-    }),
-    tags = ["manual"],
-)
-
-sh_binary(
     name = "shfmt",
-    srcs = [":shfmt_file"],
-    tags = ["manual"],
+    actual = "@multitool//tools/shfmt",
     visibility = ["//visibility:public"],
 )

@@ -2,11 +2,10 @@ load("//misc/utils:binary_wrapper.bzl", "binary_wrapper")
 
 binary_wrapper(
     name = "pnpm",
-    binary = "@pnpm//:pnpm",
     extra_commands = [
         "set -- \"-C\" \"$(pwd)\" \"$@\"",
         "cd \"${pwd}\"",
     ],
-    tags = ["manual"],
+    actual = "@multitool//tools/pnpm",
     visibility = ["//visibility:public"],
 )

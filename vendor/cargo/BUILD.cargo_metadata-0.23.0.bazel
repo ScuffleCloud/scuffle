@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "diesel",
+    name = "cargo_metadata",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,21 +35,10 @@ rust_library(
         ],
     ),
     crate_features = [
-        "32-column-tables",
-        "chrono",
         "default",
-        "i-implement-a-third-party-backend-and-opt-into-breaking-changes",
-        "network-address",
-        "postgres_backend",
-        "serde_json",
-        "uuid",
-        "with-deprecated",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
-    proc_macro_deps = [
-        "@cargo_vendor__diesel_derives-2.2.7//:diesel_derives",
-    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -58,7 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=diesel",
+        "crate-name=cargo_metadata",
         "manual",
         "noclippy",
         "norustfmt",
@@ -73,15 +62,13 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "2.2.12",
+    version = "0.23.0",
     deps = [
-        "@cargo_vendor__bitflags-2.9.4//:bitflags",
-        "@cargo_vendor__byteorder-1.5.0//:byteorder",
-        "@cargo_vendor__chrono-0.4.42//:chrono",
-        "@cargo_vendor__ipnetwork-0.21.1//:ipnetwork",
-        "@cargo_vendor__itoa-1.0.15//:itoa",
-        "@cargo_vendor__libc-0.2.175//:libc",
+        "@cargo_vendor__camino-1.1.12//:camino",
+        "@cargo_vendor__cargo-platform-0.3.1//:cargo_platform",
+        "@cargo_vendor__semver-1.0.26//:semver",
+        "@cargo_vendor__serde-1.0.220//:serde",
         "@cargo_vendor__serde_json-1.0.145//:serde_json",
-        "@cargo_vendor__uuid-1.18.1//:uuid",
+        "@cargo_vendor__thiserror-2.0.16//:thiserror",
     ],
 )

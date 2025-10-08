@@ -34,10 +34,10 @@ docs = ["dep:scuffle-changelog", "dep:document-features"]
 
 [dependencies]
 document-features = { optional = true, version = "0.2" }
-opentelemetry = { default-features = false, features = ["metrics"], version = "0.30" }
-opentelemetry_sdk = { default-features = false, features = ["experimental_metrics_custom_reader", "metrics"], version = "0.30" }
+opentelemetry = { default-features = false, features = ["metrics"], version = "0.31.0" }
+opentelemetry_sdk = { default-features = false, features = ["experimental_metrics_custom_reader", "metrics"], version = "0.31.0" }
 parking_lot = "0.12"
-prometheus-client = { optional = true, version = "0.23" }
+prometheus-client = { optional = true, version = "0.24.0" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
 scuffle-metrics-derive = { path = "derive", version = "=0.4.2" }
 tracing = { optional = true, version = "0.1" }
@@ -47,7 +47,7 @@ insta = "1.42.0"
 postcompile = { path = "../postcompile" }
 
 # For examples:
-opentelemetry-stdout = "0.30"
+opentelemetry-stdout = "0.31.0"
 tokio = { features = ["full"], version = "1" }
 
 [package.metadata.docs.rs]

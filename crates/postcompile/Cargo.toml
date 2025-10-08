@@ -20,7 +20,7 @@ docs = ["dep:scuffle-changelog", "dep:document-features"]
 
 [dependencies]
 cargo-manifest = "0.19"
-cargo_metadata = "0.21"
+cargo_metadata = "0.23.0"
 document-features = { optional = true, version = "0.2" }
 prettyplease = "0.2"
 regex = "1"

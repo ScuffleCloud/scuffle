@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "opentelemetry_appender_tracing",
+    name = "cargo_platform",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,11 +34,8 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-    ],
     crate_root = "src/lib.rs",
-    edition = "2021",
+    edition = "2024",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -47,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=opentelemetry-appender-tracing",
+        "crate-name=cargo-platform",
         "manual",
         "noclippy",
         "norustfmt",
@@ -62,11 +59,8 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.30.1",
+    version = "0.3.1",
     deps = [
-        "@cargo_vendor__opentelemetry-0.30.0//:opentelemetry",
-        "@cargo_vendor__tracing-0.1.41//:tracing",
-        "@cargo_vendor__tracing-core-0.1.34//:tracing_core",
-        "@cargo_vendor__tracing-subscriber-0.3.20//:tracing_subscriber",
+        "@cargo_vendor__serde-1.0.220//:serde",
     ],
 )

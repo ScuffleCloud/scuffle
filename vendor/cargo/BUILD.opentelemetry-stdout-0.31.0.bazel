@@ -65,10 +65,10 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.30.0",
+    version = "0.31.0",
     deps = [
         "@cargo_vendor__chrono-0.4.42//:chrono",
-        "@cargo_vendor__opentelemetry-0.30.0//:opentelemetry",
-        "@cargo_vendor__opentelemetry_sdk-0.30.0//:opentelemetry_sdk",
+        "@cargo_vendor__opentelemetry-0.31.0//:opentelemetry",
+        "@cargo_vendor__opentelemetry_sdk-0.31.0//:opentelemetry_sdk",
     ],
 )

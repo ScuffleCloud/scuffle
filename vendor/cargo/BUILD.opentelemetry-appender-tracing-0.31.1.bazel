@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "diesel_async",
+    name = "opentelemetry_appender_tracing",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,13 +35,7 @@ rust_library(
         ],
     ),
     crate_features = [
-        "async-connection-wrapper",
-        "bb8",
         "default",
-        "pool",
-        "postgres",
-        "tokio",
-        "tokio-postgres",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -53,7 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=diesel-async",
+        "crate-name=opentelemetry-appender-tracing",
         "manual",
         "noclippy",
         "norustfmt",
@@ -68,14 +62,11 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.6.1",
+    version = "0.31.1",
     deps = [
-        "@cargo_vendor__bb8-0.9.0//:bb8",
-        "@cargo_vendor__diesel-2.2.12//:diesel",
-        "@cargo_vendor__futures-core-0.3.31//:futures_core",
-        "@cargo_vendor__futures-util-0.3.31//:futures_util",
-        "@cargo_vendor__scoped-futures-0.1.4//:scoped_futures",
-        "@cargo_vendor__tokio-1.47.1//:tokio",
-        "@cargo_vendor__tokio-postgres-0.7.13//:tokio_postgres",
+        "@cargo_vendor__opentelemetry-0.31.0//:opentelemetry",
+        "@cargo_vendor__tracing-0.1.41//:tracing",
+        "@cargo_vendor__tracing-core-0.1.34//:tracing_core",
+        "@cargo_vendor__tracing-subscriber-0.3.20//:tracing_subscriber",
     ],
 )

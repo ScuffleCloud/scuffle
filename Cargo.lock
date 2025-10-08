@@ -749,6 +749,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "cargo-platform"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "122ec45a44b270afd1402f351b782c676b173e3c3fb28d86ff7ebfb4d86a4ee4"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "cargo-util-schemas"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -771,8 +780,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5cfca2aaa699835ba88faf58a06342a314a950d2b9686165e038286c30316868"
 dependencies = [
  "camino",
- "cargo-platform",
+ "cargo-platform 0.2.0",
  "cargo-util-schemas",
+ "semver",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.16",
+]
+
+[[package]]
+name = "cargo_metadata"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "981a6f317983eec002839b90fae7411a85621410ae591a9cab2ecf5cb5744873"
+dependencies = [
+ "camino",
+ "cargo-platform 0.3.1",
  "semver",
  "serde",
  "serde_json",
@@ -1525,14 +1548,15 @@ dependencies = [
 
 [[package]]
 name = "diesel"
-version = "2.2.12"
+version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "229850a212cd9b84d4f0290ad9d294afc0ae70fccaa8949dbe8b43ffafa1e20c"
+checksum = "e8496eeb328dce26ee9d9b73275d396d9bddb433fa30106cf6056dd8c3c2764c"
 dependencies = [
  "bitflags 2.9.4",
  "byteorder",
  "chrono",
  "diesel_derives",
+ "downcast-rs",
  "ipnetwork",
  "itoa",
  "libc",
@@ -1542,9 +1566,9 @@ dependencies = [
 
 [[package]]
 name = "diesel-async"
-version = "0.6.1"
+version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7fcc26599f590c7e5b182a05061cfb445f216bb069df72eb31f38cffde8ca598"
+checksum = "c69eded9cb72c7e112505caec23da00149d4dd49f4c96b3c83b2b63f0aa3da5f"
 dependencies = [
  "bb8",
  "diesel",
@@ -1557,9 +1581,9 @@ dependencies = [
 
 [[package]]
 name = "diesel_derives"
-version = "2.2.7"
+version = "2.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b96984c469425cb577bf6f17121ecb3e4fe1e81de5d8f780dd372802858d756"
+checksum = "09af0e983035368439f1383011cd87c46f41da81d0f21dc3727e2857d5a43c8e"
 dependencies = [
  "diesel_table_macro_syntax",
  "dsl_auto_type",
@@ -1624,9 +1648,9 @@ dependencies = [
 
 [[package]]
 name = "diesel_table_macro_syntax"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "209c735641a413bc68c4923a9d6ad4bcb3ca306b794edaa7eb0b3228a99ffb25"
+checksum = "fe2444076b48641147115697648dc743c2c00b61adade0f01ce67133c7babe8c"
 dependencies = [
  "syn 2.0.106",
 ]
@@ -1684,12 +1708,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "dsl_auto_type"
-version = "0.1.3"
+name = "downcast-rs"
+version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "139ae9aca7527f85f26dd76483eb38533fd84bd571065da1739656ef71c5ff5b"
+checksum = "117240f60069e65410b3ae1bb213295bd828f707b5bec6596a1afc8793ce0cbc"
+
+[[package]]
+name = "dsl_auto_type"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd122633e4bef06db27737f21d3738fb89c8f6d5360d6d9d7635dda142a7757e"
 dependencies = [
- "darling 0.20.11",
+ "darling 0.21.3",
  "either",
  "heck",
  "proc-macro2",
@@ -2291,7 +2321,7 @@ checksum = "7eadc0c380d2c5f421758a5838ce593687da4a47d1dcf1169bf3bad629b764e7"
 dependencies = [
  "ahash",
  "camino",
- "cargo_metadata",
+ "cargo_metadata 0.21.0",
  "cfg-if",
  "debug-ignore",
  "fixedbitset 0.5.7",
@@ -2962,10 +2992,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "be1f93b8b1eb69c77f24bbb0afdf66f54b632ee39af40ca21c4365a1d7347e49"
 dependencies = [
  "jiff-static",
+ "jiff-tzdb-platform",
  "log",
  "portable-atomic",
  "portable-atomic-util",
  "serde",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -2977,6 +3009,21 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.106",
+]
+
+[[package]]
+name = "jiff-tzdb"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1283705eb0a21404d2bfd6eef2a7593d240bc42a0bdb39db0ad6fa2ec026524"
+
+[[package]]
+name = "jiff-tzdb-platform"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "875a5a69ac2bab1a891711cf5eccbec1ce0341ea805560dcd90b7a2e925132e8"
+dependencies = [
+ "jiff-tzdb",
 ]
 
 [[package]]
@@ -3476,7 +3523,7 @@ dependencies = [
  "bytes",
  "camino",
  "camino-tempfile",
- "cargo_metadata",
+ "cargo_metadata 0.21.0",
  "cfg-if",
  "chrono",
  "config",
@@ -3818,9 +3865,9 @@ dependencies = [
 
 [[package]]
 name = "opentelemetry"
-version = "0.30.0"
+version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aaf416e4cb72756655126f7dd7bb0af49c674f4c1b9903e80c009e0c37e552e6"
+checksum = "b84bcd6ae87133e903af7ef497404dda70c60d0ea14895fc8a5e6722754fc2a0"
 dependencies = [
  "futures-core",
  "futures-sink",
@@ -3832,9 +3879,9 @@ dependencies = [
 
 [[package]]
 name = "opentelemetry-appender-tracing"
-version = "0.30.1"
+version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e68f63eca5fad47e570e00e893094fc17be959c80c79a7d6ec1abdd5ae6ffc16"
+checksum = "ef6a1ac5ca3accf562b8c306fa8483c85f4390f768185ab775f242f7fe8fdcc2"
 dependencies = [
  "opentelemetry",
  "tracing",
@@ -3844,9 +3891,9 @@ dependencies = [
 
 [[package]]
 name = "opentelemetry-stdout"
-version = "0.30.0"
+version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "447191061af41c3943e082ea359ab8b64ff27d6d34d30d327df309ddef1eef6f"
+checksum = "bc8887887e169414f637b18751487cce4e095be787d23fad13c454e2fb1b3811"
 dependencies = [
  "chrono",
  "opentelemetry",
@@ -3855,9 +3902,9 @@ dependencies = [
 
 [[package]]
 name = "opentelemetry_sdk"
-version = "0.30.0"
+version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11f644aa9e5e31d11896e024305d7e3c98a88884d9f8919dbf37a9991bc47a4b"
+checksum = "e14ae4f5991976fd48df6d843de219ca6d31b01daaab2dad5af2badeded372bd"
 dependencies = [
  "futures-channel",
  "futures-executor",
@@ -3865,7 +3912,6 @@ dependencies = [
  "opentelemetry",
  "percent-encoding",
  "rand 0.9.2",
- "serde_json",
  "thiserror 2.0.16",
 ]
 
@@ -4269,7 +4315,7 @@ name = "postcompile"
 version = "0.3.3"
 dependencies = [
  "cargo-manifest",
- "cargo_metadata",
+ "cargo_metadata 0.23.0",
  "document-features",
  "insta",
  "prettyplease",
@@ -4399,9 +4445,9 @@ dependencies = [
 
 [[package]]
 name = "prometheus-client"
-version = "0.23.1"
+version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf41c1a7c32ed72abe5082fb19505b969095c12da9f5732a4bc9878757fd087c"
+checksum = "e4500adecd7af8e0e9f4dbce15cfee07ce913fbf6ad605cc468b83f2d531ee94"
 dependencies = [
  "dtoa",
  "itoa",
@@ -4411,9 +4457,9 @@ dependencies = [
 
 [[package]]
 name = "prometheus-client-derive-encode"
-version = "0.4.2"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "440f724eba9f6996b75d63681b0a92b06947f1457076d503a4d2e2c8f56442b8"
+checksum = "9adf1691c04c0a5ff46ff8f262b58beb07b0dbb61f96f9f54f6cbd82106ed87f"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4888,9 +4934,9 @@ checksum = "caf4aa5b0f434c91fe5c7f1ecb6a5ece2130b02ad2a590589dda5146df959001"
 
 [[package]]
 name = "reqsign"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be18806fe2251c9924d875549573c9bf0e43b51d7efcf32a19ec31bb32196987"
+checksum = "c9a80170eaab619a5dfa6428b0596c0cb85734bfa36b717a764a16abc3456a7b"
 dependencies = [
  "reqsign-aws-v4",
  "reqsign-core",
@@ -4898,21 +4944,19 @@ dependencies = [
 
 [[package]]
 name = "reqsign-aws-v4"
-version = "1.0.0"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b0fb0ac0a8222efdb0746d83c5ec36c6bdb0f5310b4b92147e3de7c45ef6657"
+checksum = "c50993dfb45a89b82dba66b2251984baad70e1b3c502db980f077f095615a26e"
 dependencies = [
  "anyhow",
  "async-trait",
  "bytes",
- "chrono",
  "form_urlencoded",
  "http",
  "log",
  "percent-encoding",
  "quick-xml 0.38.3",
  "reqsign-core",
- "reqwest",
  "rust-ini",
  "serde",
  "serde_json",
@@ -4922,25 +4966,24 @@ dependencies = [
 
 [[package]]
 name = "reqsign-core"
-version = "1.0.0"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35fd7359352a79b293168785b9cbb239e7017b4fa0c934351518feee394f92bc"
+checksum = "8f2f07d63648c81c8dbccc19e8e10ef8d57daafb8174e4c2a75f14f33fe8c5ec"
 dependencies = [
  "anyhow",
  "async-trait",
  "base64 0.22.1",
  "bytes",
- "chrono",
  "form_urlencoded",
  "hex",
  "hmac",
  "http",
+ "jiff",
  "log",
  "percent-encoding",
  "sha1",
  "sha2",
- "thiserror 2.0.16",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.0",
 ]
 
 [[package]]
@@ -6953,7 +6996,7 @@ name = "test_runner_lib"
 version = "0.0.0"
 dependencies = [
  "camino",
- "cargo_metadata",
+ "cargo_metadata 0.21.0",
  "clap",
  "guppy",
  "nextest-filtering",
@@ -7681,15 +7724,16 @@ dependencies = [
 
 [[package]]
 name = "tracing-opentelemetry"
-version = "0.31.0"
+version = "0.32.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ddcf5959f39507d0d04d6413119c04f33b623f4f951ebcbdddddfad2d0623a9c"
+checksum = "1e6e5658463dd88089aba75c7791e1d3120633b1bfde22478b28f625a9bb1b8e"
 dependencies = [
  "js-sys",
- "once_cell",
  "opentelemetry",
  "opentelemetry_sdk",
+ "rustversion",
  "smallvec",
+ "thiserror 2.0.16",
  "tracing",
  "tracing-core",
  "tracing-log",
@@ -8712,8 +8756,8 @@ name = "xtask"
 version = "0.0.0"
 dependencies = [
  "anyhow",
- "cargo-platform",
- "cargo_metadata",
+ "cargo-platform 0.2.0",
+ "cargo_metadata 0.21.0",
  "chrono",
  "clap",
  "fmtools",

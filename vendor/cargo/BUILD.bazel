@@ -244,8 +244,8 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "cargo_metadata",
-    actual = "@cargo_vendor__cargo_metadata-0.21.0//:cargo_metadata",
+    name = "cargo_metadata-0.23.0",
+    actual = "@cargo_vendor__cargo_metadata-0.23.0//:cargo_metadata",
     tags = ["manual"],
 )
 
@@ -430,26 +430,26 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "diesel-2.2.12",
-    actual = "@cargo_vendor__diesel-2.2.12//:diesel",
+    name = "diesel-2.3.2",
+    actual = "@cargo_vendor__diesel-2.3.2//:diesel",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "diesel",
-    actual = "@cargo_vendor__diesel-2.2.12//:diesel",
+    actual = "@cargo_vendor__diesel-2.3.2//:diesel",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "diesel-async-0.6.1",
-    actual = "@cargo_vendor__diesel-async-0.6.1//:diesel_async",
+    name = "diesel-async-0.7.3",
+    actual = "@cargo_vendor__diesel-async-0.7.3//:diesel_async",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "diesel-async",
-    actual = "@cargo_vendor__diesel-async-0.6.1//:diesel_async",
+    actual = "@cargo_vendor__diesel-async-0.7.3//:diesel_async",
     tags = ["manual"],
 )
 
@@ -994,50 +994,50 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "opentelemetry-0.30.0",
-    actual = "@cargo_vendor__opentelemetry-0.30.0//:opentelemetry",
+    name = "opentelemetry-0.31.0",
+    actual = "@cargo_vendor__opentelemetry-0.31.0//:opentelemetry",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "opentelemetry",
-    actual = "@cargo_vendor__opentelemetry-0.30.0//:opentelemetry",
+    actual = "@cargo_vendor__opentelemetry-0.31.0//:opentelemetry",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "opentelemetry-appender-tracing-0.30.1",
-    actual = "@cargo_vendor__opentelemetry-appender-tracing-0.30.1//:opentelemetry_appender_tracing",
+    name = "opentelemetry-appender-tracing-0.31.1",
+    actual = "@cargo_vendor__opentelemetry-appender-tracing-0.31.1//:opentelemetry_appender_tracing",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "opentelemetry-appender-tracing",
-    actual = "@cargo_vendor__opentelemetry-appender-tracing-0.30.1//:opentelemetry_appender_tracing",
+    actual = "@cargo_vendor__opentelemetry-appender-tracing-0.31.1//:opentelemetry_appender_tracing",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "opentelemetry-stdout-0.30.0",
-    actual = "@cargo_vendor__opentelemetry-stdout-0.30.0//:opentelemetry_stdout",
+    name = "opentelemetry-stdout-0.31.0",
+    actual = "@cargo_vendor__opentelemetry-stdout-0.31.0//:opentelemetry_stdout",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "opentelemetry-stdout",
-    actual = "@cargo_vendor__opentelemetry-stdout-0.30.0//:opentelemetry_stdout",
+    actual = "@cargo_vendor__opentelemetry-stdout-0.31.0//:opentelemetry_stdout",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "opentelemetry_sdk-0.30.0",
-    actual = "@cargo_vendor__opentelemetry_sdk-0.30.0//:opentelemetry_sdk",
+    name = "opentelemetry_sdk-0.31.0",
+    actual = "@cargo_vendor__opentelemetry_sdk-0.31.0//:opentelemetry_sdk",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "opentelemetry_sdk",
-    actual = "@cargo_vendor__opentelemetry_sdk-0.30.0//:opentelemetry_sdk",
+    actual = "@cargo_vendor__opentelemetry_sdk-0.31.0//:opentelemetry_sdk",
     tags = ["manual"],
 )
 
@@ -1138,14 +1138,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "prometheus-client-0.23.1",
-    actual = "@cargo_vendor__prometheus-client-0.23.1//:prometheus_client",
+    name = "prometheus-client-0.24.0",
+    actual = "@cargo_vendor__prometheus-client-0.24.0//:prometheus_client",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "prometheus-client",
-    actual = "@cargo_vendor__prometheus-client-0.23.1//:prometheus_client",
+    actual = "@cargo_vendor__prometheus-client-0.24.0//:prometheus_client",
     tags = ["manual"],
 )
 
@@ -1282,14 +1282,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "reqsign-0.17.0",
-    actual = "@cargo_vendor__reqsign-0.17.0//:reqsign",
+    name = "reqsign-0.18.0",
+    actual = "@cargo_vendor__reqsign-0.18.0//:reqsign",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "reqsign",
-    actual = "@cargo_vendor__reqsign-0.17.0//:reqsign",
+    actual = "@cargo_vendor__reqsign-0.18.0//:reqsign",
     tags = ["manual"],
 )
 
@@ -1858,14 +1858,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "tracing-opentelemetry-0.31.0",
-    actual = "@cargo_vendor__tracing-opentelemetry-0.31.0//:tracing_opentelemetry",
+    name = "tracing-opentelemetry-0.32.0",
+    actual = "@cargo_vendor__tracing-opentelemetry-0.32.0//:tracing_opentelemetry",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "tracing-opentelemetry",
-    actual = "@cargo_vendor__tracing-opentelemetry-0.31.0//:tracing_opentelemetry",
+    actual = "@cargo_vendor__tracing-opentelemetry-0.32.0//:tracing_opentelemetry",
     tags = ["manual"],
 )
 

@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "opentelemetry",
+    name = "reqsign_aws_v4",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,22 +34,11 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-        "futures",
-        "futures-core",
-        "futures-sink",
-        "internal-logs",
-        "logs",
-        "metrics",
-        "pin-project-lite",
-        "spec_unstable_logs_enabled",
-        "thiserror",
-        "trace",
-        "tracing",
-    ],
     crate_root = "src/lib.rs",
-    edition = "2021",
+    edition = "2024",
+    proc_macro_deps = [
+        "@cargo_vendor__async-trait-0.1.89//:async_trait",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -58,7 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=opentelemetry",
+        "crate-name=reqsign-aws-v4",
         "manual",
         "noclippy",
         "norustfmt",
@@ -73,17 +62,20 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.30.0",
+    version = "2.0.0",
     deps = [
-        "@cargo_vendor__futures-core-0.3.31//:futures_core",
-        "@cargo_vendor__futures-sink-0.3.31//:futures_sink",
-        "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
-        "@cargo_vendor__thiserror-2.0.16//:thiserror",
-        "@cargo_vendor__tracing-0.1.41//:tracing",
-    ] + select({
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@cargo_vendor__js-sys-0.3.78//:js_sys",  # cfg(all(target_arch = "wasm32", not(target_os = "wasi")))
-        ],
-        "//conditions:default": [],
-    }),
+        "@cargo_vendor__anyhow-1.0.99//:anyhow",
+        "@cargo_vendor__bytes-1.10.1//:bytes",
+        "@cargo_vendor__form_urlencoded-1.2.2//:form_urlencoded",
+        "@cargo_vendor__http-1.3.1//:http",
+        "@cargo_vendor__log-0.4.28//:log",
+        "@cargo_vendor__percent-encoding-2.3.2//:percent_encoding",
+        "@cargo_vendor__quick-xml-0.38.3//:quick_xml",
+        "@cargo_vendor__reqsign-core-2.0.0//:reqsign_core",
+        "@cargo_vendor__rust-ini-0.21.3//:ini",
+        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__serde_json-1.0.145//:serde_json",
+        "@cargo_vendor__serde_urlencoded-0.7.1//:serde_urlencoded",
+        "@cargo_vendor__sha1-0.10.6//:sha1",
+    ],
 )

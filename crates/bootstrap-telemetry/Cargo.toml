@@ -19,16 +19,16 @@ bytes = "1"
 http = "1"
 http-body = "1"
 http-body-util = "0.1.2"
-prometheus-client = { optional = true, version = "0.23" }
+prometheus-client = { optional = true, version = "0.24.0" }
 querystring = { optional = true, version = "1" }
 thiserror = { optional = true, version = "2" }
 tokio = { default-features = false, features = ["rt"], optional = true, version = "1" }
 tracing = "0.1"
 
-opentelemetry = { optional = true, version = "0.30" }
-opentelemetry-appender-tracing = { optional = true, version = "0.30" }
-opentelemetry_sdk = { optional = true, version = "0.30" }
-tracing-opentelemetry = { optional = true, version = "0.31" }
+opentelemetry = { optional = true, version = "0.31.0" }
+opentelemetry-appender-tracing = { optional = true, version = "0.31.1" }
+opentelemetry_sdk = { optional = true, version = "0.31.0" }
+tracing-opentelemetry = { optional = true, version = "0.32.0" }
 
 document-features = { optional = true, version = "0.2" }
 scuffle-bootstrap = { path = "../bootstrap", version = "0.1.3" }

@@ -1,0 +1,35 @@
+[[scuffle-bootstrap-telemetry]]
+category = "chore"
+description = "upgrade opentelemtry and prometheus dependencies"
+breaking = true
+authors = ["@lennartkloock"]
+
+[[scuffle-http]]
+category = "chore"
+description = "upgrade tokio dependency"
+breaking = true
+authors = ["@lennartkloock"]
+
+[[scuffle-metrics]]
+category = "chore"
+description = "upgrade opentelemtry and prometheus dependencies"
+breaking = true
+authors = ["@lennartkloock"]
+
+[[postcompile]]
+category = "chore"
+description = "upgrade cargo_metadata dependency"
+breaking = true
+authors = ["@lennartkloock"]
+
+[[scuffle-rtmp]]
+category = "chore"
+description = "upgrade tokio dependency"
+breaking = true
+authors = ["@lennartkloock"]
+
+[[scuffle-signal]]
+category = "chore"
+description = "upgrade tokio dependency"
+breaking = true
+authors = ["@lennartkloock"]

@@ -74,6 +74,6 @@ rust_library(
         "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
         "@cargo_vendor__ureq-proto-0.5.2//:ureq_proto",
         "@cargo_vendor__utf-8-0.7.6//:utf8",
-        "@cargo_vendor__webpki-roots-1.0.2//:webpki_roots",
+        "@cargo_vendor__webpki-roots-1.0.3//:webpki_roots",
     ],
 )

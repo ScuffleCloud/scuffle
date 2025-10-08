@@ -155,7 +155,9 @@ message UserMfaTotpCredentialSetupResponse {
 }
 
 // The request for the `UserService.CompleteMfaTotpCredentialSetup` method.
-message UserMfaTotpCredentialFinalizeRequest {}
+message UserMfaTotpCredentialFinalizeRequest {
+  string totp_credential_id = 1 [(string_constraint).id = true];
+}
 
 // The response for the `UserService.CompleteMfaTotpCredentialSetup` method.
 message UserMfaTotpCredentialFinalizeResponse {

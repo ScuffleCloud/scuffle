@@ -72,8 +72,12 @@ message User {
 
       // Whether the user can use a TOTP credential to complete the login.
       bool totp_enabled = 2;
+
       // Whether the user can request a code to complete the login.
       bool request_code_enabled = 3;
+
+      // Whether the user can use a WebAuthn credential to complete the login.
+      bool webauthn_enabled = 4;
     }
 
     message Session {

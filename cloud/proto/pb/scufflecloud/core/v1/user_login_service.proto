@@ -143,14 +143,18 @@ message UserLoginMagicLinkFinalizeResponse {
 
 // The request for the `UserLoginService.LoginWithWebauthn` method.
 message UserLoginRequestWebauthnRequest {
-  // The user's email.
-  string email = 1 [(tinc.field).constraint.string.email = true];
+  oneof identity {
+    // The user's email.
+    string email = 1 [(tinc.field).constraint.string.email = true];
+    // A challenge ID that has webauthn enabled.
+    string challenge_id = 2 [(string_constraint).id = true];
+  }
 }
 
 // The response for the `UserLoginService.LoginWithWebauthn` method.
 message UserLoginRequestWebauthnResponse {
-  // The result of the login
-  User.Login login = 1;
+  // The user session.
+  User.Login.Session session = 1;
 }
 
 // The request for the `UserLoginService.WebauthnFinalize` method.
@@ -204,7 +208,7 @@ message UserLoginCompleteMfaRequest {
 // The response for the `UserLoginService.LoginCompleteMfa` method.
 message UserLoginCompleteMfaResponse {
   // The user session.
-  User.Login.Session user_session = 1;
+  User.Login.Session session = 1;
 }
 
 // The request for the `UserLoginService.RequestMfa` method.

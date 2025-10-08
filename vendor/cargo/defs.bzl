@@ -943,6 +943,11 @@ _NORMAL_DEPENDENCIES = {
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
             },
         },
+        "webtransport": {
+            _COMMON_CONDITION: {
+                "h3-webtransport": Label("@cargo_vendor//:h3-webtransport-0.1.2"),
+            },
+        },
     },
     "crates/metrics": {
         _REQUIRED_FEATURE: {
@@ -1714,6 +1719,10 @@ _NORMAL_ALIASES = {
             },
         },
         "tracing": {
+            _COMMON_CONDITION: {
+            },
+        },
+        "webtransport": {
             _COMMON_CONDITION: {
             },
         },
@@ -4353,6 +4362,9 @@ _FEATURE_FLAGS = {
         "tower": [
         ],
         "tracing": [
+        ],
+        "webtransport": [
+            "http3",
         ],
     },
     "crates/metrics": {
@@ -7030,12 +7042,32 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__h3-datagram-0.0.2",
+        sha256 = "9d2c9f77921668673721ae40f17c729fc48b9e38a663858097cea547484fdf0f",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/h3-datagram/0.0.2/download"],
+        strip_prefix = "h3-datagram-0.0.2",
+        build_file = Label("//vendor/cargo:BUILD.h3-datagram-0.0.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__h3-quinn-0.0.10",
         sha256 = "8b2e732c8d91a74731663ac8479ab505042fbf547b9a207213ab7fbcbfc4f8b4",
         type = "tar.gz",
         urls = ["https://static.crates.io/crates/h3-quinn/0.0.10/download"],
         strip_prefix = "h3-quinn-0.0.10",
         build_file = Label("//vendor/cargo:BUILD.h3-quinn-0.0.10.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__h3-webtransport-0.1.2",
+        sha256 = "2d91a50fd582a5d67b1f756fba3cd9c66367ff4f23e1017c882f664d63b350a7",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/h3-webtransport/0.1.2/download"],
+        strip_prefix = "h3-webtransport-0.1.2",
+        build_file = Label("//vendor/cargo:BUILD.h3-webtransport-0.1.2.bazel"),
     )
 
     maybe(
@@ -11887,6 +11919,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__guppy-0.17.22", is_dev_dep = False),
         struct(repo = "cargo_vendor__h3-0.0.8", is_dev_dep = False),
         struct(repo = "cargo_vendor__h3-quinn-0.0.10", is_dev_dep = False),
+        struct(repo = "cargo_vendor__h3-webtransport-0.1.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__heck-0.5.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__hex-0.4.3", is_dev_dep = False),
         struct(repo = "cargo_vendor__hmac-0.12.1", is_dev_dep = False),

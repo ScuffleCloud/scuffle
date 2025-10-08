@@ -28,6 +28,11 @@ name = "scuffle-http-axum"
 path = "examples/axum.rs"
 required-features = ["default", "tls-rustls", "http3", "tower", "tracing"]
 
+[[example]]
+name = "scuffle-http-webtransport-tls"
+path = "examples/webtransport_tls.rs"
+required-features = ["default", "tls-rustls", "http3", "webtransport", "tracing"]
+
 [features]
 default = ["http1", "http2", "tower"]
 ## Enables tracing support
@@ -56,6 +61,8 @@ http2 = [
 ]
 ## Enables http3 support
 http3 = ["dep:quinn", "dep:h3-quinn", "dep:h3"]
+## Enables WebTransport over HTTP/3 support (requires http3)
+webtransport = ["http3", "dep:h3-webtransport", "h3-quinn?/datagram"]
 ## Enables tls via rustls
 tls-rustls = ["dep:tokio-rustls"]
 ## Alias for ["http3", "tls-rustls"]
@@ -90,6 +97,7 @@ libc = { default-features = false, optional = true, version = "0.2" }
 h3 = { default-features = false, optional = true, version = "0.0.8" }
 h3-quinn = { default-features = false, optional = true, version = "0.0.10" }
 quinn = { default-features = false, features = ["platform-verifier", "runtime-tokio", "rustls-aws-lc-rs"], optional = true, version = "0.11" }
+h3-webtransport = { default-features = false, optional = true, version = "0.1" }
 
 # TLS
 tokio-rustls = { default-features = false, features = ["aws_lc_rs", "tls12"], optional = true, version = "0.26" }

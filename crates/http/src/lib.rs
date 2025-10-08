@@ -43,7 +43,6 @@
 //!
 //! ### Missing Features
 //!
-//! - HTTP/3 webtransport support
 //! - Upgrading to websocket connections from HTTP/3 connections (this is usually done via HTTP/1.1 anyway)
 //!
 //! ## License

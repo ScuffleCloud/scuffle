@@ -9,6 +9,8 @@ use scuffle_context::ContextFutExt;
 #[cfg(feature = "tracing")]
 use tracing::Instrument;
 use utils::copy_response_body;
+#[cfg(feature = "webtransport")]
+use {h3::ext::Protocol, h3_webtransport as h3wt};
 
 use crate::error::HttpError;
 use crate::service::{HttpService, HttpServiceFactory};
@@ -82,23 +84,24 @@ where
             let socket = socket.try_clone().expect("failed to clone socket");
             let runtime = Arc::clone(&runtime);
 
-            let worker_fut = async move {
-                let endpoint = h3_quinn::quinn::Endpoint::new(
-                    h3_quinn::quinn::EndpointConfig::default(),
-                    Some(server_config),
-                    socket,
-                    runtime,
-                )?;
+            let worker_fut =
+                async move {
+                    let endpoint = h3_quinn::quinn::Endpoint::new(
+                        h3_quinn::quinn::EndpointConfig::default(),
+                        Some(server_config),
+                        socket,
+                        runtime,
+                    )?;
 
-                #[cfg(feature = "tracing")]
-                tracing::trace!("waiting for connections");
+                    #[cfg(feature = "tracing")]
+                    tracing::trace!("waiting for connections");
 
-                while let Some(Some(new_conn)) = endpoint.accept().with_context(&ctx).await {
-                    let mut service_factory = service_factory.clone();
-                    let ctx = ctx.clone();
+                    while let Some(Some(new_conn)) = endpoint.accept().with_context(&ctx).await {
+                        let mut service_factory = service_factory.clone();
+                        let ctx = ctx.clone();
 
-                    tokio::spawn(async move {
-                        let _res: Result<_, HttpError<F>> = async move {
+                        tokio::spawn(async move {
+                            let _res: Result<_, HttpError<F>> = async move {
                             let Some(conn) = new_conn.with_context(&ctx).await.transpose()? else {
                                 #[cfg(feature = "tracing")]
                                 tracing::trace!("context done while accepting connection");
@@ -130,7 +133,7 @@ where
                                 }
 
                                 // make a new service for this connection
-                                let http_service = service_factory
+                                let mut http_service = service_factory
                                     .new_service(addr)
                                     .await
                                     .map_err(|e| HttpError::ServiceFactoryError(e))?;
@@ -138,6 +141,7 @@ where
                                 loop {
                                     match h3_conn.accept().with_context(&ctx).await {
                                         Some(Ok(Some(resolver))) => {
+                                            // Resolve the request
                                             let (req, stream) = match resolver.resolve_request().await {
                                                 Ok(r) => r,
                                                 Err(_err) => {
@@ -150,6 +154,29 @@ where
                                             #[cfg(feature = "tracing")]
                                             tracing::debug!(method = %req.method(), uri = %req.uri(), "received request");
 
+                                            // Check if this is a WebTransport CONNECT request
+                                            #[cfg(feature = "webtransport")]
+                                            if req.extensions().get::<Protocol>() == Some(&Protocol::WEB_TRANSPORT)
+                                                && req.method() == http::Method::CONNECT
+                                            {
+                                                #[cfg(feature = "tracing")]
+                                                tracing::debug!("starting WebTransport session");
+
+                                                match drive_webtransport_session::<F>(
+                                                    req, stream, h3_conn, ctx, &mut http_service
+                                                ).await {
+                                                    Ok(_) => {
+                                                        #[cfg(feature = "tracing")]
+                                                        tracing::debug!("WebTransport session ended");
+                                                    }
+                                                    Err(err) => {
+                                                        #[cfg(feature = "tracing")]
+                                                        tracing::warn!(err = %err, "WebTransport session error");
+                                                    }
+                                                }
+                                                break;
+                                            }
+
                                             let (mut send, recv) = stream.split();
 
                                             let size_hint = req
@@ -161,30 +188,32 @@ where
 
                                             req.extensions_mut().extend(extra_extensions.clone());
 
-                                            let ctx = ctx.clone();
-                                            let mut http_service = http_service.clone();
-                                            tokio::spawn(async move {
-                                                let _res: Result<_, HttpError<F>> = async move {
-                                                    let resp = http_service
-                                                        .call(req)
-                                                        .await
-                                                        .map_err(|e| HttpError::ServiceError(e))?;
-                                                    let (parts, body) = resp.into_parts();
+                                            tokio::spawn({
+                                                let ctx = ctx.clone();
+                                                let mut http_service = http_service.clone();
+                                                async move {
+                                                    let _res: Result<_, HttpError<F>> = async move {
+                                                        let resp = http_service
+                                                            .call(req)
+                                                            .await
+                                                            .map_err(|e| HttpError::ServiceError(e))?;
+                                                        let (parts, body) = resp.into_parts();
 
-                                                    send.send_response(http::Response::from_parts(parts, ())).await?;
-                                                    copy_response_body(send, body).await?;
+                                                        send.send_response(http::Response::from_parts(parts, ())).await?;
+                                                        copy_response_body(send, body).await?;
 
-                                                    Ok(())
+                                                        Ok(())
+                                                    }
+                                                    .await;
+
+                                                    #[cfg(feature = "tracing")]
+                                                    if let Err(e) = _res {
+                                                        tracing::warn!(err = %e, "error handling request");
+                                                    }
+
+                                                    // This moves the context into the async block because it is dropped here
+                                                    drop(ctx);
                                                 }
-                                                .await;
-
-                                                #[cfg(feature = "tracing")]
-                                                if let Err(e) = _res {
-                                                    tracing::warn!(err = %e, "error handling request");
-                                                }
-
-                                                // This moves the context into the async block because it is dropped here
-                                                drop(ctx);
                                             });
                                         }
                                         // indicating no more streams to be received
@@ -214,19 +243,19 @@ where
                         }
                         .await;
 
-                        #[cfg(feature = "tracing")]
-                        if let Err(err) = _res {
-                            tracing::warn!(err = %err, "error handling connection");
-                        }
-                    });
-                }
+                            #[cfg(feature = "tracing")]
+                            if let Err(err) = _res {
+                                tracing::warn!(err = %err, "error handling connection");
+                            }
+                        });
+                    }
 
-                // shut down gracefully
-                // wait for connections to be closed before exiting
-                endpoint.wait_idle().await;
+                    // shut down gracefully
+                    // wait for connections to be closed before exiting
+                    endpoint.wait_idle().await;
 
-                Ok::<_, crate::error::HttpError<F>>(())
-            };
+                    Ok::<_, crate::error::HttpError<F>>(())
+                };
 
             #[cfg(feature = "tracing")]
             let worker_fut = worker_fut.instrument(tracing::trace_span!("worker", n = _n));
@@ -247,4 +276,245 @@ where
 
         Ok(())
     }
+}
+
+#[cfg(feature = "webtransport")]
+async fn drive_webtransport_session<F>(
+    req: http::Request<()>,
+    stream: h3::server::RequestStream<h3_quinn::BidiStream<bytes::Bytes>, bytes::Bytes>,
+    h3_conn: h3::server::Connection<h3_quinn::Connection, bytes::Bytes>,
+    ctx: scuffle_context::Context,
+    http_service: &mut F::Service,
+) -> Result<(), crate::error::HttpError<F>>
+where
+    F: HttpServiceFactory + Clone + Send + 'static,
+    F::Error: std::error::Error + Send,
+    F::Service: Clone + Send + 'static,
+    <F::Service as HttpService>::Error: std::error::Error + Send + Sync,
+    <F::Service as HttpService>::ResBody: Send,
+    <<F::Service as HttpService>::ResBody as http_body::Body>::Data: Send,
+    <<F::Service as HttpService>::ResBody as http_body::Body>::Error: std::error::Error + Send + Sync,
+{
+    // Accept the WebTransport session
+    let session = std::sync::Arc::new(h3wt::server::WebTransportSession::accept(req, stream, h3_conn).await?);
+
+    // Spawn task to handle unidirectional streams
+    let uni_handle = tokio::spawn({
+        let ctx = ctx.clone();
+        let session = session.clone();
+        async move {
+            loop {
+                match session.accept_uni().with_context(&ctx).await {
+                    Some(Ok(Some((sid, stream)))) => {
+                        #[cfg(feature = "tracing")]
+                        tracing::debug!(session_id = ?sid, "received WebTransport uni stream");
+
+                        tokio::spawn({
+                            let ctx = ctx.clone();
+                            async move {
+                                if let Err(err) = handle_webtransport_uni_stream(stream, ctx).await {
+                                    #[cfg(feature = "tracing")]
+                                    tracing::warn!(err = %err, "error handling WebTransport uni stream");
+                                }
+                            }
+                        });
+                    }
+                    Some(Ok(None)) => break,
+                    Some(Err(err)) => {
+                        #[cfg(feature = "tracing")]
+                        tracing::warn!(err = %err, "WebTransport uni stream accept error");
+                        break;
+                    }
+                    None => break,
+                }
+            }
+        }
+    });
+
+    // Handle bidirectional streams and requests
+    loop {
+        match session.accept_bi().with_context(&ctx).await {
+            Some(Ok(Some(h3wt::server::AcceptedBi::Request(req, stream)))) => {
+                let (mut send, recv) = stream.split();
+                let size_hint = req
+                    .headers()
+                    .get(http::header::CONTENT_LENGTH)
+                    .and_then(|len| len.to_str().ok().and_then(|x| x.parse().ok()));
+                let body = QuicIncomingBody::new(recv, size_hint);
+                let req = req.map(|_| crate::body::IncomingBody::from(body));
+
+                let resp = match http_service.call(req).await {
+                    Ok(r) => r,
+                    Err(_e) => {
+                        #[cfg(feature = "tracing")]
+                        tracing::warn!(err = %_e, "service error in WebTransport request");
+                        let _ = send
+                            .send_response(
+                                http::Response::builder()
+                                    .status(http::StatusCode::INTERNAL_SERVER_ERROR)
+                                    .body(())
+                                    .unwrap(),
+                            )
+                            .await;
+                        continue;
+                    }
+                };
+
+                let (parts, body) = resp.into_parts();
+                if let Err(err) = send.send_response(http::Response::from_parts(parts, ())).await {
+                    #[cfg(feature = "tracing")]
+                    tracing::warn!(err = %err, "failed to send WebTransport response headers");
+                    continue;
+                }
+                if let Err(err) = copy_response_body::<_, F>(send, body).await {
+                    #[cfg(feature = "tracing")]
+                    tracing::warn!(err = %err, "failed to send WebTransport response body");
+                }
+            }
+            Some(Ok(Some(h3wt::server::AcceptedBi::BidiStream(sid, bidi)))) => {
+                // Handle raw bidirectional WebTransport stream
+                #[cfg(feature = "tracing")]
+                tracing::debug!(session_id = ?sid, "received WebTransport bidi stream");
+
+                tokio::spawn({
+                    let ctx = ctx.clone();
+                    async move {
+                        if let Err(err) = handle_webtransport_bidi_stream(bidi, ctx).await {
+                            #[cfg(feature = "tracing")]
+                            tracing::warn!(err = %err, "error handling WebTransport bidi stream");
+                        }
+                    }
+                });
+            }
+            Some(Ok(None)) => break,
+            Some(Err(err)) => {
+                #[cfg(feature = "tracing")]
+                tracing::warn!(err = %err, "WebTransport session error");
+                break;
+            }
+            None => break,
+        }
+    }
+
+    // Wait for uni stream handler to complete
+    let _ = uni_handle.await;
+
+    Ok(())
+}
+
+#[cfg(feature = "webtransport")]
+async fn handle_webtransport_uni_stream(
+    mut stream: h3wt::stream::RecvStream<h3_quinn::RecvStream, bytes::Bytes>,
+    ctx: scuffle_context::Context,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    use bytes::Buf;
+    use h3::quic::RecvStream;
+
+    let mut buffer = Vec::new();
+    loop {
+        match std::future::poll_fn(|cx| stream.poll_data(cx)).with_context(&ctx).await {
+            Some(Ok(Some(mut chunk))) => {
+                let chunk_size = chunk.remaining();
+                let chunk_bytes = chunk.copy_to_bytes(chunk_size);
+                buffer.extend_from_slice(&chunk_bytes);
+
+                #[cfg(feature = "tracing")]
+                tracing::debug!(
+                    bytes = chunk_size,
+                    total = buffer.len(),
+                    "received data on WebTransport uni stream"
+                );
+            }
+            Some(Ok(None)) => {
+                #[cfg(feature = "tracing")]
+                tracing::debug!(
+                    total_bytes = buffer.len(),
+                    data = ?String::from_utf8_lossy(&buffer),
+                    "WebTransport uni stream finished"
+                );
+                break;
+            }
+            Some(Err(err)) => {
+                #[cfg(feature = "tracing")]
+                tracing::warn!(err = %err, "error reading from WebTransport uni stream");
+                return Err(err.into());
+            }
+            None => {
+                #[cfg(feature = "tracing")]
+                tracing::trace!("context done while reading WebTransport uni stream");
+                return Ok(());
+            }
+        }
+    }
+
+    Ok(())
+}
+
+#[cfg(feature = "webtransport")]
+async fn handle_webtransport_bidi_stream(
+    mut stream: h3wt::stream::BidiStream<h3_quinn::BidiStream<bytes::Bytes>, bytes::Bytes>,
+    ctx: scuffle_context::Context,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    use bytes::Buf;
+    use h3::quic::RecvStream;
+
+    // Read data from the receive side
+    let mut buffer = Vec::new();
+    loop {
+        match std::future::poll_fn(|cx| stream.poll_data(cx)).with_context(&ctx).await {
+            Some(Ok(Some(mut chunk))) => {
+                let chunk_size = chunk.remaining();
+                let chunk_bytes = chunk.copy_to_bytes(chunk_size);
+                buffer.extend_from_slice(&chunk_bytes);
+
+                #[cfg(feature = "tracing")]
+                tracing::debug!(
+                    bytes = chunk_size,
+                    total = buffer.len(),
+                    "received data on WebTransport bidi stream"
+                );
+            }
+            Some(Ok(None)) => {
+                // Stream finished
+                #[cfg(feature = "tracing")]
+                tracing::debug!(total_bytes = buffer.len(), "WebTransport bidi stream finished reading");
+                break;
+            }
+            Some(Err(err)) => {
+                #[cfg(feature = "tracing")]
+                tracing::warn!(err = %err, "error reading from WebTransport bidi stream");
+                return Err(err.into());
+            }
+            None => {
+                // Context cancelled
+                #[cfg(feature = "tracing")]
+                tracing::trace!("context done while reading WebTransport bidi stream");
+                return Ok(());
+            }
+        }
+    }
+
+    // Echo back the received data
+    if !buffer.is_empty() {
+        #[cfg(feature = "tracing")]
+        tracing::debug!(bytes = buffer.len(), "echoing data back on WebTransport bidi stream");
+
+        let response_msg = format!("Echo: received {} bytes", buffer.len());
+        let response_bytes = bytes::Bytes::from(response_msg);
+
+        // Send the response using SendStreamUnframed
+        use h3::quic::{SendStream, SendStreamUnframed};
+        let mut bytes_buf = response_bytes.clone();
+        while bytes_buf.has_remaining() {
+            let written = std::future::poll_fn(|cx| stream.poll_send(cx, &mut bytes_buf)).await?;
+            if written == 0 {
+                break;
+            }
+        }
+        std::future::poll_fn(|cx| stream.poll_finish(cx)).await?;
+        #[cfg(feature = "tracing")]
+        tracing::debug!("successfully echoed data on WebTransport bidi stream");
+    }
+
+    Ok(())
 }

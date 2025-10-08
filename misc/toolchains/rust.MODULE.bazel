@@ -208,6 +208,7 @@ use_repo(
     "cargo_vendor__derive_more-2.0.1",
     "cargo_vendor__diesel-2.3.2",
     "cargo_vendor__diesel-async-0.7.3",
+    "cargo_vendor__diesel-derive-enum-3.0.0-beta.1",
     "cargo_vendor__document-features-0.2.11",
     "cargo_vendor__email_address-0.2.9",
     "cargo_vendor__env_logger-0.10.2",

@@ -1,7 +1,7 @@
 _packages = [
     "//cloud/ext-traits",
     "//cloud/core",
-    "//cloud/core/cedar",
+    "//cloud/core/auth",
     "//cloud/core/traits",
     "//cloud/core/emails",
     "//cloud/core/db-types",

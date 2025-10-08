@@ -1,0 +1,217 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "scufflecloud/core/v1/constraints.proto";
+import "scufflecloud/core/v1/user.proto";
+import "tinc/annotations.proto";
+
+// A service for managing the current user's sessions.
+service UserLoginService {
+  option (tinc.service).prefix = "/v1/user/login";
+
+  // Login with a password.
+  //
+  // ### Authentication
+  //
+  // Device fingerprint authentication is required for this method.
+  rpc EmailPassword(UserLoginEmailPasswordRequest) returns (UserLoginEmailPasswordResponse) {
+    option (tinc.method).endpoint = {post: "/email-password"};
+  }
+
+  // Request a magic link login flow.
+  //
+  // ### Authentication
+  //
+  // Device fingerprint authentication is required for this method.
+  rpc RequestMagicLink(UserLoginRequestMagicLinkRequest) returns (UserLoginRequestMagicLinkResponse) {
+    option (tinc.method).endpoint = {post: "/magic-link/request"};
+  }
+
+  // Finalize a magic link login flow.
+  //
+  // ### Authentication
+  //
+  // Device fingerprint authentication is required for this method.
+  rpc MagicLinkFinalize(UserLoginMagicLinkFinalizeRequest) returns (UserLoginMagicLinkFinalizeResponse) {
+    option (tinc.method).endpoint = {post: "/magic-link/finalize"};
+  }
+
+  // Request a WebAuthn credential login flow.
+  //
+  // ### Authentication
+  //
+  // Device fingerprint authentication is required for this method.
+  rpc RequestWebauthn(UserLoginRequestWebauthnRequest) returns (UserLoginRequestWebauthnResponse) {
+    option (tinc.method).endpoint = {post: "/webauthn"};
+  }
+
+  // Finalize a WebAuthn credential login flow.
+  //
+  // ### Authentication
+  //
+  // Device fingerprint authentication is required for this method.
+  rpc WebauthnFinalize(UserLoginWebauthnFinalizeRequest) returns (UserLoginWebauthnFinalizeResponse) {
+    option (tinc.method).endpoint = {post: "/webauthn/finalize"};
+  }
+
+  // Request a Google login flow.
+  //
+  // ### Authentication
+  //
+  // Device fingerprint authentication is required for this method.
+  rpc RequestGoogle(UserLoginRequestGoogleRequest) returns (UserLoginRequestGoogleResponse) {
+    option (tinc.method).endpoint = {post: "/google/request"};
+  }
+
+  // Finalize a Google login flow.
+  //
+  // ### Authentication
+  //
+  // Device fingerprint authentication is required for this method.
+  rpc GoogleFinalize(UserLoginGoogleFinalizeRequest) returns (UserLoginGoogleFinalizeResponse) {
+    option (tinc.method).endpoint = {post: "/google/finalize"};
+  }
+
+  // Complete an MFA login flow.
+  //
+  // ### Authentication
+  //
+  // Device fingerprint authentication is required for this method.
+  rpc CompleteMfa(UserLoginCompleteMfaRequest) returns (UserLoginCompleteMfaResponse) {
+    option (tinc.method).endpoint = {post: "/mfa/complete"};
+  }
+
+  // Upgrade a user session to have MFA.
+  //
+  // ### Authentication
+  //
+  // Device fingerprint authentication is required for this method.
+  rpc RequestMfa(UserLoginRequestMfaRequest) returns (UserLoginRequestMfaResponse) {
+    option (tinc.method).endpoint = {post: "/mfa/request"};
+  }
+
+  // Request an email code login flow.
+  //
+  // ### Authentication
+  //
+  // Device fingerprint authentication is required for this method.
+  rpc RequestMfaCode(UserLoginRequestMfaCodeRequest) returns (UserLoginRequestMfaCodeResponse) {
+    option (tinc.method).endpoint = {post: "/mfa/request/code"};
+  }
+}
+
+// The request for the `UserLoginService.LoginWithPassword` method.
+message UserLoginEmailPasswordRequest {
+  // The user's email.
+  string email = 1 [(tinc.field).constraint.string.email = true];
+  // The user's password.
+  string password = 2;
+}
+
+// The response for the `UserLoginService.LoginWithPassword` method.
+message UserLoginEmailPasswordResponse {
+  // The result of the login
+  User.Login login = 1;
+}
+
+// The request for the `UserLoginService.LoginWithMagicLink` method.
+message UserLoginRequestMagicLinkRequest {
+  // The user's email.
+  string email = 1 [(tinc.field).constraint.string.email = true];
+}
+
+// The response for the `UserLoginService.LoginWithMagicLink` method.
+message UserLoginRequestMagicLinkResponse {
+  // The ID of the magic link request.
+  string magic_link_id = 1 [(string_constraint).id = true];
+}
+
+// The request for the `UserLoginService.MagicLinkFinalize` method.
+message UserLoginMagicLinkFinalizeRequest {
+  // The ID of the magic link request.
+  string magic_link_id = 1 [(string_constraint).id = true];
+  // The code sent to the email address.
+  string code = 2 [(tinc.field).constraint.string.len = 6];
+}
+
+// The response for the `UserLoginService.MagicLinkFinalize` method.
+message UserLoginMagicLinkFinalizeResponse {
+  // The result of the login
+  User.Login login = 1;
+}
+
+// The request for the `UserLoginService.LoginWithWebauthn` method.
+message UserLoginRequestWebauthnRequest {
+  // The user's email.
+  string email = 1 [(tinc.field).constraint.string.email = true];
+}
+
+// The response for the `UserLoginService.LoginWithWebauthn` method.
+message UserLoginRequestWebauthnResponse {
+  // The result of the login
+  User.Login login = 1;
+}
+
+// The request for the `UserLoginService.WebauthnFinalize` method.
+message UserLoginWebauthnFinalizeRequest {
+  // The WebAuthn credential ID.
+  string webauthn_credential_id = 1 [(string_constraint).id = true];
+}
+
+// The response for the `UserLoginService.WebauthnFinalize` method.
+message UserLoginWebauthnFinalizeResponse {
+  // The result of the login
+  User.Login login = 1;
+}
+
+// The request for the `UserLoginService.LoginWithGoogle` method.
+message UserLoginRequestGoogleRequest {}
+
+// The response for the `UserLoginService.LoginWithGoogle` method.
+message UserLoginRequestGoogleResponse {
+  // The result of the login
+  User.Login login = 1;
+}
+
+// The request for the `UserLoginService.GoogleFinalize` method.
+message UserLoginGoogleFinalizeRequest {}
+
+// The response for the `UserLoginService.GoogleFinalize` method.
+message UserLoginGoogleFinalizeResponse {
+  // The result of the login
+  User.Login login = 1;
+}
+
+// The request for the `UserLoginService.MfaRequestCode` method.
+message UserLoginRequestMfaCodeRequest {
+  // The MFA challenge ID.
+  string challenge_id = 1 [(string_constraint).id = true];
+}
+
+// The response for the `UserLoginService.MfaRequestCode` method.
+message UserLoginRequestMfaCodeResponse {
+  // A message indicating the code has been sent.
+  string message = 1;
+}
+
+// The request for the `UserLoginService.LoginCompleteMfa` method.
+message UserLoginCompleteMfaRequest {
+  // The MFA challenge ID.
+  string challenge_id = 1 [(string_constraint).id = true];
+}
+
+// The response for the `UserLoginService.LoginCompleteMfa` method.
+message UserLoginCompleteMfaResponse {
+  // The user session.
+  User.Login.Session user_session = 1;
+}
+
+// The request for the `UserLoginService.RequestMfa` method.
+message UserLoginRequestMfaRequest {}
+
+// The response for the `UserLoginService.UpgradeToMfa` method.
+message UserLoginRequestMfaResponse {
+  // The MFA required for the login.
+  User.Login.MfaRequired mfa_required = 1;
+}

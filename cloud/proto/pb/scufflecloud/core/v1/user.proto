@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "google/protobuf/timestamp.proto";
+import "scufflecloud/core/v1/constraints.proto";
+import "tinc/annotations.proto";
+
+// The user object.
+message User {
+  // The user's name.
+  message Name {
+    // The user's first name.
+    string first = 1;
+    // The user's last name.
+    optional string last = 2;
+    // The user's preferred name.
+    optional string preferred = 3;
+  }
+
+  // A unique identifier for the user.
+  string id = 1 [(string_constraint).id = true];
+  // The user's name.
+  Name name = 2;
+  // The user's primary email.
+  Email primary_email = 3;
+  // The user's avatar URL.
+  optional string avatar_url = 4;
+  // The date and time the user was created.
+  google.protobuf.Timestamp created_at = 5;
+
+  // A user email.
+  message Email {
+    // The email address.
+    string address = 1 [(tinc.field).constraint.string.email = true];
+    // The date and time the email was verified.
+    // Optional if the email has not been verified.
+    optional google.protobuf.Timestamp verified_at = 2;
+    // The date and time the email was last sent a verification code.
+    google.protobuf.Timestamp last_sent_code_at = 3;
+  }
+
+  // A user's Multi-Factor Authentication (MFA).
+  message Mfa {
+    // A user WebAuthn credential.
+    message WebauthnCredential {
+      // The WebAuthn credential ID.
+      string id = 1 [(string_constraint).id = true];
+      google.protobuf.Timestamp created_at = 2;
+    }
+
+    // A user TOTP credential.
+    message TotpCredential {
+      // The TOTP credential ID.
+      string id = 1 [(string_constraint).id = true];
+      google.protobuf.Timestamp created_at = 2;
+    }
+
+    // A user recovery codes.
+    message RecoveryCodes {
+      // The recovery codes.
+      repeated string codes = 1;
+    }
+  }
+
+  // The result of a login request.
+  message Login {
+    // MFA Required
+    message MfaRequired {
+      // The MFA challenge ID.
+      string challenge_id = 1 [(string_constraint).id = true];
+
+      // Whether the user can use a TOTP credential to complete the login.
+      bool totp_enabled = 2;
+      // Whether the user can request a code to complete the login.
+      bool request_code_enabled = 3;
+    }
+
+    message Session {
+      // The encrypted token.
+      // This token is encrypted using the device's public key.
+      // So that only the intended device can decrypt it.
+      string encrypted_token = 1;
+      // The token's expiration time.
+      google.protobuf.Timestamp expires_at = 2;
+    }
+
+    // The result could be either:
+    // A user session, which means the login was successful
+    // Or MFA required which means the login was validated but needs additional
+    // factors to complete.
+    oneof result {
+      // The user session.
+      Session session = 1;
+      // MFA is required to complete the login.
+      MfaRequired mfa_required = 2;
+    }
+  }
+}

@@ -6,8 +6,10 @@
 #![deny(unreachable_pub)]
 #![deny(clippy::mod_module_files)]
 
+mod chrono_ext;
 mod http_ext;
 mod std_ext;
 
+pub use chrono_ext::*;
 pub use http_ext::*;
 pub use std_ext::*;

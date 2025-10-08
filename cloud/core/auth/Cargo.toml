@@ -1,0 +1,11 @@
+[package]
+name = "scufflecloud-core-auth"
+version = "0.1.0"
+edition = "2024"
+license = "AGPL-3.0"
+publish = false
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Authentication service for scuffle.cloud"
+
+[dependencies]

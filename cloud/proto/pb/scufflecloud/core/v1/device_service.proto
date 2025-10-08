@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "scufflecloud/core/v1/device.proto";
+import "tinc/annotations.proto";
+
+// A service for managing the current user's devices.
+service DeviceService {
+  option (tinc.service).prefix = "/v1/devices";
+
+  // Create a new device.
+  //
+  // ### Authentication
+  //
+  // No authentication is required for this method.
+  rpc Setup(DeviceSetupRequest) returns (DeviceSetupResponse) {
+    option (tinc.method).endpoint = {post: "/"};
+  }
+
+  // Finalize the device setup.
+  //
+  // ### Authentication
+  //
+  // No authentication is required for this method.
+  rpc Finalize(DeviceFinalizeRequest) returns (DeviceFinalizeResponse) {
+    option (tinc.method).endpoint = {post: "/{device_fingerprint}/finalize"};
+  }
+}
+
+// The request for the `DeviceService.Setup` method.
+message DeviceSetupRequest {
+  // The device's algorithm.
+  Device.Algorithm algorithm = 1;
+  // The device's public key data.
+  string public_key_data = 2;
+}
+
+// The response for the `DeviceService.Setup` method.
+message DeviceSetupResponse {
+  // The device.
+  string device_fingerprint = 1;
+  // The code to finalize the device setup.
+  string code = 2;
+}
+
+// The request for the `DeviceService.Finalize` method.
+message DeviceFinalizeRequest {
+  // The device's fingerprint.
+  string device_fingerprint = 1;
+  // The code signed by the device's private key.
+  string signed_code = 2;
+}
+
+// The response for the `DeviceService.Finalize` method.
+message DeviceFinalizeResponse {
+  // The device.
+  Device device = 1;
+}

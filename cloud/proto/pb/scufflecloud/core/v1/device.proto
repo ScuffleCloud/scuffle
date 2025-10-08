@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "google/protobuf/timestamp.proto";
+import "scufflecloud/core/v1/constraints.proto";
+
+// A device.
+message Device {
+  // The device's algorithm.
+  enum Algorithm {
+    // The device's algorithm is unknown.
+    DEVICE_ALGORITHM_UNKNOWN = 0;
+    // The device's algorithm is RSA with OAEP padding and SHA-256 hashing.
+    DEVICE_ALGORITHM_RSA_OAEP_SHA256 = 1;
+  }
+
+  // The device's fingerprint.
+  string fingerprint = 1 [(string_constraint).id = true];
+  // The device's algorithm.
+  Algorithm algorithm = 2;
+  // The device's created at.
+  google.protobuf.Timestamp created_at = 3;
+}

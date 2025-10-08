@@ -13,7 +13,9 @@ description = "Extension traits for Scuffle Cloud"
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
+chrono = "0.4"
 http = "1"
+prost-types = "0.14"
 tonic = "0.14"
 tonic-types = "0.14"
 tracing = "0.1"

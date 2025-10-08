@@ -487,27 +487,18 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
-    "cloud/core/cedar": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "base64": Label("@cargo_vendor//:base64-0.22.1"),
-                "cedar-policy": Label("@cargo_vendor//:cedar-policy-4.5.1"),
-                "const_panic": Label("@cargo_vendor//:const_panic-0.2.15"),
-                "konst": Label("@cargo_vendor//:konst-0.4.2"),
-                "serde": Label("@cargo_vendor//:serde-1.0.228"),
-                "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
-                "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
-            },
-        },
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
+                "bon": Label("@cargo_vendor//:bon-3.7.2"),
                 "chrono": Label("@cargo_vendor//:chrono-0.4.42"),
                 "diesel": Label("@cargo_vendor//:diesel-2.3.2"),
                 "ipnetwork": Label("@cargo_vendor//:ipnetwork-0.21.1"),
                 "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
+                "sha2": Label("@cargo_vendor//:sha2-0.10.9"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
                 "ulid": Label("@cargo_vendor//:ulid-1.2.1"),
                 "uuid": Label("@cargo_vendor//:uuid-1.18.1"),
@@ -578,7 +569,9 @@ _NORMAL_DEPENDENCIES = {
     "cloud/ext-traits": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
+                "chrono": Label("@cargo_vendor//:chrono-0.4.42"),
                 "http": Label("@cargo_vendor//:http-1.3.1"),
+                "prost-types": Label("@cargo_vendor//:prost-types-0.14.1"),
                 "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
                 "tonic-types": Label("@cargo_vendor//:tonic-types-0.14.2"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
@@ -1452,11 +1445,7 @@ _NORMAL_ALIASES = {
             },
         },
     },
-    "cloud/core/cedar": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
         _REQUIRED_FEATURE: {
@@ -1983,7 +1972,7 @@ _NORMAL_ALIASES = {
 _NORMAL_DEV_DEPENDENCIES = {
     "cloud/core": {
     },
-    "cloud/core/cedar": {
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
     },
@@ -2289,7 +2278,7 @@ _NORMAL_DEV_DEPENDENCIES = {
 _NORMAL_DEV_ALIASES = {
     "cloud/core": {
     },
-    "cloud/core/cedar": {
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
     },
@@ -2538,16 +2527,12 @@ _PROC_MACRO_DEPENDENCIES = {
             },
         },
     },
-    "cloud/core/cedar": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
-            },
-        },
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
+                "diesel-derive-enum": Label("@cargo_vendor//:diesel-derive-enum-3.0.0-beta.1"),
                 "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
@@ -2989,7 +2974,7 @@ _PROC_MACRO_DEPENDENCIES = {
 _PROC_MACRO_ALIASES = {
     "cloud/core": {
     },
-    "cloud/core/cedar": {
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
     },
@@ -3148,7 +3133,7 @@ _PROC_MACRO_ALIASES = {
 _PROC_MACRO_DEV_DEPENDENCIES = {
     "cloud/core": {
     },
-    "cloud/core/cedar": {
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
     },
@@ -3312,7 +3297,7 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
 _PROC_MACRO_DEV_ALIASES = {
     "cloud/core": {
     },
-    "cloud/core/cedar": {
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
     },
@@ -3553,7 +3538,7 @@ _PROC_MACRO_DEV_ALIASES = {
 _BUILD_DEPENDENCIES = {
     "cloud/core": {
     },
-    "cloud/core/cedar": {
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
     },
@@ -3717,7 +3702,7 @@ _BUILD_DEPENDENCIES = {
 _BUILD_ALIASES = {
     "cloud/core": {
     },
-    "cloud/core/cedar": {
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
     },
@@ -3876,7 +3861,7 @@ _BUILD_ALIASES = {
 _BUILD_PROC_MACRO_DEPENDENCIES = {
     "cloud/core": {
     },
-    "cloud/core/cedar": {
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
     },
@@ -4023,7 +4008,7 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
 _BUILD_PROC_MACRO_ALIASES = {
     "cloud/core": {
     },
-    "cloud/core/cedar": {
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
     },
@@ -4170,7 +4155,7 @@ _BUILD_PROC_MACRO_ALIASES = {
 _FEATURE_FLAGS = {
     "cloud/core": {
     },
-    "cloud/core/cedar": {
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
     },
@@ -4546,7 +4531,7 @@ _FEATURE_FLAGS = {
 _RESOLVED_FEATURE_FLAGS = {
     "cloud/core": {
     },
-    "cloud/core/cedar": {
+    "cloud/core/auth": {
     },
     "cloud/core/db-types": {
     },
@@ -4745,7 +4730,7 @@ _RESOLVED_FEATURE_FLAGS = {
 
 _VERSIONS = {
     "cloud/core": "0.1.0",
-    "cloud/core/cedar": "0.1.0",
+    "cloud/core/auth": "0.1.0",
     "cloud/core/db-types": "0.1.0",
     "cloud/core/emails": "0.1.0",
     "cloud/core/traits": "0.1.0",
@@ -6280,6 +6265,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__diesel-derive-enum-3.0.0-beta.1",
+        sha256 = "50a8c082045d01debc8589f8a0db9f2855a37c99c9b031325c856b5b98e1625f",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/diesel-derive-enum/3.0.0-beta.1/download"],
+        strip_prefix = "diesel-derive-enum-3.0.0-beta.1",
+        build_file = Label("//vendor/cargo:BUILD.diesel-derive-enum-3.0.0-beta.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__diesel_derives-2.3.3",
         sha256 = "09af0e983035368439f1383011cd87c46f41da81d0f21dc3727e2857d5a43c8e",
         type = "tar.gz",
@@ -7096,6 +7091,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/hashlink/0.10.0/download"],
         strip_prefix = "hashlink-0.10.0",
         build_file = Label("//vendor/cargo:BUILD.hashlink-0.10.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__heck-0.4.1",
+        sha256 = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/heck/0.4.1/download"],
+        strip_prefix = "heck-0.4.1",
+        build_file = Label("//vendor/cargo:BUILD.heck-0.4.1.bazel"),
     )
 
     maybe(
@@ -11872,6 +11877,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__derive_more-2.0.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__diesel-2.3.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__diesel-async-0.7.3", is_dev_dep = False),
+        struct(repo = "cargo_vendor__diesel-derive-enum-3.0.0-beta.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__document-features-0.2.11", is_dev_dep = False),
         struct(repo = "cargo_vendor__email_address-0.2.9", is_dev_dep = False),
         struct(repo = "cargo_vendor__env_logger-0.10.2", is_dev_dep = False),

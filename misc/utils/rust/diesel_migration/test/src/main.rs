@@ -14,14 +14,17 @@ use similar::{ChangeTag, TextDiff};
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    #[arg(long, env = "RESULT_PATH")]
-    result_path: Utf8PathBuf,
+    #[arg(long, env = "SCHEMA_PATH")]
+    schema_path: Utf8PathBuf,
 
-    #[arg(long, env = "SCHEMAS_PATHS", value_delimiter = ';')]
-    schemas_paths: Vec<Utf8PathBuf>,
+    #[arg(long, env = "SCHEMA_RESULT_PATH")]
+    schema_result_path: Utf8PathBuf,
 
-    #[arg(long, env = "SCHEMAS_SHORT_PATHS", value_delimiter = ';')]
-    schemas_short_paths: Vec<Utf8PathBuf>,
+    #[arg(long, env = "SCHEMA_PATCH_PATH")]
+    schema_patch_path: Utf8PathBuf,
+
+    #[arg(long, env = "SCHEMA_PATCH_RESULT_PATH")]
+    schema_patch_result_path: Utf8PathBuf,
 }
 
 struct Line(Option<usize>);
@@ -35,30 +38,38 @@ impl fmt::Display for Line {
     }
 }
 
+fn get_result(path: &std::path::Path) -> anyhow::Result<String> {
+    let result = std::fs::read_to_string(path).context("read results")?;
+    let result: BTreeMap<Utf8PathBuf, String> = serde_json::from_str(&result).context("parse results")?;
+    result.into_values().next().context("get result")
+}
+
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     let runfiles = runfiles::Runfiles::create().expect("failed to create runfiles");
-    let path_map = args
-        .schemas_paths
-        .iter()
-        .zip(args.schemas_short_paths.iter())
-        .collect::<BTreeMap<_, _>>();
-    let result_path = runfiles::rlocation!(&runfiles, args.result_path).expect("failed to get result path");
+    let schema_path = runfiles::rlocation!(&runfiles, &args.schema_path).expect("failed to get schema file");
+    let schema_result_path = runfiles::rlocation!(&runfiles, &args.schema_result_path).expect("failed to get result path");
+    let schema_patch_path =
+        runfiles::rlocation!(&runfiles, &args.schema_patch_path).expect("failed to get schema patch path");
+    let schema_patch_result_path =
+        runfiles::rlocation!(&runfiles, &args.schema_patch_result_path).expect("failed to get schema patch result path");
 
-    let results = std::fs::read_to_string(&result_path).context("read results")?;
-    let results: BTreeMap<Utf8PathBuf, String> = serde_json::from_str(&results).context("parse results")?;
+    let schema = std::fs::read_to_string(&schema_path).context("read schema file")?;
+    let schema_patch = std::fs::read_to_string(&schema_patch_path).context("read schema patch file")?;
+    let schema_result = get_result(&schema_result_path)?;
+    let schema_patch_result = get_result(&schema_patch_result_path)?;
 
     let mut diff_found = false;
-    for (path, content) in results {
-        let actual_path = runfiles::rlocation!(&runfiles, path_map[&path]).expect("failed to get actual path");
-        let expected = std::fs::read_to_string(&actual_path).context("read expected")?;
-
-        if content != expected {
-            diff_found = true;
-            println!("Difference found in {}", path);
-            println!("{}", diff(&expected, &content));
-        }
+    if schema_result != schema {
+        println!("Difference found in {}", args.schema_path);
+        println!("{}", diff(&schema, &schema_result));
+        diff_found = true;
+    }
+    if schema_patch_result != schema_patch {
+        println!("Difference found in {}", args.schema_patch_path);
+        println!("{}", diff(&schema_patch, &schema_patch_result));
+        diff_found = true;
     }
 
     if diff_found {

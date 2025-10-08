@@ -4,9 +4,7 @@ load("//misc/utils/rust:package.bzl", "scuffle_package")
 cargo_toml()
 
 scuffle_package(
-    name = "fix",
-    crate_name = "diesel_schema_fixer",
+    crate_name = "diesel_migration_patcher",
     crate_type = "bin",
     tags = ["manual"],
-    visibility = ["//visibility:public"],
 )

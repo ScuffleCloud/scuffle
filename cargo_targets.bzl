@@ -54,6 +54,7 @@ _packages = [
     "//misc/utils/rust/clippy",
     "//misc/utils/rust/diesel_migration/runner",
     "//misc/utils/rust/diesel_migration/test",
+    "//misc/utils/rust/diesel_migration/patcher",
     "//misc/utils/rust/test_runner",
     "//misc/utils/rust/test_runner/lib",
     "//misc/utils/rust/doc/test/runner",

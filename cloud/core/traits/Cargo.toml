@@ -15,18 +15,18 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 anyhow = "1"
 core-db-types = { path = "../db-types", package = "scufflecloud-core-db-types" }
 diesel = { version = "2", default-features = false }
-diesel-async = { version = "0.7.3", features = ["postgres"] }
+diesel-async = { version = "0.7", features = ["postgres"] }
 fred = "10"
 geo-ip = { path = "../../geo-ip", package = "scufflecloud-geo-ip" }
 pb = { path = "../../proto", package = "scufflecloud-proto" }
 reqwest = { version = "0.12", default-features = false }
-rustls = { version = "0.23.32", default-features = false }
+rustls = { version = "0.23", default-features = false }
 scuffle-batching.path = "../../../crates/batching"
 tonic = "0.14"
 tonic-types = "0.14"
 tracing = "0.1"
-url = "2.5"
-webauthn-rs = "0.5.2"
+url = "2"
+webauthn-rs = "0.5"
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

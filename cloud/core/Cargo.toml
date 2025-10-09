@@ -17,35 +17,35 @@ path = "bin/standalone/main.rs"
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
-anyhow = "1.0.98"
-argon2 = { features = ["std"], version = "0.5.3" }
-async-trait = "0.1.88"
-axum = "0.8.4"
-base64 = "0.22.1"
-cedar-policy = "4.5.1"
-chrono = "0.4.41"
+anyhow = "1"
+argon2 = { features = ["std"], version = "0.5" }
+async-trait = "0.1"
+axum = "0.8"
+base64 = "0.22"
+cedar-policy = "4"
+chrono = "0.4"
 core-cedar = { path = "./cedar", package = "scufflecloud-core-cedar" }
 core-db-types = { path = "./db-types", package = "scufflecloud-core-db-types" }
 core-emails = { path = "./emails", package = "scufflecloud-core-emails" }
 core-traits = { path = "./traits", package = "scufflecloud-core-traits" }
-derive_more = { features = ["display"], version = "2.0.1" }
-diesel = { features = ["chrono", "network-address", "serde_json", "uuid"], version = "2.3.2" }
-diesel-async = { features = ["async-connection-wrapper", "bb8", "postgres"], version = "0.7.3" }
+derive_more = { features = ["display"], version = "2" }
+diesel = { features = ["chrono", "network-address", "serde_json", "uuid"], version = "2" }
+diesel-async = { features = ["async-connection-wrapper", "bb8", "postgres"], version = "0.7" }
 ext-traits = { path = "../ext-traits", package = "scufflecloud-ext-traits" }
-fred = "10.1.0"
+fred = "10"
 geo-ip = { path = "../geo-ip", package = "scufflecloud-geo-ip" }
-hmac = "0.12.1"
-ipnetwork = { features = ["serde"], version = "0.21.1" }
-itertools = "0.14.0"
+hmac = "0.12"
+ipnetwork = { features = ["serde"], version = "0.21" }
+itertools = "0.14"
 pb = { package = "scufflecloud-proto", path = "../proto" }
-pkcs8 = "0.10.2"
-prost = "0.14.1"
-rand = "0.8.5"
-reqwest = { features = ["json", "rustls-tls-native-roots-no-provider"], version = "0.12.20", default-features = false }
-rsa = { features = ["sha2"], version = "0.9.8" }
-rustls = { default-features = false, version = "0.23.31", features = ["aws_lc_rs"] }
-sailfish = "0.10.0"
-sailfish-macros = "0.10.0"
+pkcs8 = "0.10"
+prost = "0.14"
+rand = "0.8"
+reqwest = { features = ["json", "rustls-tls-native-roots-no-provider"], version = "0.12", default-features = false }
+rsa = { features = ["sha2"], version = "0.9" }
+rustls = { default-features = false, version = "0.23", features = ["aws_lc_rs"] }
+sailfish = "0.10"
+sailfish-macros = "0.10"
 scuffle-batching = { path = "../../crates/batching" }
 scuffle-bootstrap = { path = "../../crates/bootstrap" }
 scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../crates/bootstrap-telemetry" }
@@ -53,28 +53,28 @@ scuffle-context = { path = "../../crates/context" }
 scuffle-http = { features = ["tracing"], path = "../../crates/http" }
 scuffle-settings = { features = ["all-formats", "bootstrap"], path = "../../crates/settings" }
 scuffle-signal = { features = ["bootstrap"], path = "../../crates/signal" }
-serde = "1.0.219"
-serde_derive = "1.0.219"
-serde_json = "1.0.140"
-sha2 = "0.10.9"
-smart-default = "0.7.1"
-swagger-ui-dist = "5.27.1"
-thiserror = "2.0.12"
+serde = "1"
+serde_derive = "1"
+serde_json = "1"
+sha2 = "0.10"
+smart-default = "0.7"
+swagger-ui-dist = "5"
+thiserror = "2"
 tinc = { path = "../../crates/tinc" }
-tokio = { default-features = false, features = ["sync"], version = "1.47.1" }
-tonic = { version = "0.14.1", features = ["tls-aws-lc"] }
-tonic-reflection = "0.14.1"
-tonic-types = "0.14.1"
-tonic-web = "0.14.2"
-totp-rs = { features = ["otpauth", "qr"], version = "5.7.0" }
-tower-http = { features = ["cors", "trace"], version = "0.6.6" }
-tracing = "0.1.41"
-tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
-ulid = { features = ["uuid"], version = "1.2.1" }
-url = "2.5.4"
-urlencoding = "2.1.3"
-uuid = "1.17.0"
-webauthn-rs = { features = ["danger-allow-state-serialisation"], version = "0.5.2" }
+tokio = { default-features = false, features = ["sync"], version = "1" }
+tonic = { version = "0.14", features = ["tls-aws-lc"] }
+tonic-reflection = "0.14"
+tonic-types = "0.14"
+tonic-web = "0.14"
+totp-rs = { features = ["otpauth", "qr"], version = "5" }
+tower-http = { features = ["cors", "trace"], version = "0.6" }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+ulid = { features = ["uuid"], version = "1" }
+url = "2"
+urlencoding = "2"
+uuid = "1"
+webauthn-rs = { features = ["danger-allow-state-serialisation"], version = "0.5" }
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

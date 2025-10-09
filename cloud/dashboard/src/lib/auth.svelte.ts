@@ -1,4 +1,5 @@
 import { browser } from "$app/environment";
+import { type RpcError } from "@protobuf-ts/runtime-rpc";
 import type { Timestamp } from "@scufflecloud/proto/google/protobuf/timestamp.js";
 import {
     type Device,
@@ -9,7 +10,6 @@ import {
 import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
 import { rpcErrorToString, sessionsServiceClient, usersServiceClient } from "./grpcClient";
 import { arrayBufferToBase64, base64ToArrayBuffer } from "./utils";
-import { type RpcError } from "@protobuf-ts/runtime-rpc";
 
 function timestampToDate(timestmap: Timestamp): Date | null {
     const seconds = parseInt(timestmap.seconds);

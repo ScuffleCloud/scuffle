@@ -31,7 +31,6 @@
         "globals": "^16.0.0",
         "lodash": "^4.17.21",
         "melt": "^0.17.8",
-        "msw": "^2.7.3",
         "svelte": "^5.39.8",
         "svelte-echarts": "^1.0.0",
         "svelte-eslint-parser": "^0.43.0",
@@ -42,10 +41,5 @@
     },
     "dependenciesComments": {
         "svelte-eslint-parser": "New version has errors with `pnpm lint`. Can resolve later."
-    },
-    "msw": {
-        "workerDirectory": [
-            "static"
-        ]
     }
 }

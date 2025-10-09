@@ -53,13 +53,21 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
 /**
  * Checks URL parameters for OAuth callback
  */
-function handleGoogleOAuthCallback(): void {
+
+let isProcessingGoogleOAuth = false;
+
+async function handleGoogleOAuthCallback(): Promise<void> {
+    // So not affected by $effect in layout
+    if (isProcessingGoogleOAuth) return;
+
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
     const state = urlParams.get("state");
 
     if (code && state) {
-        completeGoogleLogin(code, state).catch(console.error);
+        isProcessingGoogleOAuth = true;
+        await completeGoogleLogin(code, state).catch(console.error);
+        isProcessingGoogleOAuth = false;
     }
 }
 

@@ -144,13 +144,6 @@
             isLoading = false;
         }
     });
-
-    // See if I need this later
-    $effect(() => {
-        if (page.state.userEmail) {
-            userEmail = page.state.userEmail;
-        }
-    });
 </script>
 
 <svelte:head>

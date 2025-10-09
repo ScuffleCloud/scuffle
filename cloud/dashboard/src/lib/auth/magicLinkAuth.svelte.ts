@@ -3,8 +3,10 @@ import { authState } from "$lib/auth.svelte";
 import { LANDING_ROUTE } from "$lib/consts";
 import { rpcErrorToString, sessionsServiceClient } from "$lib/grpcClient";
 import { base64urlToArrayBuffer } from "$lib/utils";
-import { CaptchaProvider } from "@scufflecloud/proto/scufflecloud/core/v1/common.js";
 import { type RpcError } from "@protobuf-ts/runtime-rpc";
+import { CaptchaProvider } from "@scufflecloud/proto/scufflecloud/core/v1/common.js";
+
+let isProcessingMagicLink = false;
 
 /**
  * Sends a magic link to the specified email address
@@ -68,14 +70,19 @@ async function completeMagicLinkLogin(code: string): Promise<void> {
 }
 
 /**
- * Checks URL parameters for magic link callback. Place in $effect.
+ * Checks URL parameters for magic link callback
  */
-function handleMagicLinkCallback(): void {
+async function handleMagicLinkCallback(): Promise<void> {
+    // So not affected by $effect in layout
+    if (isProcessingMagicLink) return;
+
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
 
     if (code) {
-        completeMagicLinkLogin(code).catch(console.error);
+        isProcessingMagicLink = true;
+        await completeMagicLinkLogin(code).catch(console.error);
+        isProcessingMagicLink = false;
     }
 }
 

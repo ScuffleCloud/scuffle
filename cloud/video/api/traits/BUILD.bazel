@@ -5,4 +5,11 @@ cargo_toml()
 
 scuffle_package(
     crate_name = "scufflecloud-video-api-traits",
+    deps = [
+        "//crates/batching",
+        "//cloud/video/api/db-types",
+    ],
+    aliases = {
+        "//cloud/video/api/db-types": "db_types",
+    },
 )

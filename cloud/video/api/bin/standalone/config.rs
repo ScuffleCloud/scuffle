@@ -7,6 +7,8 @@ pub(crate) struct Config {
     pub bind: SocketAddr,
     #[default = "info"]
     pub level: String,
+    #[default(None)]
+    pub db_url: Option<String>,
     #[default = true]
     pub swagger_ui: bool,
     pub telemetry: Option<TelemetryConfig>,

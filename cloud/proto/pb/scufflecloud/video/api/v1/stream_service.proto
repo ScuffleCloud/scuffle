@@ -8,7 +8,7 @@ import "tinc/annotations.proto";
 
 // A service for managing video streams.
 service StreamService {
-  option (tinc.service).prefix = "/v1/streams";
+  option (tinc.service).prefix = "/streams";
 
   // Create a new stream.
   rpc Create(StreamCreateRequest) returns (StreamCreateResponse) {
@@ -38,8 +38,10 @@ service StreamService {
 
 // The request message for `StreamService.Create`.
 message StreamCreateRequest {
+  // The ID of the project to create the stream in.
+  string project_id = 1 [(string_constraint).id = true];
   // The name of the stream. If not provided, a randomly generated name will be used.
-  optional string name = 1 [(tinc.field).constraint.string = {
+  optional string name = 2 [(tinc.field).constraint.string = {
     min_len: 1
     max_len: 255
   }];

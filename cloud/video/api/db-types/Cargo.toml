@@ -17,6 +17,7 @@ diesel = { version = "2", default-features = false }
 id = { path = "../../../id", package = "scufflecloud-id" }
 serde = "1"
 serde_derive = "1"
+pb = { path = "../../../proto", package = "scufflecloud-proto" }
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

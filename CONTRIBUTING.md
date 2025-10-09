@@ -51,6 +51,7 @@ Adding the following to your `/etc/docker/daemon.json`:
 #### Scripts / Tools
 
 We provide a bunch of tools which we vendor by using [rules_multitool](https://github.com/bazel-contrib/rules_multitool). We recommend adding this directory to the front of your `PATH` (automatically done if you use [direnv](#environment-variables)).
+
 ### VSCode Setup
 
 If you use VSCode you can setup rust-analyzer to work by adding the following to your `settings.json`:

@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "serde_path_to_error",
+    name = "yaml_rust2",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,6 +34,10 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "default",
+        "encoding",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -44,7 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=serde_path_to_error",
+        "crate-name=yaml-rust2",
         "manual",
         "noclippy",
         "norustfmt",
@@ -59,9 +63,10 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.17",
+    version = "0.10.4",
     deps = [
-        "@cargo_vendor__itoa-1.0.15//:itoa",
-        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__arraydeque-0.5.1//:arraydeque",
+        "@cargo_vendor__encoding_rs-0.8.35//:encoding_rs",
+        "@cargo_vendor__hashlink-0.10.0//:hashlink",
     ],
 )

@@ -190,14 +190,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "camino-1.1.12",
-    actual = "@cargo_vendor__camino-1.1.12//:camino",
+    name = "camino-1.2.1",
+    actual = "@cargo_vendor__camino-1.2.1//:camino",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "camino",
-    actual = "@cargo_vendor__camino-1.1.12//:camino",
+    actual = "@cargo_vendor__camino-1.2.1//:camino",
     tags = ["manual"],
 )
 
@@ -226,25 +226,25 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "cargo-platform-0.2.0",
-    actual = "@cargo_vendor__cargo-platform-0.2.0//:cargo_platform",
+    name = "cargo-platform-0.3.1",
+    actual = "@cargo_vendor__cargo-platform-0.3.1//:cargo_platform",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "cargo-platform",
-    actual = "@cargo_vendor__cargo-platform-0.2.0//:cargo_platform",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
-    name = "cargo_metadata-0.21.0",
-    actual = "@cargo_vendor__cargo_metadata-0.21.0//:cargo_metadata",
+    actual = "@cargo_vendor__cargo-platform-0.3.1//:cargo_platform",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "cargo_metadata-0.23.0",
+    actual = "@cargo_vendor__cargo_metadata-0.23.0//:cargo_metadata",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "cargo_metadata",
     actual = "@cargo_vendor__cargo_metadata-0.23.0//:cargo_metadata",
     tags = ["manual"],
 )
@@ -322,14 +322,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "config-0.15.15",
-    actual = "@cargo_vendor__config-0.15.15//:config",
+    name = "config-0.15.18",
+    actual = "@cargo_vendor__config-0.15.18//:config",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "config",
-    actual = "@cargo_vendor__config-0.15.15//:config",
+    actual = "@cargo_vendor__config-0.15.18//:config",
     tags = ["manual"],
 )
 
@@ -586,14 +586,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "guppy-0.17.20",
-    actual = "@cargo_vendor__guppy-0.17.20//:guppy",
+    name = "guppy-0.17.22",
+    actual = "@cargo_vendor__guppy-0.17.22//:guppy",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "guppy",
-    actual = "@cargo_vendor__guppy-0.17.20//:guppy",
+    actual = "@cargo_vendor__guppy-0.17.22//:guppy",
     tags = ["manual"],
 )
 
@@ -742,14 +742,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "indexmap-2.11.1",
-    actual = "@cargo_vendor__indexmap-2.11.1//:indexmap",
+    name = "indexmap-2.11.4",
+    actual = "@cargo_vendor__indexmap-2.11.4//:indexmap",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "indexmap",
-    actual = "@cargo_vendor__indexmap-2.11.1//:indexmap",
+    actual = "@cargo_vendor__indexmap-2.11.4//:indexmap",
     tags = ["manual"],
 )
 
@@ -946,14 +946,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "nextest-runner-0.85.0",
-    actual = "@cargo_vendor__nextest-runner-0.85.0//:nextest_runner",
+    name = "nextest-runner-0.88.0",
+    actual = "@cargo_vendor__nextest-runner-0.88.0//:nextest_runner",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "nextest-runner",
-    actual = "@cargo_vendor__nextest-runner-0.85.0//:nextest_runner",
+    actual = "@cargo_vendor__nextest-runner-0.88.0//:nextest_runner",
     tags = ["manual"],
 )
 
@@ -1330,14 +1330,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "rustdoc-types-0.55.0",
-    actual = "@cargo_vendor__rustdoc-types-0.55.0//:rustdoc_types",
+    name = "rustdoc-types-0.56.0",
+    actual = "@cargo_vendor__rustdoc-types-0.56.0//:rustdoc_types",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "rustdoc-types",
-    actual = "@cargo_vendor__rustdoc-types-0.55.0//:rustdoc_types",
+    actual = "@cargo_vendor__rustdoc-types-0.56.0//:rustdoc_types",
     tags = ["manual"],
 )
 
@@ -1414,38 +1414,38 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "semver-1.0.26",
-    actual = "@cargo_vendor__semver-1.0.26//:semver",
+    name = "semver-1.0.27",
+    actual = "@cargo_vendor__semver-1.0.27//:semver",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "semver",
-    actual = "@cargo_vendor__semver-1.0.26//:semver",
+    actual = "@cargo_vendor__semver-1.0.27//:semver",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "serde-1.0.220",
-    actual = "@cargo_vendor__serde-1.0.220//:serde",
+    name = "serde-1.0.228",
+    actual = "@cargo_vendor__serde-1.0.228//:serde",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "serde",
-    actual = "@cargo_vendor__serde-1.0.220//:serde",
+    actual = "@cargo_vendor__serde-1.0.228//:serde",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "serde_derive-1.0.220",
-    actual = "@cargo_vendor__serde_derive-1.0.220//:serde_derive",
+    name = "serde_derive-1.0.228",
+    actual = "@cargo_vendor__serde_derive-1.0.228//:serde_derive",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "serde_derive",
-    actual = "@cargo_vendor__serde_derive-1.0.220//:serde_derive",
+    actual = "@cargo_vendor__serde_derive-1.0.228//:serde_derive",
     tags = ["manual"],
 )
 
@@ -1570,14 +1570,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "target-spec-3.5.0",
-    actual = "@cargo_vendor__target-spec-3.5.0//:target_spec",
+    name = "target-spec-3.5.2",
+    actual = "@cargo_vendor__target-spec-3.5.2//:target_spec",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "target-spec",
-    actual = "@cargo_vendor__target-spec-3.5.0//:target_spec",
+    actual = "@cargo_vendor__target-spec-3.5.2//:target_spec",
     tags = ["manual"],
 )
 
@@ -1690,26 +1690,26 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "toml-0.9.5",
-    actual = "@cargo_vendor__toml-0.9.5//:toml",
+    name = "toml-0.9.7",
+    actual = "@cargo_vendor__toml-0.9.7//:toml",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "toml",
-    actual = "@cargo_vendor__toml-0.9.5//:toml",
+    actual = "@cargo_vendor__toml-0.9.7//:toml",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "toml_edit-0.22.27",
-    actual = "@cargo_vendor__toml_edit-0.22.27//:toml_edit",
+    name = "toml_edit-0.23.6",
+    actual = "@cargo_vendor__toml_edit-0.23.6//:toml_edit",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "toml_edit-0.23.4",
-    actual = "@cargo_vendor__toml_edit-0.23.4//:toml_edit",
+    name = "toml_edit",
+    actual = "@cargo_vendor__toml_edit-0.23.6//:toml_edit",
     tags = ["manual"],
 )
 

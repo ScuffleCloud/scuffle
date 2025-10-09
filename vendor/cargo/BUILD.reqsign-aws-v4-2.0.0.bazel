@@ -73,7 +73,7 @@ rust_library(
         "@cargo_vendor__quick-xml-0.38.3//:quick_xml",
         "@cargo_vendor__reqsign-core-2.0.0//:reqsign_core",
         "@cargo_vendor__rust-ini-0.21.3//:ini",
-        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__serde-1.0.228//:serde",
         "@cargo_vendor__serde_json-1.0.145//:serde_json",
         "@cargo_vendor__serde_urlencoded-0.7.1//:serde_urlencoded",
         "@cargo_vendor__sha1-0.10.6//:sha1",

@@ -6,7 +6,11 @@
 #     bazel run @@//vendor:cargo_vendor
 ###############################################################################
 
-load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
+load(
+    "@rules_rust//cargo:defs.bzl",
+    "cargo_build_script",
+    "cargo_toml_env_vars",
+)
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -17,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "yaml_rust2",
+    name = "camino",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,8 +39,7 @@ rust_library(
         ],
     ),
     crate_features = [
-        "default",
-        "encoding",
+        "serde1",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -48,7 +51,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=yaml-rust2",
+        "crate-name=camino",
         "manual",
         "noclippy",
         "norustfmt",
@@ -63,10 +66,70 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.10.3",
+    version = "1.2.1",
     deps = [
-        "@cargo_vendor__arraydeque-0.5.1//:arraydeque",
-        "@cargo_vendor__encoding_rs-0.8.35//:encoding_rs",
-        "@cargo_vendor__hashlink-0.10.0//:hashlink",
+        "@cargo_vendor__camino-1.2.1//:build_script_build",
+        "@cargo_vendor__serde_core-1.0.228//:serde_core",
     ],
+)
+
+cargo_build_script(
+    name = "_bs",
+    srcs = glob(
+        include = ["**/*.rs"],
+        allow_empty = True,
+    ),
+    compile_data = glob(
+        include = ["**"],
+        allow_empty = True,
+        exclude = [
+            "**/* *",
+            "**/*.rs",
+            ".tmp_git_root/**/*",
+            "BUILD",
+            "BUILD.bazel",
+            "WORKSPACE",
+            "WORKSPACE.bazel",
+        ],
+    ),
+    crate_features = [
+        "serde1",
+    ],
+    crate_name = "build_script_build",
+    crate_root = "build.rs",
+    data = glob(
+        include = ["**"],
+        allow_empty = True,
+        exclude = [
+            "**/* *",
+            ".tmp_git_root/**/*",
+            "BUILD",
+            "BUILD.bazel",
+            "WORKSPACE",
+            "WORKSPACE.bazel",
+        ],
+    ),
+    edition = "2021",
+    pkg_name = "camino",
+    rustc_env_files = [
+        ":cargo_toml_env_vars",
+    ],
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-bazel",
+        "crate-name=camino",
+        "manual",
+        "noclippy",
+        "norustfmt",
+    ],
+    version = "1.2.1",
+    visibility = ["//visibility:private"],
+)
+
+alias(
+    name = "build_script_build",
+    actual = ":_bs",
+    tags = ["manual"],
 )

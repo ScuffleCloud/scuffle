@@ -62,6 +62,6 @@ rust_library(
     version = "0.7.0",
     deps = [
         "@cargo_vendor__ordered-float-2.10.1//:ordered_float",
-        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__serde-1.0.228//:serde",
     ],
 )

@@ -465,7 +465,7 @@ _NORMAL_DEPENDENCIES = {
                 "rsa": Label("@cargo_vendor//:rsa-0.9.8"),
                 "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
                 "sailfish": Label("@cargo_vendor//:sailfish-0.10.0"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "sha2": Label("@cargo_vendor//:sha2-0.10.9"),
                 "swagger-ui-dist": Label("@cargo_vendor//:swagger-ui-dist-5.29.0"),
@@ -494,7 +494,7 @@ _NORMAL_DEPENDENCIES = {
                 "cedar-policy": Label("@cargo_vendor//:cedar-policy-4.5.1"),
                 "const_panic": Label("@cargo_vendor//:const_panic-0.2.15"),
                 "konst": Label("@cargo_vendor//:konst-0.4.2"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
             },
@@ -506,7 +506,7 @@ _NORMAL_DEPENDENCIES = {
                 "chrono": Label("@cargo_vendor//:chrono-0.4.42"),
                 "diesel": Label("@cargo_vendor//:diesel-2.3.2"),
                 "ipnetwork": Label("@cargo_vendor//:ipnetwork-0.21.1"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
                 "ulid": Label("@cargo_vendor//:ulid-1.2.1"),
@@ -553,7 +553,7 @@ _NORMAL_DEPENDENCIES = {
                 "reqsign": Label("@cargo_vendor//:reqsign-0.18.0"),
                 "reqwest": Label("@cargo_vendor//:reqwest-0.12.23"),
                 "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
                 "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
@@ -593,7 +593,7 @@ _NORMAL_DEPENDENCIES = {
                 "futures": Label("@cargo_vendor//:futures-0.3.31"),
                 "ipnetwork": Label("@cargo_vendor//:ipnetwork-0.21.1"),
                 "maxminddb": Label("@cargo_vendor//:maxminddb-0.26.0"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
                 "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
                 "tower-layer": Label("@cargo_vendor//:tower-layer-0.3.3"),
@@ -606,7 +606,7 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "diesel": Label("@cargo_vendor//:diesel-2.3.2"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
                 "ulid": Label("@cargo_vendor//:ulid-1.2.1"),
                 "uuid": Label("@cargo_vendor//:uuid-1.18.1"),
@@ -617,7 +617,7 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "prost": Label("@cargo_vendor//:prost-0.14.1"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
             },
         },
     },
@@ -625,7 +625,7 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
             },
@@ -637,7 +637,7 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
             },
@@ -665,7 +665,7 @@ _NORMAL_DEPENDENCIES = {
         },
         "serde": {
             _COMMON_CONDITION: {
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
             },
         },
     },
@@ -762,7 +762,7 @@ _NORMAL_DEPENDENCIES = {
         },
         "serde": {
             _COMMON_CONDITION: {
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
             },
         },
     },
@@ -774,7 +774,7 @@ _NORMAL_DEPENDENCIES = {
                 "cedar-policy-core": Label("@cargo_vendor//:cedar-policy-core-4.5.1"),
                 "const_panic": Label("@cargo_vendor//:const_panic-0.2.15"),
                 "konst": Label("@cargo_vendor//:konst-0.4.2"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "smol_str": Label("@cargo_vendor//:smol_str-0.3.2"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
@@ -802,7 +802,7 @@ _NORMAL_DEPENDENCIES = {
                 "proc-macro2": Label("@cargo_vendor//:proc-macro2-1.0.101"),
                 "quote": Label("@cargo_vendor//:quote-1.0.40"),
                 "regex": Label("@cargo_vendor//:regex-1.11.2"),
-                "semver": Label("@cargo_vendor//:semver-1.0.26"),
+                "semver": Label("@cargo_vendor//:semver-1.0.27"),
                 "syn": Label("@cargo_vendor//:syn-2.0.106"),
             },
         },
@@ -858,7 +858,7 @@ _NORMAL_DEPENDENCIES = {
                 "byteorder": Label("@cargo_vendor//:byteorder-1.5.0"),
                 "bytes": Label("@cargo_vendor//:bytes-1.10.1"),
                 "num-traits": Label("@cargo_vendor//:num-traits-0.2.19"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
             },
         },
@@ -982,10 +982,10 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "bon": Label("@cargo_vendor//:bon-3.7.2"),
-                "indexmap": Label("@cargo_vendor//:indexmap-2.11.1"),
+                "indexmap": Label("@cargo_vendor//:indexmap-2.11.4"),
                 "is_empty": Label("@cargo_vendor//:is_empty-0.3.0"),
                 "ordered-float": Label("@cargo_vendor//:ordered-float-5.0.0"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
         },
@@ -1002,11 +1002,11 @@ _NORMAL_DEPENDENCIES = {
                 "cargo_metadata": Label("@cargo_vendor//:cargo_metadata-0.23.0"),
                 "prettyplease": Label("@cargo_vendor//:prettyplease-0.2.37"),
                 "regex": Label("@cargo_vendor//:regex-1.11.2"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "syn": Label("@cargo_vendor//:syn-2.0.106"),
                 "target-triple": Label("@cargo_vendor//:target-triple-0.1.4"),
-                "toml": Label("@cargo_vendor//:toml-0.9.5"),
+                "toml": Label("@cargo_vendor//:toml-0.9.7"),
             },
         },
     },
@@ -1027,7 +1027,7 @@ _NORMAL_DEPENDENCIES = {
                 "hmac": Label("@cargo_vendor//:hmac-0.12.1"),
                 "num-traits": Label("@cargo_vendor//:num-traits-0.2.19"),
                 "rand": Label("@cargo_vendor//:rand-0.9.2"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "sha2": Label("@cargo_vendor//:sha2-0.10.9"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
                 "tokio": Label("@cargo_vendor//:tokio-1.47.1"),
@@ -1038,8 +1038,8 @@ _NORMAL_DEPENDENCIES = {
     "crates/settings": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "config": Label("@cargo_vendor//:config-0.15.15"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "config": Label("@cargo_vendor//:config-0.15.18"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
             },
         },
@@ -1086,7 +1086,7 @@ _NORMAL_DEPENDENCIES = {
                 "mediatype": Label("@cargo_vendor//:mediatype-0.20.0"),
                 "num-traits": Label("@cargo_vendor//:num-traits-0.2.19"),
                 "regex": Label("@cargo_vendor//:regex-1.11.2"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "serde_qs": Label("@cargo_vendor//:serde_qs-0.15.0"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
@@ -1116,14 +1116,14 @@ _NORMAL_DEPENDENCIES = {
                 "convert_case": Label("@cargo_vendor//:convert_case-0.8.0"),
                 "fmtools": Label("@cargo_vendor//:fmtools-0.1.2"),
                 "heck": Label("@cargo_vendor//:heck-0.5.0"),
-                "indexmap": Label("@cargo_vendor//:indexmap-2.11.1"),
+                "indexmap": Label("@cargo_vendor//:indexmap-2.11.4"),
                 "num-traits": Label("@cargo_vendor//:num-traits-0.2.19"),
                 "prettyplease": Label("@cargo_vendor//:prettyplease-0.2.37"),
                 "proc-macro2": Label("@cargo_vendor//:proc-macro2-1.0.101"),
                 "quote": Label("@cargo_vendor//:quote-1.0.40"),
                 "regex": Label("@cargo_vendor//:regex-1.11.2"),
                 "runtime-format": Label("@cargo_vendor//:runtime-format-0.1.3"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "syn": Label("@cargo_vendor//:syn-2.0.106"),
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
@@ -1189,8 +1189,8 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "cargo-platform": Label("@cargo_vendor//:cargo-platform-0.2.0"),
-                "cargo_metadata": Label("@cargo_vendor//:cargo_metadata-0.21.0"),
+                "cargo-platform": Label("@cargo_vendor//:cargo-platform-0.3.1"),
+                "cargo_metadata": Label("@cargo_vendor//:cargo_metadata-0.23.0"),
                 "chrono": Label("@cargo_vendor//:chrono-0.4.42"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "fmtools": Label("@cargo_vendor//:fmtools-0.1.2"),
@@ -1199,10 +1199,10 @@ _NORMAL_DEPENDENCIES = {
                 "indent_write": Label("@cargo_vendor//:indent_write-2.2.0"),
                 "minijinja": Label("@cargo_vendor//:minijinja-2.12.0"),
                 "num_cpus": Label("@cargo_vendor//:num_cpus-1.17.0"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "sha2": Label("@cargo_vendor//:sha2-0.10.9"),
-                "toml_edit": Label("@cargo_vendor//:toml_edit-0.22.27"),
+                "toml_edit": Label("@cargo_vendor//:toml_edit-0.23.6"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
             },
@@ -1219,9 +1219,9 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
         },
@@ -1230,11 +1230,11 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "env_logger": Label("@cargo_vendor//:env_logger-0.10.2"),
                 "log": Label("@cargo_vendor//:log-0.4.28"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
         },
@@ -1242,9 +1242,9 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/rust/clippy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
         },
@@ -1253,9 +1253,9 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
         },
@@ -1264,11 +1264,11 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "env_logger": Label("@cargo_vendor//:env_logger-0.11.8"),
                 "log": Label("@cargo_vendor//:log-0.4.28"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
         },
@@ -1277,11 +1277,11 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "env_logger": Label("@cargo_vendor//:env_logger-0.11.8"),
                 "log": Label("@cargo_vendor//:log-0.4.28"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "testcontainers": Label("@cargo_vendor//:testcontainers-0.25.0"),
                 "tokio": Label("@cargo_vendor//:tokio-1.47.1"),
@@ -1292,10 +1292,10 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "console": Label("@cargo_vendor//:console-0.16.1"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "similar": Label("@cargo_vendor//:similar-2.7.0"),
             },
@@ -1304,11 +1304,11 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/rust/doc/merger": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "copy_dir": Label("@cargo_vendor//:copy_dir-0.1.3"),
                 "lol_html": Label("@cargo_vendor//:lol_html-2.6.0"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
         },
@@ -1316,9 +1316,9 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/rust/doc/test/builder": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
         },
@@ -1326,17 +1326,17 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/rust/doc/test/common": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
             },
         },
     },
     "misc/utils/rust/doc/test/runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
         },
@@ -1344,7 +1344,7 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/rust/doc/wrapper": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "camino-tempfile": Label("@cargo_vendor//:camino-tempfile-1.4.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
             },
@@ -1354,24 +1354,24 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "cargo_toml": Label("@cargo_vendor//:cargo_toml-0.22.3"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "pulldown-cmark": Label("@cargo_vendor//:pulldown-cmark-0.13.0"),
                 "pulldown-cmark-to-cmark": Label("@cargo_vendor//:pulldown-cmark-to-cmark-21.0.0"),
                 "regex": Label("@cargo_vendor//:regex-1.11.2"),
-                "rustdoc-types": Label("@cargo_vendor//:rustdoc-types-0.55.0"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "rustdoc-types": Label("@cargo_vendor//:rustdoc-types-0.56.0"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
-                "toml": Label("@cargo_vendor//:toml-0.9.5"),
+                "toml": Label("@cargo_vendor//:toml-0.9.7"),
             },
         },
     },
     "misc/utils/rust/sync_readme/common": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
             },
         },
     },
@@ -1379,7 +1379,7 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "console": Label("@cargo_vendor//:console-0.16.1"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
@@ -1390,24 +1390,24 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/rust/test_runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
-                "target-spec": Label("@cargo_vendor//:target-spec-3.5.0"),
+                "target-spec": Label("@cargo_vendor//:target-spec-3.5.2"),
             },
         },
     },
     "misc/utils/rust/test_runner/lib": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
-                "cargo_metadata": Label("@cargo_vendor//:cargo_metadata-0.21.0"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
+                "cargo_metadata": Label("@cargo_vendor//:cargo_metadata-0.23.0"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
-                "guppy": Label("@cargo_vendor//:guppy-0.17.20"),
+                "guppy": Label("@cargo_vendor//:guppy-0.17.22"),
                 "nextest-filtering": Label("@cargo_vendor//:nextest-filtering-0.16.0"),
                 "nextest-metadata": Label("@cargo_vendor//:nextest-metadata-0.12.2"),
-                "nextest-runner": Label("@cargo_vendor//:nextest-runner-0.85.0"),
+                "nextest-runner": Label("@cargo_vendor//:nextest-runner-0.88.0"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
-                "toml_edit": Label("@cargo_vendor//:toml_edit-0.23.4"),
+                "toml_edit": Label("@cargo_vendor//:toml_edit-0.23.6"),
                 "walkdir": Label("@cargo_vendor//:walkdir-2.5.0"),
             },
         },
@@ -1416,7 +1416,7 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "env_logger": Label("@cargo_vendor//:env_logger-0.11.8"),
                 "log": Label("@cargo_vendor//:log-0.4.28"),
@@ -1429,7 +1429,7 @@ _NORMAL_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
-                "camino": Label("@cargo_vendor//:camino-1.1.12"),
+                "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "env_logger": Label("@cargo_vendor//:env_logger-0.11.8"),
                 "log": Label("@cargo_vendor//:log-0.4.28"),
@@ -2026,7 +2026,7 @@ _NORMAL_DEV_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "insta": Label("@cargo_vendor//:insta-1.43.2"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
             },
@@ -2134,7 +2134,7 @@ _NORMAL_DEV_DEPENDENCIES = {
     "crates/mp4": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
         },
@@ -2215,7 +2215,7 @@ _NORMAL_DEV_DEPENDENCIES = {
                 "prost": Label("@cargo_vendor//:prost-0.14.1"),
                 "prost-types": Label("@cargo_vendor//:prost-types-0.14.1"),
                 "rand": Label("@cargo_vendor//:rand-0.9.2"),
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "tokio": Label("@cargo_vendor//:tokio-1.47.1"),
                 "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
@@ -2228,7 +2228,7 @@ _NORMAL_DEV_DEPENDENCIES = {
     "crates/transmuxer": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde": Label("@cargo_vendor//:serde-1.0.220"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
             },
         },
@@ -2524,7 +2524,7 @@ _PROC_MACRO_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "async-trait": Label("@cargo_vendor//:async-trait-0.1.89"),
                 "sailfish-macros": Label("@cargo_vendor//:sailfish-macros-0.10.0"),
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
             },
         },
@@ -2532,14 +2532,14 @@ _PROC_MACRO_DEPENDENCIES = {
     "cloud/core/cedar": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
     "cloud/core/db-types": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
@@ -2551,7 +2551,7 @@ _PROC_MACRO_DEPENDENCIES = {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
                 "async-trait": Label("@cargo_vendor//:async-trait-0.1.89"),
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
             },
         },
@@ -2565,7 +2565,7 @@ _PROC_MACRO_DEPENDENCIES = {
     "cloud/id": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
@@ -2574,7 +2574,7 @@ _PROC_MACRO_DEPENDENCIES = {
     "cloud/video/api": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
             },
         },
@@ -2584,7 +2584,7 @@ _PROC_MACRO_DEPENDENCIES = {
     "cloud/video/ingest": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
             },
         },
@@ -2655,7 +2655,7 @@ _PROC_MACRO_DEPENDENCIES = {
     "crates/cedar-policy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
         "docs": {
@@ -2694,7 +2694,7 @@ _PROC_MACRO_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "bitmask-enum": Label("@cargo_vendor//:bitmask-enum-2.2.5"),
                 "num-derive": Label("@cargo_vendor//:num-derive-0.4.2"),
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
         "docs": {
@@ -2762,7 +2762,7 @@ _PROC_MACRO_DEPENDENCIES = {
     "crates/openapiv3_1": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
         "docs": {
@@ -2774,7 +2774,7 @@ _PROC_MACRO_DEPENDENCIES = {
     "crates/postcompile": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
         "docs": {
@@ -2795,7 +2795,7 @@ _PROC_MACRO_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "bitmask-enum": Label("@cargo_vendor//:bitmask-enum-2.2.5"),
                 "num-derive": Label("@cargo_vendor//:num-derive-0.4.2"),
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
         "docs": {
@@ -2807,7 +2807,7 @@ _PROC_MACRO_DEPENDENCIES = {
     "crates/settings": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
         "docs": {
@@ -2826,7 +2826,7 @@ _PROC_MACRO_DEPENDENCIES = {
     "crates/tinc": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
                 "serde_repr": Label("@cargo_vendor//:serde_repr-0.1.20"),
             },
         },
@@ -2839,7 +2839,7 @@ _PROC_MACRO_DEPENDENCIES = {
     "crates/tinc/build": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
         "docs": {
@@ -2876,7 +2876,7 @@ _PROC_MACRO_DEPENDENCIES = {
     "dev-tools/xtask": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
@@ -2885,21 +2885,21 @@ _PROC_MACRO_DEPENDENCIES = {
     "misc/utils/rust/analyzer/check": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
     "misc/utils/rust/analyzer/discover": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
     "misc/utils/rust/clippy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
@@ -2908,14 +2908,14 @@ _PROC_MACRO_DEPENDENCIES = {
     "misc/utils/rust/diesel_migration/patcher": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
     "misc/utils/rust/diesel_migration/runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
@@ -2924,28 +2924,28 @@ _PROC_MACRO_DEPENDENCIES = {
     "misc/utils/rust/doc/merger": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
     "misc/utils/rust/doc/test/builder": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
     "misc/utils/rust/doc/test/common": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
     "misc/utils/rust/doc/test/runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
@@ -2954,14 +2954,14 @@ _PROC_MACRO_DEPENDENCIES = {
     "misc/utils/rust/sync_readme": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
     "misc/utils/rust/sync_readme/common": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
@@ -3172,7 +3172,7 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "crates/amf0": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
@@ -3183,7 +3183,7 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "crates/bootstrap": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
             },
         },
@@ -3235,7 +3235,7 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "crates/settings": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.220"),
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
             },
         },
@@ -5511,12 +5511,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__camino-1.1.12",
-        sha256 = "dd0b03af37dad7a14518b7691d81acb0f8222604ad3d1b02f6b4bed5188c0cd5",
+        name = "cargo_vendor__camino-1.2.1",
+        sha256 = "276a59bf2b2c967788139340c9f0c5b12d7fd6630315c15c217e559de85d2609",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/camino/1.1.12/download"],
-        strip_prefix = "camino-1.1.12",
-        build_file = Label("//vendor/cargo:BUILD.camino-1.1.12.bazel"),
+        urls = ["https://static.crates.io/crates/camino/1.2.1/download"],
+        strip_prefix = "camino-1.2.1",
+        build_file = Label("//vendor/cargo:BUILD.camino-1.2.1.bazel"),
     )
 
     maybe(
@@ -5541,16 +5541,6 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__cargo-platform-0.2.0",
-        sha256 = "84982c6c0ae343635a3a4ee6dedef965513735c8b183caa7289fa6e27399ebd4",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/cargo-platform/0.2.0/download"],
-        strip_prefix = "cargo-platform-0.2.0",
-        build_file = Label("//vendor/cargo:BUILD.cargo-platform-0.2.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "cargo_vendor__cargo-platform-0.3.1",
         sha256 = "122ec45a44b270afd1402f351b782c676b173e3c3fb28d86ff7ebfb4d86a4ee4",
         type = "tar.gz",
@@ -5571,12 +5561,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__cargo_metadata-0.21.0",
-        sha256 = "5cfca2aaa699835ba88faf58a06342a314a950d2b9686165e038286c30316868",
+        name = "cargo_vendor__cargo_metadata-0.22.0",
+        sha256 = "0c3f56c207c76c07652489840ff98687dcf213de178ac0974660d6fefeaf5ec6",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/cargo_metadata/0.21.0/download"],
-        strip_prefix = "cargo_metadata-0.21.0",
-        build_file = Label("//vendor/cargo:BUILD.cargo_metadata-0.21.0.bazel"),
+        urls = ["https://static.crates.io/crates/cargo_metadata/0.22.0/download"],
+        strip_prefix = "cargo_metadata-0.22.0",
+        build_file = Label("//vendor/cargo:BUILD.cargo_metadata-0.22.0.bazel"),
     )
 
     maybe(
@@ -5811,12 +5801,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__config-0.15.15",
-        sha256 = "0faa974509d38b33ff89282db9c3295707ccf031727c0de9772038ec526852ba",
+        name = "cargo_vendor__config-0.15.18",
+        sha256 = "180e549344080374f9b32ed41bf3b6b57885ff6a289367b3dbc10eea8acc1918",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/config/0.15.15/download"],
-        strip_prefix = "config-0.15.15",
-        build_file = Label("//vendor/cargo:BUILD.config-0.15.15.bazel"),
+        urls = ["https://static.crates.io/crates/config/0.15.18/download"],
+        strip_prefix = "config-0.15.18",
+        build_file = Label("//vendor/cargo:BUILD.config-0.15.18.bazel"),
     )
 
     maybe(
@@ -6721,6 +6711,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__foldhash-0.2.0",
+        sha256 = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/foldhash/0.2.0/download"],
+        strip_prefix = "foldhash-0.2.0",
+        build_file = Label("//vendor/cargo:BUILD.foldhash-0.2.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__foreign-types-0.3.2",
         sha256 = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1",
         type = "tar.gz",
@@ -6981,12 +6981,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__guppy-0.17.20",
-        sha256 = "7eadc0c380d2c5f421758a5838ce593687da4a47d1dcf1169bf3bad629b764e7",
+        name = "cargo_vendor__guppy-0.17.22",
+        sha256 = "41ae4d3577acdf296abfed57f2f391137b545f445d9a6e3600c0a40815872e31",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/guppy/0.17.20/download"],
-        strip_prefix = "guppy-0.17.20",
-        build_file = Label("//vendor/cargo:BUILD.guppy-0.17.20.bazel"),
+        urls = ["https://static.crates.io/crates/guppy/0.17.22/download"],
+        strip_prefix = "guppy-0.17.22",
+        build_file = Label("//vendor/cargo:BUILD.guppy-0.17.22.bazel"),
     )
 
     maybe(
@@ -7067,6 +7067,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/hashbrown/0.15.5/download"],
         strip_prefix = "hashbrown-0.15.5",
         build_file = Label("//vendor/cargo:BUILD.hashbrown-0.15.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__hashbrown-0.16.0",
+        sha256 = "5419bdc4f6a9207fbeba6d11b604d481addf78ecd10c11ad51e76c2f6482748d",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/hashbrown/0.16.0/download"],
+        strip_prefix = "hashbrown-0.16.0",
+        build_file = Label("//vendor/cargo:BUILD.hashbrown-0.16.0.bazel"),
     )
 
     maybe(
@@ -7331,12 +7341,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__iddqd-0.3.12",
-        sha256 = "8cced377b2b081501b1a33157064dba846c68b045c10dbd31f8f730463ec8a64",
+        name = "cargo_vendor__iddqd-0.3.14",
+        sha256 = "bac5efd33e0c5eb0ac45cbd210541a214dac576896ca97ba08e16e3b1079cdd8",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/iddqd/0.3.12/download"],
-        strip_prefix = "iddqd-0.3.12",
-        build_file = Label("//vendor/cargo:BUILD.iddqd-0.3.12.bazel"),
+        urls = ["https://static.crates.io/crates/iddqd/0.3.14/download"],
+        strip_prefix = "iddqd-0.3.14",
+        build_file = Label("//vendor/cargo:BUILD.iddqd-0.3.14.bazel"),
     )
 
     maybe(
@@ -7391,12 +7401,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__indexmap-2.11.1",
-        sha256 = "206a8042aec68fa4a62e8d3f7aa4ceb508177d9324faf261e1959e495b7a1921",
+        name = "cargo_vendor__indexmap-2.11.4",
+        sha256 = "4b0f83760fb341a774ed326568e19f5a863af4a952def8c39f9ab92fd95b88e5",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/indexmap/2.11.1/download"],
-        strip_prefix = "indexmap-2.11.1",
-        build_file = Label("//vendor/cargo:BUILD.indexmap-2.11.1.bazel"),
+        urls = ["https://static.crates.io/crates/indexmap/2.11.4/download"],
+        strip_prefix = "indexmap-2.11.4",
+        build_file = Label("//vendor/cargo:BUILD.indexmap-2.11.4.bazel"),
     )
 
     maybe(
@@ -8061,12 +8071,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__nextest-runner-0.85.0",
-        sha256 = "8e2f3283b46e15d80958a9aa22877bcfc14855e20cfdae060c6bfda170131f4b",
+        name = "cargo_vendor__nextest-runner-0.88.0",
+        sha256 = "0fdcb9a51a018e9d8f33954ec5f9ea1ae6d46f97c881ca8f10632636d884d912",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/nextest-runner/0.85.0/download"],
-        strip_prefix = "nextest-runner-0.85.0",
-        build_file = Label("//vendor/cargo:BUILD.nextest-runner-0.85.0.bazel"),
+        urls = ["https://static.crates.io/crates/nextest-runner/0.88.0/download"],
+        strip_prefix = "nextest-runner-0.88.0",
+        build_file = Label("//vendor/cargo:BUILD.nextest-runner-0.88.0.bazel"),
     )
 
     maybe(
@@ -9420,12 +9430,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__rustdoc-types-0.55.0",
-        sha256 = "61f25a84ea78419de928cd82c3b2f76709a696a64a880486c567b4c4da8f2dda",
+        name = "cargo_vendor__rustdoc-types-0.56.0",
+        sha256 = "27bf787c529efe523ed9eb6dcdbaa5954d34329f08d5c243fce928441826ca90",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/rustdoc-types/0.55.0/download"],
-        strip_prefix = "rustdoc-types-0.55.0",
-        build_file = Label("//vendor/cargo:BUILD.rustdoc-types-0.55.0.bazel"),
+        urls = ["https://static.crates.io/crates/rustdoc-types/0.56.0/download"],
+        strip_prefix = "rustdoc-types-0.56.0",
+        build_file = Label("//vendor/cargo:BUILD.rustdoc-types-0.56.0.bazel"),
     )
 
     maybe(
@@ -9660,32 +9670,32 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__semver-1.0.26",
-        sha256 = "56e6fa9c48d24d85fb3de5ad847117517440f6beceb7798af16b4a87d616b8d0",
+        name = "cargo_vendor__semver-1.0.27",
+        sha256 = "d767eb0aabc880b29956c35734170f26ed551a859dbd361d140cdbeca61ab1e2",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/semver/1.0.26/download"],
-        strip_prefix = "semver-1.0.26",
-        build_file = Label("//vendor/cargo:BUILD.semver-1.0.26.bazel"),
+        urls = ["https://static.crates.io/crates/semver/1.0.27/download"],
+        strip_prefix = "semver-1.0.27",
+        build_file = Label("//vendor/cargo:BUILD.semver-1.0.27.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "cargo_vendor__serde-1.0.220",
-        sha256 = "ceecad4c782e936ac90ecfd6b56532322e3262b14320abf30ce89a92ffdbfe22",
+        name = "cargo_vendor__serde-1.0.228",
+        sha256 = "9a8e94ea7f378bd32cbbd37198a4a91436180c5bb472411e48b5ec2e2124ae9e",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/serde/1.0.220/download"],
-        strip_prefix = "serde-1.0.220",
-        build_file = Label("//vendor/cargo:BUILD.serde-1.0.220.bazel"),
+        urls = ["https://static.crates.io/crates/serde/1.0.228/download"],
+        strip_prefix = "serde-1.0.228",
+        build_file = Label("//vendor/cargo:BUILD.serde-1.0.228.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "cargo_vendor__serde-untagged-0.1.8",
-        sha256 = "34836a629bcbc6f1afdf0907a744870039b1e14c0561cb26094fa683b158eff3",
+        name = "cargo_vendor__serde-untagged-0.1.9",
+        sha256 = "f9faf48a4a2d2693be24c6289dbe26552776eb7737074e6722891fadbe6c5058",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/serde-untagged/0.1.8/download"],
-        strip_prefix = "serde-untagged-0.1.8",
-        build_file = Label("//vendor/cargo:BUILD.serde-untagged-0.1.8.bazel"),
+        urls = ["https://static.crates.io/crates/serde-untagged/0.1.9/download"],
+        strip_prefix = "serde-untagged-0.1.9",
+        build_file = Label("//vendor/cargo:BUILD.serde-untagged-0.1.9.bazel"),
     )
 
     maybe(
@@ -9710,32 +9720,32 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__serde_core-1.0.220",
-        sha256 = "ddba47394f3b862d6ff6efdbd26ca4673e3566a307880a0ffb98f274bbe0ec32",
+        name = "cargo_vendor__serde_core-1.0.228",
+        sha256 = "41d385c7d4ca58e59fc732af25c3983b67ac852c1a25000afe1175de458b67ad",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/serde_core/1.0.220/download"],
-        strip_prefix = "serde_core-1.0.220",
-        build_file = Label("//vendor/cargo:BUILD.serde_core-1.0.220.bazel"),
+        urls = ["https://static.crates.io/crates/serde_core/1.0.228/download"],
+        strip_prefix = "serde_core-1.0.228",
+        build_file = Label("//vendor/cargo:BUILD.serde_core-1.0.228.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "cargo_vendor__serde_derive-1.0.220",
-        sha256 = "60e1f3b1761e96def5ec6d04a6e7421c0404fa3cf5c0155f1e2848fae3d8cc08",
+        name = "cargo_vendor__serde_derive-1.0.228",
+        sha256 = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/serde_derive/1.0.220/download"],
-        strip_prefix = "serde_derive-1.0.220",
-        build_file = Label("//vendor/cargo:BUILD.serde_derive-1.0.220.bazel"),
+        urls = ["https://static.crates.io/crates/serde_derive/1.0.228/download"],
+        strip_prefix = "serde_derive-1.0.228",
+        build_file = Label("//vendor/cargo:BUILD.serde_derive-1.0.228.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "cargo_vendor__serde_ignored-0.1.12",
-        sha256 = "b516445dac1e3535b6d658a7b528d771153dfb272ed4180ca4617a20550365ff",
+        name = "cargo_vendor__serde_ignored-0.1.14",
+        sha256 = "115dffd5f3853e06e746965a20dcbae6ee747ae30b543d91b0e089668bb07798",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/serde_ignored/0.1.12/download"],
-        strip_prefix = "serde_ignored-0.1.12",
-        build_file = Label("//vendor/cargo:BUILD.serde_ignored-0.1.12.bazel"),
+        urls = ["https://static.crates.io/crates/serde_ignored/0.1.14/download"],
+        strip_prefix = "serde_ignored-0.1.14",
+        build_file = Label("//vendor/cargo:BUILD.serde_ignored-0.1.14.bazel"),
     )
 
     maybe(
@@ -9760,12 +9770,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__serde_path_to_error-0.1.17",
-        sha256 = "59fab13f937fa393d08645bf3a84bdfe86e296747b506ada67bb15f10f218b2a",
+        name = "cargo_vendor__serde_path_to_error-0.1.20",
+        sha256 = "10a9ff822e371bb5403e391ecd83e182e0e77ba7f6fe0160b795797109d1b457",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/serde_path_to_error/0.1.17/download"],
-        strip_prefix = "serde_path_to_error-0.1.17",
-        build_file = Label("//vendor/cargo:BUILD.serde_path_to_error-0.1.17.bazel"),
+        urls = ["https://static.crates.io/crates/serde_path_to_error/0.1.20/download"],
+        strip_prefix = "serde_path_to_error-0.1.20",
+        build_file = Label("//vendor/cargo:BUILD.serde_path_to_error-0.1.20.bazel"),
     )
 
     maybe(
@@ -9800,12 +9810,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__serde_spanned-1.0.0",
-        sha256 = "40734c41988f7306bb04f0ecf60ec0f3f1caa34290e4e8ea471dcd3346483b83",
+        name = "cargo_vendor__serde_spanned-1.0.2",
+        sha256 = "5417783452c2be558477e104686f7de5dae53dba813c28435e0e70f82d9b04ee",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/serde_spanned/1.0.0/download"],
-        strip_prefix = "serde_spanned-1.0.0",
-        build_file = Label("//vendor/cargo:BUILD.serde_spanned-1.0.0.bazel"),
+        urls = ["https://static.crates.io/crates/serde_spanned/1.0.2/download"],
+        strip_prefix = "serde_spanned-1.0.2",
+        build_file = Label("//vendor/cargo:BUILD.serde_spanned-1.0.2.bazel"),
     )
 
     maybe(
@@ -10310,12 +10320,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__target-spec-3.5.0",
-        sha256 = "53928b291de23967df6740f2e584bb68101890f63d730292c0a5205092c8e0fa",
+        name = "cargo_vendor__target-spec-3.5.2",
+        sha256 = "b44840fc121ca20db81dadbb66d27ac9133a0d4756d674caa7da088ce89cbf2d",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/target-spec/3.5.0/download"],
-        strip_prefix = "target-spec-3.5.0",
-        build_file = Label("//vendor/cargo:BUILD.target-spec-3.5.0.bazel"),
+        urls = ["https://static.crates.io/crates/target-spec/3.5.2/download"],
+        strip_prefix = "target-spec-3.5.2",
+        build_file = Label("//vendor/cargo:BUILD.target-spec-3.5.2.bazel"),
     )
 
     maybe(
@@ -10610,12 +10620,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__toml-0.9.5",
-        sha256 = "75129e1dc5000bfbaa9fee9d1b21f974f9fbad9daec557a521ee6e080825f6e8",
+        name = "cargo_vendor__toml-0.9.7",
+        sha256 = "00e5e5d9bf2475ac9d4f0d9edab68cc573dc2fd644b0dba36b0c30a92dd9eaa0",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/toml/0.9.5/download"],
-        strip_prefix = "toml-0.9.5",
-        build_file = Label("//vendor/cargo:BUILD.toml-0.9.5.bazel"),
+        urls = ["https://static.crates.io/crates/toml/0.9.7/download"],
+        strip_prefix = "toml-0.9.7",
+        build_file = Label("//vendor/cargo:BUILD.toml-0.9.7.bazel"),
     )
 
     maybe(
@@ -10630,12 +10640,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__toml_datetime-0.7.0",
-        sha256 = "bade1c3e902f58d73d3f294cd7f20391c1cb2fbcb643b73566bc773971df91e3",
+        name = "cargo_vendor__toml_datetime-0.7.2",
+        sha256 = "32f1085dec27c2b6632b04c80b3bb1b4300d6495d1e129693bdda7d91e72eec1",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/toml_datetime/0.7.0/download"],
-        strip_prefix = "toml_datetime-0.7.0",
-        build_file = Label("//vendor/cargo:BUILD.toml_datetime-0.7.0.bazel"),
+        urls = ["https://static.crates.io/crates/toml_datetime/0.7.2/download"],
+        strip_prefix = "toml_datetime-0.7.2",
+        build_file = Label("//vendor/cargo:BUILD.toml_datetime-0.7.2.bazel"),
     )
 
     maybe(
@@ -10650,22 +10660,22 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__toml_edit-0.23.4",
-        sha256 = "7211ff1b8f0d3adae1663b7da9ffe396eabe1ca25f0b0bee42b0da29a9ddce93",
+        name = "cargo_vendor__toml_edit-0.23.6",
+        sha256 = "f3effe7c0e86fdff4f69cdd2ccc1b96f933e24811c5441d44904e8683e27184b",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/toml_edit/0.23.4/download"],
-        strip_prefix = "toml_edit-0.23.4",
-        build_file = Label("//vendor/cargo:BUILD.toml_edit-0.23.4.bazel"),
+        urls = ["https://static.crates.io/crates/toml_edit/0.23.6/download"],
+        strip_prefix = "toml_edit-0.23.6",
+        build_file = Label("//vendor/cargo:BUILD.toml_edit-0.23.6.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "cargo_vendor__toml_parser-1.0.2",
-        sha256 = "b551886f449aa90d4fe2bdaa9f4a2577ad2dde302c61ecf262d80b116db95c10",
+        name = "cargo_vendor__toml_parser-1.0.3",
+        sha256 = "4cf893c33be71572e0e9aa6dd15e6677937abd686b066eac3f8cd3531688a627",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/toml_parser/1.0.2/download"],
-        strip_prefix = "toml_parser-1.0.2",
-        build_file = Label("//vendor/cargo:BUILD.toml_parser-1.0.2.bazel"),
+        urls = ["https://static.crates.io/crates/toml_parser/1.0.3/download"],
+        strip_prefix = "toml_parser-1.0.3",
+        build_file = Label("//vendor/cargo:BUILD.toml_parser-1.0.3.bazel"),
     )
 
     maybe(
@@ -10680,12 +10690,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__toml_writer-1.0.2",
-        sha256 = "fcc842091f2def52017664b53082ecbbeb5c7731092bad69d2c63050401dfd64",
+        name = "cargo_vendor__toml_writer-1.0.3",
+        sha256 = "d163a63c116ce562a22cda521fcc4d79152e7aba014456fb5eb442f6d6a10109",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/toml_writer/1.0.2/download"],
-        strip_prefix = "toml_writer-1.0.2",
-        build_file = Label("//vendor/cargo:BUILD.toml_writer-1.0.2.bazel"),
+        urls = ["https://static.crates.io/crates/toml_writer/1.0.3/download"],
+        strip_prefix = "toml_writer-1.0.3",
+        build_file = Label("//vendor/cargo:BUILD.toml_writer-1.0.3.bazel"),
     )
 
     maybe(
@@ -11690,12 +11700,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__yaml-rust2-0.10.3",
-        sha256 = "4ce2a4ff45552406d02501cea6c18d8a7e50228e7736a872951fe2fe75c91be7",
+        name = "cargo_vendor__yaml-rust2-0.10.4",
+        sha256 = "2462ea039c445496d8793d052e13787f2b90e750b833afee748e601c17621ed9",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/yaml-rust2/0.10.3/download"],
-        strip_prefix = "yaml-rust2-0.10.3",
-        build_file = Label("//vendor/cargo:BUILD.yaml-rust2-0.10.3.bazel"),
+        urls = ["https://static.crates.io/crates/yaml-rust2/0.10.4/download"],
+        strip_prefix = "yaml-rust2-0.10.4",
+        build_file = Label("//vendor/cargo:BUILD.yaml-rust2-0.10.4.bazel"),
     )
 
     maybe(
@@ -11832,11 +11842,10 @@ def crate_repositories():
         struct(repo = "cargo_vendor__byteorder-1.5.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__bytes-1.10.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__bytestring-1.4.0", is_dev_dep = False),
-        struct(repo = "cargo_vendor__camino-1.1.12", is_dev_dep = False),
+        struct(repo = "cargo_vendor__camino-1.2.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__camino-tempfile-1.4.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__cargo-manifest-0.19.1", is_dev_dep = False),
-        struct(repo = "cargo_vendor__cargo-platform-0.2.0", is_dev_dep = False),
-        struct(repo = "cargo_vendor__cargo_metadata-0.21.0", is_dev_dep = False),
+        struct(repo = "cargo_vendor__cargo-platform-0.3.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__cargo_metadata-0.23.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__cargo_toml-0.22.3", is_dev_dep = False),
         struct(repo = "cargo_vendor__cedar-policy-4.5.1", is_dev_dep = False),
@@ -11844,7 +11853,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__cel-parser-0.8.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__chrono-0.4.42", is_dev_dep = False),
         struct(repo = "cargo_vendor__clap-4.5.47", is_dev_dep = False),
-        struct(repo = "cargo_vendor__config-0.15.15", is_dev_dep = False),
+        struct(repo = "cargo_vendor__config-0.15.18", is_dev_dep = False),
         struct(repo = "cargo_vendor__console-0.16.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__const_panic-0.2.15", is_dev_dep = False),
         struct(repo = "cargo_vendor__convert_case-0.8.0", is_dev_dep = False),
@@ -11866,7 +11875,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__futures-0.3.31", is_dev_dep = False),
         struct(repo = "cargo_vendor__futures-lite-2.6.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__glob-0.3.3", is_dev_dep = False),
-        struct(repo = "cargo_vendor__guppy-0.17.20", is_dev_dep = False),
+        struct(repo = "cargo_vendor__guppy-0.17.22", is_dev_dep = False),
         struct(repo = "cargo_vendor__h3-0.0.8", is_dev_dep = False),
         struct(repo = "cargo_vendor__h3-quinn-0.0.10", is_dev_dep = False),
         struct(repo = "cargo_vendor__heck-0.5.0", is_dev_dep = False),
@@ -11879,7 +11888,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__hyper-1.7.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__hyper-util-0.1.16", is_dev_dep = False),
         struct(repo = "cargo_vendor__indent_write-2.2.0", is_dev_dep = False),
-        struct(repo = "cargo_vendor__indexmap-2.11.1", is_dev_dep = False),
+        struct(repo = "cargo_vendor__indexmap-2.11.4", is_dev_dep = False),
         struct(repo = "cargo_vendor__ipnetwork-0.21.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__is_empty-0.3.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__itertools-0.14.0", is_dev_dep = False),
@@ -11895,7 +11904,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__minijinja-2.12.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__nextest-filtering-0.16.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__nextest-metadata-0.12.2", is_dev_dep = False),
-        struct(repo = "cargo_vendor__nextest-runner-0.85.0", is_dev_dep = False),
+        struct(repo = "cargo_vendor__nextest-runner-0.88.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__num-derive-0.4.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__num-traits-0.2.19", is_dev_dep = False),
         struct(repo = "cargo_vendor__num_cpus-1.17.0", is_dev_dep = False),
@@ -11927,15 +11936,15 @@ def crate_repositories():
         struct(repo = "cargo_vendor__reqwest-0.12.23", is_dev_dep = False),
         struct(repo = "cargo_vendor__rsa-0.9.8", is_dev_dep = False),
         struct(repo = "cargo_vendor__runtime-format-0.1.3", is_dev_dep = False),
-        struct(repo = "cargo_vendor__rustdoc-types-0.55.0", is_dev_dep = False),
+        struct(repo = "cargo_vendor__rustdoc-types-0.56.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__rustfix-0.9.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__rustls-0.23.32", is_dev_dep = False),
         struct(repo = "cargo_vendor__rusty_ffmpeg-0.16.7-ffmpeg.8", is_dev_dep = False),
         struct(repo = "cargo_vendor__sailfish-0.10.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__sailfish-macros-0.10.0", is_dev_dep = False),
-        struct(repo = "cargo_vendor__semver-1.0.26", is_dev_dep = False),
-        struct(repo = "cargo_vendor__serde-1.0.220", is_dev_dep = False),
-        struct(repo = "cargo_vendor__serde_derive-1.0.220", is_dev_dep = False),
+        struct(repo = "cargo_vendor__semver-1.0.27", is_dev_dep = False),
+        struct(repo = "cargo_vendor__serde-1.0.228", is_dev_dep = False),
+        struct(repo = "cargo_vendor__serde_derive-1.0.228", is_dev_dep = False),
         struct(repo = "cargo_vendor__serde_json-1.0.145", is_dev_dep = False),
         struct(repo = "cargo_vendor__serde_norway-0.9.42", is_dev_dep = False),
         struct(repo = "cargo_vendor__serde_qs-0.15.0", is_dev_dep = False),
@@ -11946,16 +11955,15 @@ def crate_repositories():
         struct(repo = "cargo_vendor__smol_str-0.3.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__swagger-ui-dist-5.29.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__syn-2.0.106", is_dev_dep = False),
-        struct(repo = "cargo_vendor__target-spec-3.5.0", is_dev_dep = False),
+        struct(repo = "cargo_vendor__target-spec-3.5.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__target-triple-0.1.4", is_dev_dep = False),
         struct(repo = "cargo_vendor__testcontainers-0.25.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__thiserror-2.0.16", is_dev_dep = False),
         struct(repo = "cargo_vendor__tokio-1.47.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__tokio-rustls-0.26.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__tokio-util-0.7.16", is_dev_dep = False),
-        struct(repo = "cargo_vendor__toml-0.9.5", is_dev_dep = False),
-        struct(repo = "cargo_vendor__toml_edit-0.22.27", is_dev_dep = False),
-        struct(repo = "cargo_vendor__toml_edit-0.23.4", is_dev_dep = False),
+        struct(repo = "cargo_vendor__toml-0.9.7", is_dev_dep = False),
+        struct(repo = "cargo_vendor__toml_edit-0.23.6", is_dev_dep = False),
         struct(repo = "cargo_vendor__tonic-0.14.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__tonic-build-0.14.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__tonic-prost-0.14.2", is_dev_dep = False),

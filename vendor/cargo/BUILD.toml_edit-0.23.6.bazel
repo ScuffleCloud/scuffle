@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "indexmap",
+    name = "toml_edit",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -36,8 +36,9 @@ rust_library(
     ),
     crate_features = [
         "default",
+        "display",
+        "parse",
         "serde",
-        "std",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -49,7 +50,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=indexmap",
+        "crate-name=toml_edit",
         "manual",
         "noclippy",
         "norustfmt",
@@ -64,10 +65,14 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "2.11.1",
+    version = "0.23.6",
     deps = [
-        "@cargo_vendor__equivalent-1.0.2//:equivalent",
-        "@cargo_vendor__hashbrown-0.15.5//:hashbrown",
-        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__indexmap-2.11.4//:indexmap",
+        "@cargo_vendor__serde_core-1.0.228//:serde_core",
+        "@cargo_vendor__serde_spanned-1.0.2//:serde_spanned",
+        "@cargo_vendor__toml_datetime-0.7.2//:toml_datetime",
+        "@cargo_vendor__toml_parser-1.0.3//:toml_parser",
+        "@cargo_vendor__toml_writer-1.0.3//:toml_writer",
+        "@cargo_vendor__winnow-0.7.13//:winnow",
     ],
 )

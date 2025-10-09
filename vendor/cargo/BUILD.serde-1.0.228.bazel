@@ -21,7 +21,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "camino",
+    name = "serde",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -39,11 +39,18 @@ rust_library(
         ],
     ),
     crate_features = [
-        "serde",
-        "serde1",
+        "alloc",
+        "default",
+        "derive",
+        "rc",
+        "serde_derive",
+        "std",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
+    proc_macro_deps = [
+        "@cargo_vendor__serde_derive-1.0.228//:serde_derive",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -52,7 +59,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=camino",
+        "crate-name=serde",
         "manual",
         "noclippy",
         "norustfmt",
@@ -67,10 +74,10 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "1.1.12",
+    version = "1.0.228",
     deps = [
-        "@cargo_vendor__camino-1.1.12//:build_script_build",
-        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__serde-1.0.228//:build_script_build",
+        "@cargo_vendor__serde_core-1.0.228//:serde_core",
     ],
 )
 
@@ -94,8 +101,12 @@ cargo_build_script(
         ],
     ),
     crate_features = [
-        "serde",
-        "serde1",
+        "alloc",
+        "default",
+        "derive",
+        "rc",
+        "serde_derive",
+        "std",
     ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
@@ -111,8 +122,8 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    edition = "2018",
-    pkg_name = "camino",
+    edition = "2021",
+    pkg_name = "serde",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -121,12 +132,12 @@ cargo_build_script(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=camino",
+        "crate-name=serde",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.1.12",
+    version = "1.0.228",
     visibility = ["//visibility:private"],
 )
 

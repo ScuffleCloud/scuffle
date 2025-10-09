@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "ron",
+    name = "iddqd",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,13 +35,13 @@ rust_library(
         ],
     ),
     crate_features = [
+        "allocator-api2",
         "default",
+        "default-hasher",
+        "std",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
-    proc_macro_deps = [
-        "@cargo_vendor__serde_derive-1.0.228//:serde_derive",
-    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -50,7 +50,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=ron",
+        "crate-name=iddqd",
         "manual",
         "noclippy",
         "norustfmt",
@@ -65,10 +65,12 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.8.1",
+    version = "0.3.14",
     deps = [
-        "@cargo_vendor__base64-0.21.7//:base64",
-        "@cargo_vendor__bitflags-2.9.4//:bitflags",
-        "@cargo_vendor__serde-1.0.228//:serde",
+        "@cargo_vendor__allocator-api2-0.2.21//:allocator_api2",
+        "@cargo_vendor__equivalent-1.0.2//:equivalent",
+        "@cargo_vendor__foldhash-0.2.0//:foldhash",
+        "@cargo_vendor__hashbrown-0.16.0//:hashbrown",
+        "@cargo_vendor__rustc-hash-2.1.1//:rustc_hash",
     ],
 )

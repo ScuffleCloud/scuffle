@@ -87,7 +87,7 @@ rust_library(
         "@cargo_vendor__parking_lot-0.12.4//:parking_lot",
         "@cargo_vendor__rand-0.8.5//:rand",
         "@cargo_vendor__redis-protocol-6.0.0//:redis_protocol",
-        "@cargo_vendor__semver-1.0.26//:semver",
+        "@cargo_vendor__semver-1.0.27//:semver",
         "@cargo_vendor__socket2-0.5.10//:socket2",
         "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__tokio-stream-0.1.17//:tokio_stream",

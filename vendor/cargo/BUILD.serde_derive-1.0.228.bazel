@@ -7,7 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,8 +16,8 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_library(
-    name = "cargo_metadata",
+rust_proc_macro(
+    name = "serde_derive",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -47,7 +47,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=cargo_metadata",
+        "crate-name=serde_derive",
         "manual",
         "noclippy",
         "norustfmt",
@@ -56,20 +56,15 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.21.0",
+    version = "1.0.228",
     deps = [
-        "@cargo_vendor__camino-1.1.12//:camino",
-        "@cargo_vendor__cargo-platform-0.2.0//:cargo_platform",
-        "@cargo_vendor__cargo-util-schemas-0.8.2//:cargo_util_schemas",
-        "@cargo_vendor__semver-1.0.26//:semver",
-        "@cargo_vendor__serde-1.0.220//:serde",
-        "@cargo_vendor__serde_json-1.0.145//:serde_json",
-        "@cargo_vendor__thiserror-2.0.16//:thiserror",
+        "@cargo_vendor__proc-macro2-1.0.101//:proc_macro2",
+        "@cargo_vendor__quote-1.0.40//:quote",
+        "@cargo_vendor__syn-2.0.106//:syn",
     ],
 )

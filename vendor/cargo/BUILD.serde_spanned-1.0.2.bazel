@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "serde_ignored",
+    name = "serde_spanned",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,8 +34,14 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "alloc",
+        "default",
+        "serde",
+        "std",
+    ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -44,7 +50,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=serde_ignored",
+        "crate-name=serde_spanned",
         "manual",
         "noclippy",
         "norustfmt",
@@ -59,8 +65,8 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.12",
+    version = "1.0.2",
     deps = [
-        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__serde_core-1.0.228//:serde_core",
     ],
 )

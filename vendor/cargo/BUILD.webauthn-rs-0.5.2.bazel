@@ -67,7 +67,7 @@ rust_library(
     version = "0.5.2",
     deps = [
         "@cargo_vendor__base64urlsafedata-0.5.2//:base64urlsafedata",
-        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__serde-1.0.228//:serde",
         "@cargo_vendor__tracing-0.1.41//:tracing",
         "@cargo_vendor__url-2.5.7//:url",
         "@cargo_vendor__uuid-1.18.1//:uuid",

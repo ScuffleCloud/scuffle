@@ -1,19 +1,5 @@
-load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
-
 alias(
-    name = "diesel_file",
-    actual = select({
-        "//misc/platforms:linux-aarch64": "@diesel-linux-aarch64//:diesel",
-        "//misc/platforms:linux-x86_64": "@diesel-linux-x86_64//:diesel",
-        "//misc/platforms:macos-aarch64": "@diesel-macos-aarch64//:diesel",
-        "//misc/platforms:macos-x86_64": "@diesel-macos-x86_64//:diesel",
-    }),
-    tags = ["manual"],
-)
-
-sh_binary(
     name = "diesel",
-    srcs = [":diesel_file"],
-    tags = ["manual"],
+    actual = "@multitool//tools/diesel",
     visibility = ["//visibility:public"],
 )

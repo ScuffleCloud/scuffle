@@ -20,11 +20,11 @@ docs = ["dep:scuffle-changelog", "dep:document-features"]
 
 [dependencies]
 cargo-manifest = "0.19"
-cargo_metadata = "0.23.0"
+cargo_metadata = "0.23"
 document-features = { optional = true, version = "0.2" }
 prettyplease = "0.2"
 regex = "1"
-scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1" }
 serde = "1"
 serde_derive = "1"
 serde_json = "1"
@@ -33,7 +33,7 @@ target-triple = "0.1"
 toml = "0.9"
 
 [dev-dependencies]
-insta = "1.42.0"
+insta = "1"
 
 [package.metadata.docs.rs]
 all-features = true

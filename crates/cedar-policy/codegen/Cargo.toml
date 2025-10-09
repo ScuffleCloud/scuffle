@@ -14,7 +14,7 @@ description = "Code generator for scuffle-cedar-policy."
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
-cedar-policy-core = "4.5"
+cedar-policy-core = "4"
 heck = "0.5"
 prettyplease = "0.2"
 proc-macro2 = "1"

@@ -33,3 +33,8 @@ category = "chore"
 description = "upgrade tokio dependency"
 breaking = true
 authors = ["@lennartkloock"]
+
+[[scuffle-settings]]
+category = "chore"
+description = "upgrade config dependency"
+authors = ["@lennartkloock"]

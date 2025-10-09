@@ -47,7 +47,7 @@ required-features = ["cli"]
 [dependencies]
 anyhow = { optional = true, version = "1.0" }
 clap = { optional = true, version = "4" }
-config = { default-features = false, version = "0.15" }
+config = { default-features = false, version = "0.15.18" } # at least 0.15.18 because the parse_empty test fails otherwise
 document-features = { optional = true, version = "0.2" }
 minijinja = { features = ["custom_syntax", "json", "urlencode"], optional = true, version = "2.5" }
 scuffle-bootstrap = { optional = true, path = "../bootstrap", version = "0.1.3" }

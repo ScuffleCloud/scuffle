@@ -357,8 +357,8 @@ mod tests {
     #[test]
     fn parse_empty() {
         let err = parse_settings::<TestSettings>(Options::default()).expect_err("expected error");
-        assert!(matches!(err, crate::SettingsError::Config(config::ConfigError::Message(_))));
-        assert_eq!(err.to_string(), "missing field `key`");
+        assert!(matches!(err, crate::SettingsError::Config(config::ConfigError::NotFound(_))));
+        assert_eq!(err.to_string(), "missing configuration field \"key\"");
     }
 
     #[test]

@@ -15,4 +15,5 @@ sh_binary(
     name = "shfmt",
     srcs = [":shfmt_file"],
     tags = ["manual"],
+    visibility = ["//visibility:public"],
 )

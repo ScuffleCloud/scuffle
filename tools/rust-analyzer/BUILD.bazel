@@ -4,16 +4,19 @@ exec_transition_alias_opt(
     name = "rust-analyzer",
     actual = "@bindeps//:rust-analyzer__rust-analyzer",
     tags = ["manual"],
+    visibility = ["//visibility:public"],
 )
 
 exec_transition_alias_opt(
     name = "check",
     actual = "//misc/utils/rust/analyzer/check",
     tags = ["manual"],
+    visibility = ["//visibility:public"],
 )
 
 exec_transition_alias_opt(
     name = "discover",
     actual = "//misc/utils/rust/analyzer/discover",
     tags = ["manual"],
+    visibility = ["//visibility:public"],
 )

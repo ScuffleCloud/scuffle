@@ -187,7 +187,7 @@ struct ConfigParser {
     output_base: Option<Utf8PathBuf>,
 
     /// The path to a Bazel binary.
-    #[clap(long, default_value = "bazel")]
+    #[clap(long, default_value = "bazel", env = "BAZEL")]
     bazel: Utf8PathBuf,
 
     /// A config to pass to Bazel invocations with `--config=<config>`.

@@ -20,21 +20,7 @@ lint:
     pnpm lint:fix --ui=stream
 
 clean *args="--async":
-    #!/usr/bin/env bash
-    set -exuo pipefail
-
-    output_base=$(bazel info output_base)
-
-    rm -r "${output_base}/.scripts"
-    bazel --output_base="${output_base}" clean {{ args }}
-    bazel --output_base="${output_base}_coverage" clean {{ args }}
-    bazel --output_base="${output_base}_grind" clean {{ args }}
-    bazel --output_base="${output_base}_rust_analyzer" clean {{ args }}
-
-clear-tool-cache:
-    #!/usr/bin/env bash
-    output_base=$(bazel info output_base)
-    rm -r "${output_base}/.scripts"
+    bazel clean {{ args }}
 
 run bin *args:
     #!/usr/bin/env bash
@@ -107,13 +93,11 @@ test *targets="//...":
 
     cargo insta reject > /dev/null
 
-    output_base=$(bazel info output_base)
-
     targets=$(bazel query 'tests(set({{ targets }}))')
 
-    bazel --output_base="${output_base}_coverage" coverage ${targets} --//settings:test_insta_force_pass --skip_incompatible_explicit_targets
+    bazel coverage ${targets} --//settings:test_insta_force_pass --skip_incompatible_explicit_targets
 
-    test_logs=$(bazel --output_base="${output_base}_coverage" info bazel-testlogs)
+    test_logs=$(bazel info bazel-testlogs)
 
     snaps=$(find -L "${test_logs}" \( -name '*.snap.new' -o -name '*.pending-snap' \))
     # Loop over each found file
@@ -126,7 +110,7 @@ test *targets="//...":
     cargo insta review
 
     rm lcov.info || true
-    ln -s "$(bazel --output_base="${output_base}_coverage" info output_path)"/_coverage/_coverage_report.dat lcov.info
+    ln -s "$(bazel info output_path)"/_coverage/_coverage_report.dat lcov.info
 
 # this should be kept in sync with
 # .github/workflows/ci-check-vendor.yaml
@@ -143,10 +127,9 @@ grind *targets="//...":
     #!/usr/bin/env bash
     set -euxo pipefail
 
-    output_base=$(bazel info output_base)
     targets=$(bazel query 'kind("nextest_test rule", set({{ targets }}))')
 
-    bazel --output_base="${output_base}_grind" test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind --skip_incompatible_explicit_targets
+    bazel test ${targets} --//settings:test_rustc_flags="--cfg=valgrind" --//settings:test_valgrind --skip_incompatible_explicit_targets
 
 alias docs := doc
 

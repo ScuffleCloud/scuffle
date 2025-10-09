@@ -120,7 +120,7 @@ fn main() -> anyhow::Result<()> {
         },
     };
 
-    write_discovery(io::stdout(), discovery)?;
+    write_discovery(io::stdout(), discovery).context("failed to write discovery")?;
     Ok(())
 }
 

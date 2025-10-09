@@ -5,6 +5,8 @@
     const user = authState().user;
 
     async function webAuthList() {
+        console.log(authState());
+        console.log(user);
         if (!user) return;
 
         const listCredentials = usersServiceClient

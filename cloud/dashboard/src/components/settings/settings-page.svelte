@@ -4,24 +4,18 @@
     import Switch from "$components/switch.svelte";
     import { authState } from "$lib/auth.svelte";
     import { usersServiceClient } from "$lib/grpcClient";
-    import IconBell from "$lib/images/icon-bell.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
     import { useTotpAuth } from "$lib/two-factor/toptAuth.svelte";
     import { useWebauthnAuth } from "$lib/two-factor/webAuthn.svelte";
-    import type { UserSettings } from "$msw/mocks/settings";
     import { createQuery } from "@tanstack/svelte-query";
+    import RecoveryCodesButton from "./recovery-codes-button.svelte";
     import TwoFactorSettingsCard, {
         type MfaMethod,
     } from "./two-factor-settings-card.svelte";
 
-    interface Props {
-        settings: UserSettings;
-    }
-
-    const { settings }: Props = $props();
-
     const user = authState().user;
-    let userSettings = $state(settings);
+
+    // $inspect(user);
 
     const toptListQuery = createQuery(() => ({
         queryKey: ["totp-list"],
@@ -265,27 +259,15 @@
             description="Generate backup codes to access your account if you lose your authenticator device."
             {isLoading}
         >
-            <button
-                class="action-button action-secondary"
-                disabled={!userSettings.twoFactorAuth.enabled}
-                onclick={() => {
-                    userSettings.twoFactorAuth
-                        .backupCodesGenerated = true;
-                    console.log("Recovery codes generated");
-                }}
-            >
-                {
-                    userSettings.twoFactorAuth
-                        .backupCodesGenerated
-                    ? "Regenerate Codes"
-                    : "Generate Codes"
-                }
-            </button>
+            <RecoveryCodesButton
+                enabled={activeMethods.length > 0}
+                hasExistingCodes={activeMethods.length > 0}
+            />
         </SettingsCard>
     </SettingsBlock>
 
     <!-- Notification Settings -->
-    <SettingsBlock
+    <!-- <SettingsBlock
         title="Notification Settings"
         icon={IconBell}
     >
@@ -308,7 +290,6 @@
                 size="medium"
             />
         </SettingsCard>
-
         <SettingsCard
             title="Marketing Communications"
             description="Receive updates about new features and promotional offers."
@@ -328,8 +309,6 @@
             />
         </SettingsCard>
     </SettingsBlock>
-
-    <!-- Security & Privacy -->
     <SettingsBlock
         title="Security & Privacy"
         icon={IconShield}
@@ -366,7 +345,7 @@
                 Change Password
             </button>
         </SettingsCard>
-    </SettingsBlock>
+    </SettingsBlock> -->
 </div>
 
 <style>

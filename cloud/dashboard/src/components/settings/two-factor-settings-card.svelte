@@ -12,7 +12,6 @@
         type: "TOTP" | "WEBAUTH";
         isPrimary?: boolean;
     }
-    // When something is updated we can just refetch the webauthn list. Methods will come from a tanstack query I guess
     interface Props {
         methods: MfaMethod[];
         isLoading?: boolean;
@@ -329,13 +328,6 @@
     .step-content.centered {
       align-items: center;
       text-align: center;
-    }
-
-    .dialog-title {
-      font-size: 1.875rem;
-      font-weight: 700;
-      color: rgb(23, 23, 23);
-      margin: 0;
     }
 
     .dialog-description {

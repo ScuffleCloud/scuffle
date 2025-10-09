@@ -3,7 +3,7 @@ import { usersServiceClient } from "$lib/grpcClient";
 
 // TODO: Fix these functions and rewrite this file. Figure out how we'll bubble up errors and how completing setups
 // Will correctly update wherever the list endpoint data is being fetched. This is just testing flow for design
-// Don't commit this
+// REFACTOR ALL
 async function initiateTotpSetup(userId: string) {
     const createCall = usersServiceClient.createTotpCredential({ id: userId });
     const createStatus = await createCall.status;

@@ -68,6 +68,9 @@ async function createWebauthnCredential(userId: string, credentialName: string):
     if (completeStatus.code !== "OK") {
         throw new Error(completeStatus.detail || "Failed to complete WebAuthn credential creation");
     }
+
+    // Refetch the webauthn list. Could also optimistically update the list but probably better to just refetch
+    // TODO: Refetch the webauthn list
 }
 
 export interface WebauthnAuthProps {

@@ -58,9 +58,9 @@ thiserror = "2"
 
 [dev-dependencies]
 # For examples:
+insta = "1.42"
 serde_derive = "1"
 smart-default = "0.7"
-insta = "1.42"
 
 [package.metadata.xtask.powerset]
 additive-features = [

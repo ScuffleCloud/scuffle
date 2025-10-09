@@ -12,10 +12,10 @@ scuffle_package(
     proc_macro_deps = ["//crates/changelog"],
     test = scuffle_test(
         data = glob(["assets/*"]),
-        insta = True,
         env = {
             "ASSETS_DIR": "crates/settings/assets",
         },
+        insta = True,
     ),
     deps = ["//crates/bootstrap"],
 )

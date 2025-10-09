@@ -6,7 +6,11 @@
 #![deny(clippy::mod_module_files)]
 
 mod config;
+mod database;
+mod dataloader;
 
 pub use config::*;
+pub use database::*;
+pub use dataloader::*;
 
-pub trait Global: ConfigInterface + Send + Sync + 'static {}
+pub trait Global: ConfigInterface + DatabaseInterface + DataloaderInterface + Send + Sync + 'static {}

@@ -60,7 +60,7 @@ rust_proc_macro(
     }),
     version = "0.12.6",
     deps = [
-        "@cargo_vendor__anyhow-1.0.99//:anyhow",
+        "@cargo_vendor__anyhow-1.0.100//:anyhow",
         "@cargo_vendor__itertools-0.12.1//:itertools",
         "@cargo_vendor__proc-macro2-1.0.101//:proc_macro2",
         "@cargo_vendor__quote-1.0.40//:quote",

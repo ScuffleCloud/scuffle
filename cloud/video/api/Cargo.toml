@@ -18,8 +18,14 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
 anyhow = "1"
-axum = "0.8.4"
+axum = "0.8"
+ext-traits = { path = "../../ext-traits", package = "scufflecloud-ext-traits" }
+db-types = { path = "./db-types", package = "scufflecloud-video-api-db-types" }
+diesel = { features = ["uuid"], version = "2" }
+diesel-async = { features = ["async-connection-wrapper", "bb8", "postgres"], version = "0.7" }
+petname = { version = "2", default-features = false, features = ["default-words", "default-rng"] }
 pb = { path = "../../proto", package = "scufflecloud-proto" }
+scuffle-batching = { path = "../../../crates/batching" }
 scuffle-bootstrap = { path = "../../../crates/bootstrap" }
 scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../../crates/bootstrap-telemetry" }
 scuffle-context = { path = "../../../crates/context" }
@@ -29,12 +35,13 @@ scuffle-signal = { features = ["bootstrap"], path = "../../../crates/signal" }
 serde = "1"
 serde_derive = "1"
 smart-default = "0.7"
-swagger-ui-dist = "5.27.1"
+swagger-ui-dist = "5"
 tinc = { path = "../../../crates/tinc" }
-tonic = { version = "0.14.1", features = ["tls-aws-lc"] }
-tonic-reflection = "0.14.1"
-tonic-web = "0.14.2"
-tower-http = { features = ["cors", "trace"], version = "0.6.6" }
+tonic = { version = "0.14", features = ["tls-aws-lc"] }
+tonic-reflection = "0.14"
+tonic-web = "0.14"
+tonic-types = "0.14"
+tower-http = { features = ["cors", "trace"], version = "0.6" }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 video-api-traits = { path = "./traits", package = "scufflecloud-video-api-traits" }

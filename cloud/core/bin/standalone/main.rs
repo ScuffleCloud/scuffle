@@ -291,7 +291,7 @@ impl scuffle_bootstrap::Global for Global {
             anyhow::bail!("DATABASE_URL is not set");
         };
 
-        tracing::info!(db_url = config.db_url, "creating database connection pool");
+        tracing::info!(db_url = db_url, "creating database connection pool");
 
         let database = bb8::Pool::builder()
             .build(diesel_async::pooled_connection::AsyncDieselConnectionManager::new(db_url))

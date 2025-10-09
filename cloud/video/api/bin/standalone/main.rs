@@ -7,6 +7,9 @@
 
 use std::sync::Arc;
 
+use anyhow::Context;
+use diesel_async::pooled_connection::bb8;
+use scuffle_batching::{DataLoader, DataLoaderFetcher};
 use scuffle_bootstrap_telemetry::opentelemetry;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::logs::SdkLoggerProvider;
 use scuffle_bootstrap_telemetry::opentelemetry_sdk::trace::SdkTracerProvider;
@@ -14,10 +17,15 @@ use tracing_subscriber::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 
+use crate::dataloaders::StreamLoader;
+
 mod config;
+mod dataloaders;
 
 struct Global {
     config: config::Config,
+    database: bb8::Pool<diesel_async::AsyncPgConnection>,
+    stream_loader: DataLoader<StreamLoader>,
     open_telemetry: opentelemetry::OpenTelemetry,
 }
 
@@ -28,6 +36,27 @@ impl video_api_traits::ConfigInterface for Global {
 
     fn swagger_ui_enabled(&self) -> bool {
         self.config.swagger_ui
+    }
+}
+
+impl video_api_traits::DatabaseInterface for Global {
+    type Connection<'a>
+        = diesel_async::pooled_connection::bb8::PooledConnection<'a, diesel_async::pg::AsyncPgConnection>
+    where
+        Self: 'a;
+
+    async fn db(&self) -> anyhow::Result<Self::Connection<'_>> {
+        self.database.get().await.context("failed to get database connection")
+    }
+}
+
+impl video_api_traits::DataloaderInterface for Global {
+    fn stream_loader(
+        &self,
+    ) -> &scuffle_batching::DataLoader<
+        impl DataLoaderFetcher<Key = db_types::models::StreamId, Value = db_types::models::Stream> + Send + Sync + 'static,
+    > {
+        &self.stream_loader
     }
 }
 
@@ -64,6 +93,19 @@ impl scuffle_bootstrap::Global for Global {
             )
             .init();
 
+        let Some(db_url) = config.db_url.as_deref() else {
+            anyhow::bail!("DATABASE_URL is not set");
+        };
+
+        tracing::info!(db_url = db_url, "creating database connection pool");
+
+        let database = bb8::Pool::builder()
+            .build(diesel_async::pooled_connection::AsyncDieselConnectionManager::new(db_url))
+            .await
+            .context("build database pool")?;
+
+        let stream_loader = StreamLoader::new(database.clone());
+
         let tracer = SdkTracerProvider::default();
         opentelemetry::global::set_tracer_provider(tracer.clone());
 
@@ -71,7 +113,12 @@ impl scuffle_bootstrap::Global for Global {
 
         let open_telemetry = opentelemetry::OpenTelemetry::new().with_traces(tracer).with_logs(logger);
 
-        Ok(Arc::new(Self { config, open_telemetry }))
+        Ok(Arc::new(Self {
+            config,
+            database,
+            stream_loader,
+            open_telemetry,
+        }))
     }
 }
 

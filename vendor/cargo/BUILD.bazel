@@ -46,14 +46,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "anyhow-1.0.99",
-    actual = "@cargo_vendor__anyhow-1.0.99//:anyhow",
+    name = "anyhow-1.0.100",
+    actual = "@cargo_vendor__anyhow-1.0.100//:anyhow",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "anyhow",
-    actual = "@cargo_vendor__anyhow-1.0.99//:anyhow",
+    actual = "@cargo_vendor__anyhow-1.0.100//:anyhow",
     tags = ["manual"],
 )
 
@@ -1074,6 +1074,18 @@ transition_alias_opt(
 transition_alias_opt(
     name = "paste",
     actual = "@cargo_vendor__paste-1.0.15//:paste",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "petname-2.0.2",
+    actual = "@cargo_vendor__petname-2.0.2//:petname",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "petname",
+    actual = "@cargo_vendor__petname-2.0.2//:petname",
     tags = ["manual"],
 )
 

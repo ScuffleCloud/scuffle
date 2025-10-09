@@ -89,9 +89,9 @@ http_archive(
 http_archive(
     name = "sysroots-macos-universal",
     build_file_content = _MACOS_SYSROOT_BUILD_FILE,
-    sha256 = "0ed91a26e4d3639f7cbbdcc4c9ead90b6dc1759d92e094d25f36f0176c3464e7",
+    sha256 = "51490ae2f1bc556b37e7e357a7ddc45c4624e99a0990dd29f4f850d17897b64c",
     strip_prefix = "MacOSX14.5.sdk",
-    url = "https://github.com/ScuffleCloud/toolchains/releases/download/macos-sysroots-1/MacOSX14.5.sdk.tar.zst",
+    url = "https://github.com/ScuffleCloud/toolchains/releases/download/macos-sysroots-3/MacOSX14.5.sdk.tar.zst",
 )
 
 _CLANG_BUILD_FILE = """

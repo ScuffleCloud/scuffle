@@ -8,7 +8,7 @@
         QueryClientProvider,
     } from "@tanstack/svelte-query";
     import "@fontsource-variable/archivo";
-    import { browser, dev } from "$app/environment";
+    import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { page } from "$app/state";
     import LoginFooter from "$components/login/login-footer.svelte";
@@ -16,7 +16,6 @@
     import LoginPage from "$components/login/login-page.svelte";
     import RightNav from "$components/right-nav/right-nav.svelte";
     import TwoFactorPage from "$components/two-factor/two-factor-page.svelte";
-    import { PUBLIC_VITE_MSW_ENABLED } from "$env/static/public";
     import { authState } from "$lib/auth.svelte";
     import {
         LANDING_ROUTE,
@@ -63,7 +62,10 @@
         }
 
         // Skip routing for oauth callbacks let them manage their own routing
-        if (isOAuthCallbackRoute) {
+        if (
+            isOAuthCallbackRoute
+            && auth.userSessionToken.state !== "authenticated"
+        ) {
             return;
         }
 
@@ -87,32 +89,13 @@
 
         // Public routes logic
         if (
-            isLoginRoute
+            (isLoginRoute || isOAuthCallbackRoute)
             && auth.userSessionToken.state === "authenticated"
         ) {
             goto(LANDING_ROUTE);
         }
     });
 
-    // Maybe don't need this code since we'll mock functions in a different way but leaving it for now
-    const requireMsw = dev && browser
-        && PUBLIC_VITE_MSW_ENABLED === "true";
-    let mockingReady = $state(!requireMsw);
-
-    // TODO: Remove this mocking logic eventually
-    // We can probably have an organization with sample data setup in a dev env
-    $effect(() => {
-        if (requireMsw && !mockingReady) {
-            console.log("Loading MSW");
-            import("$msw/setup").then(({ enableMocking }) =>
-                enableMocking()
-            ).then(() => {
-                mockingReady = true;
-            }).catch((error) => {
-                console.error("Failed to load MSW:", error);
-            });
-        }
-    });
     const { children } = $props();
     const queryClient = new QueryClient({
         defaultOptions: {
@@ -131,47 +114,43 @@
 <!-- TODO: Add protection to routes if not logged in -->
 <!-- This should go on each route somewhere or here might be sufficient -->
 <!-- TODO: Clean this up at some point -->
-{#if mockingReady}
-    {#if auth.userSessionToken.state === "loading"}
-        <div>Loading...</div>
-    {:else if auth.userSessionToken.state === "unauthenticated"}
-        {#if isOAuthCallbackRoute}
-            <div class="login-page-container">
-                <LoginHeader />
-                {@render children()}
-                <LoginFooter />
-            </div>
-        {:else}
-            <div class="login-page-container">
-                <LoginHeader />
-                <LoginPage />
-                <LoginFooter />
-            </div>
-        {/if}
-    {:else if hasPendingMfa}
+{#if auth.userSessionToken.state === "loading"}
+    <div>Loading...</div>
+{:else if auth.userSessionToken.state === "unauthenticated"}
+    {#if isOAuthCallbackRoute}
         <div class="login-page-container">
             <LoginHeader />
-            <TwoFactorPage />
+            {@render children()}
             <LoginFooter />
         </div>
     {:else}
-        <div class="app">
-            <QueryClientProvider client={queryClient}>
-                <Navbar />
-                <main>
-                    <TopNav />
-                    <div class="content">
-                        <div class="main-content">
-                            {@render children()}
-                        </div>
-                        <RightNav />
-                    </div>
-                </main>
-            </QueryClientProvider>
+        <div class="login-page-container">
+            <LoginHeader />
+            <LoginPage />
+            <LoginFooter />
         </div>
     {/if}
+{:else if hasPendingMfa}
+    <div class="login-page-container">
+        <LoginHeader />
+        <TwoFactorPage />
+        <LoginFooter />
+    </div>
 {:else}
-    <div>Error loading mocks...</div>
+    <div class="app">
+        <QueryClientProvider client={queryClient}>
+            <Navbar />
+            <main>
+                <TopNav />
+                <div class="content">
+                    <div class="main-content">
+                        {@render children()}
+                    </div>
+                    <RightNav />
+                </div>
+            </main>
+        </QueryClientProvider>
+    </div>
 {/if}
 
 <style>

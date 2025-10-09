@@ -14,19 +14,19 @@ async function createWebauthnMfaChallenge(userId: string) {
     return await challengeCall.response;
 }
 
-async function validateWebauthnMfa(credentialResponse: string) {
-    const validateCall = sessionsServiceClient.validateMfaForUserSession({
-        webauthnResponse: credentialResponse,
-    });
+// async function validateWebauthnMfa(credentialResponse: string) {
+//     const validateCall = sessionsServiceClient.validateMfaForUserSession({
+//         webauthnResponse: credentialResponse,
+//     });
 
-    const validateStatus = await validateCall.status;
+//     const validateStatus = await validateCall.status;
 
-    if (validateStatus.code !== "OK") {
-        throw new Error(validateStatus.detail || "Failed to validate WebAuthn credential");
-    }
+//     if (validateStatus.code !== "OK") {
+//         throw new Error(validateStatus.detail || "Failed to validate WebAuthn credential");
+//     }
 
-    return await validateCall.response;
-}
+//     return await validateCall.response;
+// }
 
 async function performWebauthnMfaChallenge(userId: string): Promise<void> {
     // Step 1: Create WebAuthn challenge
@@ -66,9 +66,9 @@ async function performWebauthnMfaChallenge(userId: string): Promise<void> {
         type: credential.type,
     };
 
-    const userSession = await validateWebauthnMfa(JSON.stringify(credentialResponseData));
+    // const userSession = await validateWebauthnMfa(JSON.stringify(credentialResponseData));
 
-    if (userSession) {
+    if (1) {
         // await authState().handleNewUserSessionToken(userSession);
         console.log("user session finished?");
     }

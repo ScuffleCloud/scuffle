@@ -1,7 +1,6 @@
 <script lang="ts">
     import SettingsBlock from "$components/settings-block.svelte";
     import SettingsCard from "$components/settings-card.svelte";
-    import Switch from "$components/switch.svelte";
     import { authState } from "$lib/auth.svelte";
     import { usersServiceClient } from "$lib/grpcClient";
     import IconShield from "$lib/images/icon-shield.svelte";

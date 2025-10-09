@@ -121,7 +121,7 @@
             </p>
 
             <div class="codes-container">
-                {#each generatedCodes as code}
+                {#each generatedCodes as code, index (`code-${index + 1}`)}
                     <code class="recovery-code">{code}</code>
                 {/each}
             </div>

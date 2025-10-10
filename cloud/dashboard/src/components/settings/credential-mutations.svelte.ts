@@ -30,8 +30,8 @@ export function useCreateWebauthnCredential(userId: string | undefined) {
 export function useUpdateWebauthnName(userId: string | undefined) {
     const queryClient: QueryClient = useQueryClient();
 
-    return createMutation(() => ({
-        mutationFn: async ({ id, name }: UpdateWebauthnNameType) =>
+    return createMutation<void, Error, UpdateWebauthnNameType>(() => ({
+        mutationFn: ({ id, name }: UpdateWebauthnNameType) =>
             withRpcErrorHandling(async () => {
                 if (!userId) throw new Error("User not authenticated");
 
@@ -46,7 +46,7 @@ export function useUpdateWebauthnName(userId: string | undefined) {
                     throw new Error(status.detail || "Failed to update credential name");
                 }
             }),
-        onSuccess: (_data: MfaCredential[], { id, name }: UpdateWebauthnNameType) => {
+        onSuccess: (_data, { id, name }) => {
             queryClient.setQueryData<MfaCredential[]>(
                 ["webauthn-list"],
                 (old) => old?.map(cred => cred.id === id ? { ...cred, name } : cred),
@@ -58,7 +58,7 @@ export function useUpdateWebauthnName(userId: string | undefined) {
 export function useDeleteWebauthnCredential(userId: string | undefined) {
     const queryClient: QueryClient = useQueryClient();
 
-    return createMutation(() => ({
+    return createMutation<void, Error, { id: string }>(() => ({
         mutationFn: async ({ id }: { id: string }) =>
             withRpcErrorHandling(async () => {
                 if (!userId) throw new Error("User not authenticated");
@@ -72,7 +72,7 @@ export function useDeleteWebauthnCredential(userId: string | undefined) {
                     throw new Error(status.detail || "Failed to delete credential");
                 }
             }),
-        onSuccess: (_data: MfaCredential, { id }: { id: string }) => {
+        onSuccess: (_data, { id }) => {
             queryClient.setQueryData<MfaCredential[]>(
                 ["webauthn-list"],
                 (old: MfaCredential[] | undefined) => old?.filter(cred => cred.id !== id),

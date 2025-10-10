@@ -1,3 +1,9 @@
+<!--
+ Check how Modal is used across the app for correct usage.
+ If calling close from within the modal, call closeModal() must be used to correctly reset the modal state
+ TBD can change this moving forward I'm just not yet sure how this component will evolve for future use
+ so it's easily with the current flows to fully manage outside this component
+-->
 <script lang="ts">
     import IconArrowLeft from "$lib/images/icon-arrow-left.svelte";
     import IconCloseX from "$lib/images/icon-close-x.svelte";
@@ -12,16 +18,18 @@
         onBack?: () => void;
         onClose?: () => void;
         hideCloseButton?: boolean;
+        closeOnOutsideClick?: boolean;
         children: Snippet;
     }
 
     let {
-        triggerLabel = "Open",
+        triggerLabel = "",
         triggerClass = "",
         title,
         onBack,
         onClose,
         hideCloseButton = false,
+        closeOnOutsideClick = true,
         children,
     }: Props = $props();
 
@@ -36,16 +44,24 @@
             }
             return next;
         },
+        closeOnOutsideClick,
     });
 
-    export function closeDialog() {
+    // To close modal from within the modal
+    export function closeModal() {
         open.set(false);
+    }
+
+    export function openModal() {
+        open.set(true);
     }
 </script>
 
-<button use:melt={$trigger} class={triggerClass || "default-trigger"}>
-    {triggerLabel}
-</button>
+{#if triggerLabel}
+    <button use:melt={$trigger} class={triggerClass || "default-trigger"}>
+        {triggerLabel}
+    </button>
+{/if}
 
 {#if $open}
     <div use:melt={$portalled}>

@@ -1,9 +1,8 @@
-import { authState } from "$lib/auth.svelte";
 import { usersServiceClient } from "$lib/grpcClient";
 import { arrayBufferToBase64url, base64urlToArrayBuffer } from "$lib/utils";
 import { getWebAuthnErrorMessage, WEB_AUTHN_NOT_ALLOWED_ERROR } from "./utils";
 
-async function createWebauthnCredential(userId: string, credentialName: string): Promise<void> {
+export async function createWebauthnCredential(userId: string): Promise<string> {
     const createCall = usersServiceClient.createWebauthnCredential({ id: userId });
     const createStatus = await createCall.status;
 
@@ -12,7 +11,6 @@ async function createWebauthnCredential(userId: string, credentialName: string):
     }
 
     const createResponse = await createCall.response;
-
     const options = JSON.parse(createResponse.optionsJson).publicKey;
 
     const publicKey: PublicKeyCredentialCreationOptions = {
@@ -28,7 +26,6 @@ async function createWebauthnCredential(userId: string, credentialName: string):
         })) || [],
     };
 
-    // Create credential using browser API
     let credential: PublicKeyCredential | null = null;
     try {
         credential = await navigator.credentials.create({
@@ -42,7 +39,6 @@ async function createWebauthnCredential(userId: string, credentialName: string):
         throw new Error(WEB_AUTHN_NOT_ALLOWED_ERROR);
     }
 
-    // Note: Don't spread these properties from credential object
     const responseJson = JSON.stringify({
         id: credential.id,
         rawId: arrayBufferToBase64url(credential.rawId),
@@ -56,10 +52,8 @@ async function createWebauthnCredential(userId: string, credentialName: string):
         authenticatorAttachment: credential.authenticatorAttachment,
     });
 
-    // Complete registration on server
     const completeCall = usersServiceClient.completeCreateWebauthnCredential({
         id: userId,
-        name: credentialName,
         responseJson,
     });
 
@@ -69,47 +63,10 @@ async function createWebauthnCredential(userId: string, credentialName: string):
         throw new Error(completeStatus.detail || "Failed to complete WebAuthn credential creation");
     }
 
-    // Refetch the webauthn list. Could also optimistically update the list but probably better to just refetch
-    // TODO: Refetch the webauthn list
+    const completeResponse = await completeCall.response;
+    return completeResponse.id;
 }
 
-export interface WebauthnAuthProps {
-    loading: () => boolean;
-    error: () => string | null;
-    createCredential: (credentialName: string) => Promise<void>;
-    isSupported: () => boolean;
-}
-
-// TODO: Bubble up thrown errors into toast? or somewhere
-export function useWebauthnAuth(): WebauthnAuthProps {
-    let loading = $state(false);
-    let error = $state<string | null>(null);
-
-    return {
-        loading: () => loading,
-        error: () => error,
-
-        async createCredential(credentialName: string) {
-            const userId = authState().user?.id;
-            if (!userId) {
-                error = "User not authenticated";
-                return;
-            }
-
-            loading = true;
-            error = null;
-
-            try {
-                await createWebauthnCredential(userId, credentialName);
-            } catch (err) {
-                error = err instanceof Error ? err.message : "WebAuthn credential creation failed";
-            } finally {
-                loading = false;
-            }
-        },
-
-        isSupported: () => {
-            return !!(navigator.credentials && navigator.credentials.create);
-        },
-    };
+export function isWebauthnSupported(): boolean {
+    return !!(navigator.credentials && navigator.credentials.create);
 }

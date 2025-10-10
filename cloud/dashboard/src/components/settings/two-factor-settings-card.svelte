@@ -1,31 +1,34 @@
 <script lang="ts">
+    import InlineNotification from "$components/inline-notification.svelte";
     import SettingsCard from "$components/settings-card.svelte";
+    import { authState } from "$lib/auth.svelte";
     import IconCheckSmall from "$lib/images/icon-check-small.svelte";
-    import IconDots from "$lib/images/icon-dots.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
     import IconOverviewKey from "$lib/images/icon-overview-key.svelte";
-    import { useWebauthnAuth } from "$lib/two-factor/webAuthn.svelte";
+    import IconShield from "$lib/images/icon-shield.svelte";
+    import type { MfaCredential } from "$lib/types";
+
     import Modal from "../modal.svelte";
-    export interface MfaMethod {
-        id: string;
-        name: string;
-        type: "TOTP" | "WEBAUTH";
-        isPrimary?: boolean;
-    }
+    import AuthMethodActionsMenu from "./auth-method-actions-menu.svelte";
+    import {
+        useCreateWebauthnCredential,
+        useDeleteWebauthnCredential,
+        useUpdateWebauthnName,
+    } from "./credential-mutations.svelte";
     interface Props {
-        methods: MfaMethod[];
+        methods: MfaCredential[];
         isLoading?: boolean;
     }
 
     let { methods, isLoading }: Props = $props();
 
+    const userId = authState().user?.id;
     const enabled = $derived(methods.length > 0);
 
     // Flow states. Add one for TOPT later
     let currentStep = $state<"select" | "waiting" | "success">(
         "select",
     );
-    let passkeyName = $state("");
 
     const stepToTitle = {
         select: "New 2FA method",
@@ -33,37 +36,98 @@
         success: "Passkey added",
     };
 
-    let modal: Modal;
+    // Webauthn setup flow
+    let credentialId = $state("");
+    let passkeyName = $state("");
 
+    // Edit state
+    let editingCredentialId = $state<string | null>(null);
+    let editingName = $state("");
+
+    // Delete state
+    let methodToDelete = $state<MfaCredential | null>(null);
+
+    let modal: Modal;
+    let editModal: Modal;
+    let deleteModal: Modal;
+
+    // --Mutations--
+
+    const createWebAuthnMutation = useCreateWebauthnCredential(userId);
+    const updateNameMutation = useUpdateWebauthnName(userId);
+    const deleteCredentialMutation = useDeleteWebauthnCredential(
+        userId,
+    );
+
+    // --Webauthn setup flow--
     function handleReset() {
         passkeyName = "";
+        credentialId = "";
         currentStep = "select";
+        createWebAuthnMutation.reset();
     }
 
-    function handleInternalClose() {
-        handleReset();
-        modal.closeDialog();
-    }
-
-    const webauthnAuth = useWebauthnAuth();
-
-    async function handlePasskeySetup() {
+    function handlePasskeySetup() {
         currentStep = "waiting";
-        try {
-            await webauthnAuth.createCredential(
-                passkeyName || "My Passkey",
-            );
-            // currentStep = "success";
-        } catch (error) {
-            console.log("an error has occured. Click to retry", error);
+        createWebAuthnMutation.mutate(undefined, {
+            onSuccess: (id) => {
+                credentialId = id;
+                currentStep = "success";
+            },
+        });
+    }
+
+    function handleRetry() {
+        // Clear errror before retrying
+        createWebAuthnMutation.reset();
+        createWebAuthnMutation.mutate();
+    }
+
+    // --Webauthn edit modals--
+    function onEditMethod(method: MfaCredential) {
+        editingCredentialId = method.id;
+        editingName = method.name || "";
+        editModal.openModal();
+    }
+
+    function handleEditModalClose() {
+        editingCredentialId = null;
+        editingName = "";
+    }
+
+    function handleEditSubmit() {
+        if (editingCredentialId && editingName.trim()) {
+            updateNameMutation.mutate({
+                id: editingCredentialId,
+                name: editingName.trim(),
+            }, {
+                onSuccess: () => {
+                    editModal.closeModal();
+                },
+            });
         }
     }
 
-    function onEditMethod(id: string) {
-        console.log("edit method", id);
+    // --Webauthn delete modals--
+    function onDeleteMethod(method: MfaCredential) {
+        methodToDelete = method;
+        deleteModal.openModal();
+    }
+
+    function handleDeleteModalClose() {
+        methodToDelete = null;
+    }
+
+    function handleDeleteConfirm() {
+        if (methodToDelete) {
+            deleteCredentialMutation.mutate({ id: methodToDelete.id }, {
+                onSuccess: () => {
+                    deleteModal.closeModal();
+                },
+            });
+        }
     }
 </script>
-
 <SettingsCard
     title="Two-factor authentication"
     status={{
@@ -87,19 +151,15 @@
                     <div class="method-info">
                         <div class="method-name-row">
                             <span class="method-name">{method.name}</span>
-                            {#if method.isPrimary}
+                            <!-- {#if method.isPrimary}
                                 <span class="primary-badge">Primary</span>
-                            {/if}
-                            <span class="method-type">{method.type}</span>
+                            {/if} -->
                         </div>
                     </div>
-                    <button
-                        class="icon-button"
-                        onclick={() => onEditMethod(method.id)}
-                        aria-label="Edit method"
-                    >
-                        <IconDots />
-                    </button>
+                    <AuthMethodActionsMenu
+                        onEdit={() => onEditMethod(method)}
+                        onDelete={() => onDeleteMethod(method)}
+                    />
                 </div>
             {/each}
         </div>
@@ -116,6 +176,7 @@
             title={stepToTitle[currentStep]}
             onClose={handleReset}
             hideCloseButton={currentStep === "waiting"}
+            closeOnOutsideClick={currentStep === "waiting" || currentStep === "success"}
             bind:this={modal}
         >
             {#if currentStep === "select"}
@@ -134,30 +195,39 @@
                         </button>
 
                         <button class="method-button secondary" disabled>
-                            <svg
-                                width="20"
-                                height="20"
-                                viewBox="0 0 20 20"
-                                fill="none"
-                            >
-                                <path
-                                    d="M10 2L3 7V9C3 13.55 6.84 17.74 10 18C13.16 17.74 17 13.55 17 9V7L10 2Z"
-                                    fill="currentColor"
-                                />
-                            </svg>
+                            <IconShield />
                             Continue with 2FA Code
                         </button>
                     </div>
                 </div>
             {:else if currentStep === "waiting"}
                 <div class="step-content centered">
-                    <div class="spinner-container">
-                        <div class="spinner"></div>
-                    </div>
-
-                    <button class="cancel-button" onclick={handleInternalClose}>
-                        Cancel
-                    </button>
+                    {#if createWebAuthnMutation.isError}
+                        <InlineNotification
+                            type="error"
+                            message={createWebAuthnMutation.error?.message
+                            || "An error occurred"}
+                        />
+                        <div class="button-group">
+                            <button
+                                class="default-button"
+                                onclick={handleRetry}
+                            >
+                                Send request again
+                            </button>
+                            <button
+                                class="default-button"
+                                onclick={() => modal.closeModal()}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    {:else}
+                        <div class="spinner-container">
+                            <div class="spinner"></div>
+                        </div>
+                        <!-- TBD on a cancel button here too, it won't stop the navigator.credentials.create from firing even if it hangs. -->
+                    {/if}
                 </div>
             {:else if currentStep === "success"}
                 <div class="step-content">
@@ -177,7 +247,10 @@
                         class="passkey-input"
                     />
 
-                    <button class="done-button" onclick={handleInternalClose}>
+                    <button
+                        class="done-button"
+                        onclick={() => modal.closeModal()}
+                    >
                         Done
                     </button>
                 </div>
@@ -185,6 +258,98 @@
         </Modal>
     </div>
 </SettingsCard>
+
+<Modal
+    title="Edit passkey name"
+    onClose={handleEditModalClose}
+    bind:this={editModal}
+    closeOnOutsideClick={!updateNameMutation.isPending}
+>
+    <div class="edit-modal-content">
+        <input
+            type="text"
+            bind:value={editingName}
+            placeholder="Passkey name"
+            class="passkey-input"
+            disabled={updateNameMutation.isPending}
+        />
+
+        {#if updateNameMutation.isError}
+            <InlineNotification
+                type="error"
+                message={updateNameMutation.error?.message
+                || "Failed to update name"}
+            />
+        {/if}
+
+        <div class="button-group">
+            <button
+                class="done-button"
+                onclick={handleEditSubmit}
+                disabled={updateNameMutation.isPending
+                || !editingName.trim()}
+            >
+                {
+                    updateNameMutation.isPending
+                    ? "Saving..."
+                    : "Save"
+                }
+            </button>
+            <button
+                class="default-button"
+                onclick={() => editModal.closeModal()}
+                disabled={updateNameMutation.isPending}
+            >
+                Cancel
+            </button>
+        </div>
+    </div>
+</Modal>
+
+<!-- Delete confirmation modal -->
+<Modal
+    title="Delete passkey?"
+    onClose={handleDeleteModalClose}
+    bind:this={deleteModal}
+    closeOnOutsideClick={!deleteCredentialMutation.isPending}
+>
+    <div class="delete-modal-content">
+        <p class="delete-warning">
+            Are you sure you want to delete <strong>{
+                methodToDelete?.name ?? "this passkey"
+            }</strong>? This action cannot be undone.
+        </p>
+
+        {#if deleteCredentialMutation.isError}
+            <InlineNotification
+                type="error"
+                message={deleteCredentialMutation.error?.message
+                || "Failed to delete"}
+            />
+        {/if}
+
+        <div class="button-group">
+            <button
+                class="danger-button"
+                onclick={handleDeleteConfirm}
+                disabled={deleteCredentialMutation.isPending}
+            >
+                {
+                    deleteCredentialMutation.isPending
+                    ? "Deleting..."
+                    : "Delete"
+                }
+            </button>
+            <button
+                class="default-button"
+                onclick={() => deleteModal.closeModal()}
+                disabled={deleteCredentialMutation.isPending}
+            >
+                Cancel
+            </button>
+        </div>
+    </div>
+</Modal>
 
 <style>
     .divider {
@@ -245,39 +410,24 @@
       color: var(--colors-brown90);
     }
 
-    .primary-badge {
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 0.125rem 0.5rem;
-      border-radius: 5.25rem;
-      background: #fef3c7;
-      color: #d97706;
-    }
+    /*
+        .primary-badge {
+          font-size: 0.75rem;
+          font-weight: 700;
+          padding: 0.125rem 0.5rem;
+          border-radius: 5.25rem;
+          background: #fef3c7;
+          color: #d97706;
+        }
 
-    .method-type {
-      font-size: 0.875rem;
-      font-weight: 600;
-      padding: 0.125rem 0.5rem;
-      border-radius: 0.25rem;
-      background: var(--colors-gray50);
-      color: var(--colors-brown70);
-    }
-
-    .icon-button {
-      background: none;
-      border: none;
-      padding: 0.25rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--colors-brown70);
-      transition: color 0.2s;
-    }
-
-    .icon-button:hover {
-      color: var(--colors-brown90);
-    }
+        .method-type {
+          font-size: 0.875rem;
+          font-weight: 600;
+          padding: 0.125rem 0.5rem;
+          border-radius: 0.25rem;
+          background: var(--colors-gray50);
+          color: var(--colors-brown70);
+        } */
 
     .add-method-button-container {
       display: flex;
@@ -395,7 +545,7 @@
       }
     }
 
-    .cancel-button {
+    .default-button {
       padding: 0.75rem 2rem;
       border-radius: 0.5rem;
       background-color: rgb(228, 228, 231);
@@ -403,10 +553,19 @@
       font-weight: 500;
       border: none;
       cursor: pointer;
+      width: 100%;
     }
 
-    .cancel-button:hover {
+    .default-button:hover {
       background-color: rgb(212, 212, 216);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
     }
 
     .success-message {
@@ -453,5 +612,33 @@
 
     .done-button:hover {
       background-color: rgb(249, 201, 120);
+    }
+
+    .edit-modal-content,
+    .delete-modal-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .danger-button {
+      padding: 0.875rem 1.5rem;
+      border-radius: 0.75rem;
+      background-color: #fee;
+      color: #7f1d1d;
+      font-weight: 600;
+      font-size: 1rem;
+      border: 2px solid #fcc;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .danger-button:hover:not(:disabled) {
+      background-color: #fcc;
+    }
+
+    .danger-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 </style>

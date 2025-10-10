@@ -5,32 +5,34 @@
     import { usersServiceClient } from "$lib/grpcClient";
     import IconShield from "$lib/images/icon-shield.svelte";
     import { useTotpAuth } from "$lib/two-factor/toptAuth.svelte";
-    import { useWebauthnAuth } from "$lib/two-factor/webAuthn.svelte";
+    import type { MfaCredential } from "$lib/types";
     import { createQuery } from "@tanstack/svelte-query";
     import RecoveryCodesButton from "./recovery-codes-button.svelte";
-    import TwoFactorSettingsCard, {
-        type MfaMethod,
-    } from "./two-factor-settings-card.svelte";
+    import TwoFactorSettingsCard from "./two-factor-settings-card.svelte";
 
     const user = authState().user;
 
-    // $inspect(user);
-
-    const toptListQuery = createQuery(() => ({
+    const totpListQuery = createQuery(() => ({
         queryKey: ["totp-list"],
-        queryFn: () =>
-            usersServiceClient.listTotpCredentials({
+        queryFn: async () => {
+            const call = usersServiceClient.listTotpCredentials({
                 id: user!.id,
-            }),
+            });
+            const response = await call.response;
+            return response.credentials;
+        },
         enabled: !!user,
     }));
 
     const webauthnListQuery = createQuery(() => ({
         queryKey: ["webauthn-list"],
-        queryFn: () =>
-            usersServiceClient.listWebauthnCredentials({
+        queryFn: async () => {
+            const call = usersServiceClient.listWebauthnCredentials({
                 id: user!.id,
-            }),
+            });
+            const response = await call.response;
+            return response.credentials;
+        },
         enabled: !!user,
     }));
 
@@ -44,8 +46,6 @@
         { id: "2", name: "Passkey", type: "WEBAUTH" },
         { id: "3", name: "Passkey", type: "WEBAUTH" },
     ]);
-
-    const webauthnAuth = useWebauthnAuth();
 
     const totpAuth = useTotpAuth();
 
@@ -146,13 +146,28 @@
     let totpCode = $state("");
 
     const hasAnyError = $derived(
-        toptListQuery.isError || webauthnListQuery.isError,
+        totpListQuery.isError || webauthnListQuery.isError,
     );
 
     const isLoading = $derived(
-        toptListQuery.isLoading || webauthnListQuery.isLoading
+        totpListQuery.isLoading || webauthnListQuery.isLoading
             || hasAnyError,
     );
+
+    const authCredentials: MfaCredential[] = $derived(
+        [
+            ...(totpListQuery.data?.map(cred => ({
+                ...cred,
+                type: "totp" as const,
+            })) || []),
+            ...(webauthnListQuery.data?.map(cred => ({
+                ...cred,
+                type: "webauthn" as const,
+            })) || []),
+        ],
+    );
+
+    $inspect(authCredentials);
 
     let errorShown = $state(false);
 
@@ -160,7 +175,7 @@
         if (hasAnyError && !errorShown) {
             errorShown = true;
         }
-        if (toptListQuery.isSuccess && webauthnListQuery.isSuccess) {
+        if (totpListQuery.isSuccess && webauthnListQuery.isSuccess) {
             errorShown = false;
         }
     });
@@ -170,11 +185,11 @@
 
 <div class="settings-page">
     <!-- WEBAUTHN -->
-    <div class="two-factor-auth">
+    <!-- <div class="two-factor-auth">
         Here:
-        <!-- <button onclick={() => webAuthList()}>
+        <button onclick={() => webAuthList()}>
             Load WebAuthn Credentials
-        </button> -->
+        </button>
         <br>
         2fa information here testing flows:
         <br>
@@ -195,11 +210,10 @@
         <br>
         Error: {webauthnAuth.error()}
     </div>
-    <!-- TOPT -->
     <div class="two-factor-auth">
-        <!-- <button onclick={() => totpList()}>
+        <button onclick={() => totpList()}>
             Load TOTP Credentials
-        </button> -->
+        </button>
         <br>
         Here:
         <button onclick={() => totpAuth.initiateTotpSetup()}>
@@ -212,8 +226,6 @@
                 Secret URL: {totpAuth.qrCodeData()?.secretUrl}
             </div>
         {/if}
-
-        <!-- Step 2: Complete setup after scanning QR -->
         <input
             type="text"
             bind:value={totpCredentialName}
@@ -243,14 +255,14 @@
         <br>
         Error: {totpAuth.error()}
         <br>
-    </div>
+    </div> -->
     <SettingsBlock
         title="Two-factor Authentication"
         subtitle="(2FA)"
         icon={IconShield}
     >
         <TwoFactorSettingsCard
-            methods={activeMethods as MfaMethod[]}
+            methods={authCredentials}
             {isLoading}
         />
         <SettingsCard

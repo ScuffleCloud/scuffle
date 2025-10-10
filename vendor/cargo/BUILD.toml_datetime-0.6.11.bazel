@@ -64,6 +64,6 @@ rust_library(
     }),
     version = "0.6.11",
     deps = [
-        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__serde-1.0.228//:serde",
     ],
 )

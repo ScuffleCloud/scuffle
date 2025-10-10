@@ -13,10 +13,10 @@ axum = { version = "0.8", default-features = false }
 ext-traits = { path = "../ext-traits", package = "scufflecloud-ext-traits" }
 futures = "0.3"
 ipnetwork = "0.21"
-maxminddb = "0.26.0"
+maxminddb = "0.26"
 serde = "1"
 thiserror = "2"
-tonic = "0.14.2"
+tonic = "0.14"
 tower-layer = "0.3"
 tower-service = "0.3"
 tracing = "0.1"

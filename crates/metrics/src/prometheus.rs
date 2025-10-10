@@ -355,7 +355,7 @@ where
     F: Fn() -> I,
     I: IntoIterator<Item = &'a KeyValue>,
 {
-    fn encode(&self, mut encoder: prometheus_client::encoding::LabelSetEncoder) -> Result<(), std::fmt::Error> {
+    fn encode(&self, encoder: &mut prometheus_client::encoding::LabelSetEncoder) -> Result<(), std::fmt::Error> {
         use std::fmt::Write;
 
         fn write_kv(
@@ -382,19 +382,19 @@ where
 
         if let Some(resource) = self.resource {
             for (key, value) in resource.iter() {
-                write_kv(&mut encoder, key.as_str(), value.as_str().as_ref(), self.prometheus_full_utf8)?;
+                write_kv(encoder, key.as_str(), value.as_str().as_ref(), self.prometheus_full_utf8)?;
             }
         }
 
         if let Some(scope) = self.scope {
             for (key, value) in scope_to_iter(scope) {
-                write_kv(&mut encoder, key, value.as_ref(), self.prometheus_full_utf8)?;
+                write_kv(encoder, key, value.as_ref(), self.prometheus_full_utf8)?;
             }
         }
 
         for kv in (self.get_attrs)() {
             write_kv(
-                &mut encoder,
+                encoder,
                 kv.key.as_str(),
                 kv.value.as_str().as_ref(),
                 self.prometheus_full_utf8,

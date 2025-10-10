@@ -61,11 +61,11 @@ rust_library(
     }),
     version = "0.12.2",
     deps = [
-        "@cargo_vendor__camino-1.1.12//:camino",
+        "@cargo_vendor__camino-1.2.1//:camino",
         "@cargo_vendor__nextest-workspace-hack-0.1.0//:nextest_workspace_hack",
-        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__serde-1.0.228//:serde",
         "@cargo_vendor__serde_json-1.0.145//:serde_json",
         "@cargo_vendor__smol_str-0.3.2//:smol_str",
-        "@cargo_vendor__target-spec-3.5.0//:target_spec",
+        "@cargo_vendor__target-spec-3.5.2//:target_spec",
     ],
 )

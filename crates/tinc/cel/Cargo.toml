@@ -20,14 +20,14 @@ runtime = []
 docs = ["dep:document-features"]
 
 [dependencies]
-bytes = "1.5"
+bytes = "1"
 chrono = "0.4"
 document-features = { optional = true, version = "0.2" }
-email_address = "0.2.9"
+email_address = "0.2"
 float-cmp = "0.10"
 fmtools = "0.1"
 linkme = "0.3"
-num-traits = "0.2.19"
+num-traits = "0.2"
 regex = "1"
 thiserror = "2"
 ulid = "1"
@@ -35,7 +35,7 @@ url = "2"
 uuid = "1"
 
 [dev-dependencies]
-insta = "1.43"
+insta = "1"
 
 [package.metadata.xtask.powerset]
 additive-features = ["docs"]

@@ -65,7 +65,7 @@ rust_library(
     version = "0.16.0",
     deps = [
         "@cargo_vendor__globset-0.4.16//:globset",
-        "@cargo_vendor__guppy-0.17.20//:guppy",
+        "@cargo_vendor__guppy-0.17.22//:guppy",
         "@cargo_vendor__miette-7.6.0//:miette",
         "@cargo_vendor__nextest-metadata-0.12.2//:nextest_metadata",
         "@cargo_vendor__nextest-workspace-hack-0.1.0//:nextest_workspace_hack",

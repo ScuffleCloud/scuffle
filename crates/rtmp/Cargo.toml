@@ -22,38 +22,38 @@ name = "scuffle-rtmp-basic"
 path = "examples/basic.rs"
 
 [dependencies]
-byteorder = "1.5"
-bytes = "1.5"
+byteorder = "1"
+bytes = "1"
 serde = "1"
 serde_derive = "1"
-thiserror = "2.0"
-tokio = { features = ["io-util", "sync"], version = "1.36" }
+thiserror = "2"
+tokio = { features = ["io-util", "sync"], version = "1" }
 tracing = "0.1"
 
 hmac = "0.12"
 rand = "0.9"
 sha2 = "0.10"
 
-bitmask-enum = "2.2.5"
+bitmask-enum = "2"
 num-derive = "0.4"
 num-traits = "0.2"
 
 document-features = { optional = true, version = "0.2" }
-nutype-enum = { path = "../nutype-enum", version = "0.1.4" }
-scuffle-amf0 = { features = ["serde"], path = "../amf0", version = "0.2.1" }
-scuffle-bytes-util = { features = ["serde"], path = "../bytes-util", version = "0.1.3" }
-scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
-scuffle-context = { path = "../context", version = "0.1.3" }
-scuffle-future-ext = { path = "../future-ext", version = "0.1.3" }
+nutype-enum = { path = "../nutype-enum", version = "0.1" }
+scuffle-amf0 = { features = ["serde"], path = "../amf0", version = "0.2" }
+scuffle-bytes-util = { features = ["serde"], path = "../bytes-util", version = "0.1" }
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1" }
+scuffle-context = { path = "../context", version = "0.1" }
+scuffle-future-ext = { path = "../future-ext", version = "0.1" }
 
 [dev-dependencies]
-serde_json = "1.0"
-tokio = { features = ["full"], version = "1.44.1" }
+serde_json = "1"
+tokio = { features = ["full"], version = "1" }
 
 # For examples:
 scuffle-flv = { path = "../flv" }
-tracing = "0.1.41"
-tracing-subscriber = "0.3.19"
+tracing = "0.1"
+tracing-subscriber = "0.3"
 
 [package.metadata.docs.rs]
 all-features = true

@@ -42,11 +42,13 @@ impl GeneratedMethod {
             tinc_pb_prost::http_endpoint_options::Method::Patch(path) => (openapiv3_1::HttpMethod::Patch, path),
         };
 
-        let trimmed_path = path.trim_matches('/');
-        let full_path = if let Some(prefix) = &service.options.prefix {
-            format!("/{}/{}", prefix.trim_matches('/'), trimmed_path)
-        } else {
-            format!("/{trimmed_path}")
+        let full_path = match (
+            path.trim_matches('/'),
+            service.options.prefix.as_deref().map(|p| p.trim_matches('/')),
+        ) {
+            ("", Some(prefix)) => format!("/{prefix}"),
+            (path, None | Some("")) => format!("/{path}"),
+            (path, Some(prefix)) => format!("/{prefix}/{path}"),
         };
 
         let http_method = quote::format_ident!("{http_method_oa}");
@@ -69,7 +71,7 @@ impl GeneratedMethod {
         let GeneratedParams {
             tokens: path_tokens,
             params,
-        } = generator.generate_path_parameter(&full_path)?;
+        } = generator.generate_path_parameter(full_path.trim_end_matches("/"))?;
         openapi.parameters(params);
 
         let is_get_or_delete = matches!(http_method_oa, HttpMethod::Get | HttpMethod::Delete);

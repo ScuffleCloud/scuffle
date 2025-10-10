@@ -99,7 +99,7 @@ mod tests {
             static ONCE: std::sync::Once = std::sync::Once::new();
 
             ONCE.call_once(|| {
-                rustls::crypto::aws_lc_rs::default_provider()
+                tokio_rustls::rustls::crypto::aws_lc_rs::default_provider()
                     .install_default()
                     .expect("failed to install aws lc provider");
             });
@@ -282,7 +282,7 @@ mod tests {
     }
 
     #[cfg(feature = "tls-rustls")]
-    fn rustls_config() -> rustls::ServerConfig {
+    fn rustls_config() -> tokio_rustls::rustls::ServerConfig {
         install_provider();
 
         let certfile = std::fs::File::open(file_path("cert.pem")).expect("cert not found");
@@ -294,7 +294,7 @@ mod tests {
             .expect("failed to load key")
             .expect("no key found");
 
-        rustls::ServerConfig::builder()
+        tokio_rustls::rustls::ServerConfig::builder()
             .with_no_client_auth()
             .with_single_cert(certs, key)
             .expect("failed to build config")

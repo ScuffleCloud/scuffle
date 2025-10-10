@@ -38,7 +38,7 @@ pub struct HyperBackend<F> {
     /// Use this field to set the server into TLS mode.
     /// It will only accept TLS connections when this is set.
     #[cfg(feature = "tls-rustls")]
-    rustls_config: Option<rustls::ServerConfig>,
+    rustls_config: Option<tokio_rustls::rustls::ServerConfig>,
     /// Enable HTTP/1.1.
     #[cfg(feature = "http1")]
     #[builder(default = true)]

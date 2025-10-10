@@ -930,7 +930,6 @@ _NORMAL_DEPENDENCIES = {
         },
         "tls-rustls": {
             _COMMON_CONDITION: {
-                "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
                 "tokio-rustls": Label("@cargo_vendor//:tokio-rustls-0.26.2"),
             },
         },

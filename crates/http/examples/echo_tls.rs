@@ -12,7 +12,7 @@
 
 use std::{fs, io};
 
-use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use tokio_rustls::rustls::pki_types::{CertificateDer, PrivateKeyDer};
 
 #[tokio::main]
 async fn main() {
@@ -36,11 +36,11 @@ async fn main() {
         .expect("server failed");
 }
 
-pub fn get_tls_config() -> io::Result<rustls::ServerConfig> {
+pub fn get_tls_config() -> io::Result<tokio_rustls::rustls::ServerConfig> {
     let certs = load_certs("local/fullchain.pem")?;
     let key = load_private_key("local/privkey.pem")?;
 
-    let server_config = rustls::ServerConfig::builder()
+    let server_config = tokio_rustls::rustls::ServerConfig::builder()
         .with_no_client_auth()
         .with_single_cert(certs, key)
         .unwrap();

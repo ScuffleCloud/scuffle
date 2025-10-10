@@ -21,7 +21,7 @@ jobs:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
       - name: Format bazel
-        run: ./tools/scripts/buildifier $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
+        run: bazel run //tools/buildifier $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
 
       - name: Format dprint
         run: bazel run //tools/dprint fmt

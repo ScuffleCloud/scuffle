@@ -66,10 +66,11 @@ pub(crate) fn authorization_url<G: core_traits::Global>(
     state: &str,
 ) -> String {
     format!(
-        "https://accounts.google.com/o/oauth2/v2/auth?client_id={}&redirect_uri={}&response_type=code&scope={}&state={state}",
+        "https://accounts.google.com/o/oauth2/v2/auth?client_id={}&redirect_uri={}&response_type=code&scope={}&state={}",
         global.google_oauth2_config().client_id,
         urlencoding::encode(&redirect_uri(dashboard_origin)),
         ALL_SCOPES.join("%20"), // URL-encoded space
+        urlencoding::encode(state),
     )
 }
 

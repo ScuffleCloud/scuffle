@@ -13,10 +13,10 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
 anyhow = "1"
+db-types = { path = "../db-types", package = "scufflecloud-video-api-db-types" }
 diesel = { version = "2", default-features = false }
 diesel-async = { version = "0.7", default-features = false }
 scuffle-batching = { path = "../../../../crates/batching" }
-db-types = { path = "../db-types", package = "scufflecloud-video-api-db-types" }
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

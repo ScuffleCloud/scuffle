@@ -307,8 +307,9 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
     async fn validate(&mut self) -> Result<(), tonic::Status> {
         let device = self.get_ref().device.clone().require("device")?;
         let device_fingerprint = sha2::Sha256::digest(&device.public_key_data);
+        let state = urlencoding::decode(&self.get_ref().state).into_tonic_internal_err("failed to decode state")?;
         let state = base64::prelude::BASE64_URL_SAFE
-            .decode(&self.get_ref().state)
+            .decode(state.as_ref())
             .into_tonic_internal_err("failed to decode state")?;
 
         if *device_fingerprint != state {

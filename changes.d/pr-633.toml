@@ -1,0 +1,9 @@
+[[scuffle-bootstrap-telemetry]]
+category = "chore"
+description = "fix rustls dependency"
+authors = ["@lennartkloock"]
+
+[[scuffle-http]]
+category = "chore"
+description = "fix rustls dependency"
+authors = ["@lennartkloock"]

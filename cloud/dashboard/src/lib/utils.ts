@@ -1,3 +1,6 @@
+import { rpcErrorToString } from "$lib/grpcClient";
+import type { RpcError } from "@protobuf-ts/runtime-rpc";
+
 export function getCssVar(varName: string): string {
     if (typeof window === "undefined") {
         return "";
@@ -29,4 +32,13 @@ export function arrayBufferToBase64url(buffer: ArrayBuffer): string {
         /\//g,
         "_",
     );
+}
+
+// Wrapper to handle RPC errors in mutations
+export async function withRpcErrorHandling<T>(fn: () => Promise<T>): Promise<T> {
+    try {
+        return await fn();
+    } catch (err) {
+        throw new Error(rpcErrorToString(err as RpcError));
+    }
 }

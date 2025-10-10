@@ -45,10 +45,8 @@ rust_library(
     crate_features = [
         "aws-lc-rs",
         "aws_lc_rs",
-        "default",
         "log",
         "logging",
-        "prefer-post-quantum",
         "std",
         "tls12",
     ],
@@ -112,10 +110,8 @@ cargo_build_script(
     crate_features = [
         "aws-lc-rs",
         "aws_lc_rs",
-        "default",
         "log",
         "logging",
-        "prefer-post-quantum",
         "std",
         "tls12",
     ],

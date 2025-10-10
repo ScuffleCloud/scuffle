@@ -39,7 +39,7 @@ const fn minutes(mins: u64) -> std::time::Duration {
 #[serde(default)]
 pub struct TimeoutConfig {
     #[default(minutes(2))]
-    pub max_request_lifetime: std::time::Duration,
+    pub max_request_diff: std::time::Duration,
     #[default(days(30))]
     pub user_session: std::time::Duration,
     #[default(minutes(5))]

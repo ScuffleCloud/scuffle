@@ -115,7 +115,7 @@ impl core_traits::ConfigInterface for Global {
         core_traits::TimeoutConfig {
             new_user_email_request: self.config.timeouts.new_user_email_request,
             magic_link_request: self.config.timeouts.magic_link_request,
-            max_request: self.config.timeouts.max_request_lifetime,
+            max_request_diff: self.config.timeouts.max_request_diff,
             mfa: self.config.timeouts.mfa,
             user_session: self.config.timeouts.user_session,
             user_session_request: self.config.timeouts.user_session_request,

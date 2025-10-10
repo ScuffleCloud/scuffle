@@ -185,7 +185,9 @@ async fn get_and_update_active_session<G: core_traits::Global>(
         return Ok((None, None));
     };
 
-    if timestamp > chrono::Utc::now() || timestamp < chrono::Utc::now() - global.timeout_config().max_request {
+    if (chrono::Utc::now() - timestamp).abs()
+        > chrono::TimeDelta::from_std(global.timeout_config().max_request_diff).expect("invalid config")
+    {
         tracing::debug!(timestamp = %timestamp, "invalid request timestamp");
         return Err(StatusCode::UNAUTHORIZED);
     }
@@ -262,7 +264,7 @@ async fn get_and_update_active_session<G: core_traits::Global>(
             key.as_slice(),
             true,
             Some(fred::types::Expiration::PX(
-                global.timeout_config().max_request.as_millis() as i64
+                global.timeout_config().max_request_diff.as_millis() as i64,
             )),
             Some(fred::types::SetOptions::NX),
             true,

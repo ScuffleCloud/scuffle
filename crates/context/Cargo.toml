@@ -17,14 +17,14 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 document-features = { optional = true, version = "0.2" }
 futures-lite = "2"
 pin-project-lite = "0.2"
-scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1" }
 tokio = "1"
 tokio-util = "0.7"
 
 [dev-dependencies]
 scuffle-future-ext = { path = "../future-ext" }
 tokio = { features = ["macros"], version = "1" }
-tokio-test = "0.4.4"
+tokio-test = "0.4"
 
 [features]
 ## Enables changelog and documentation of feature flags

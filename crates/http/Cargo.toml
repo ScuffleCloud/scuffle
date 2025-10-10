@@ -67,53 +67,53 @@ tower = ["dep:tower"]
 docs = ["dep:scuffle-changelog", "dep:document-features"]
 
 [dependencies]
-bon = "3.3.2"
-futures = { default-features = false, features = ["alloc"], version = "0.3.31" }
-pin-project-lite = "0.2.16"
-scuffle-context = { path = "../context", version = "0.1.3" }
-thiserror = "2.0.11"
-tokio = { version = "1.43.0" }
+bon = "3"
+futures = { default-features = false, features = ["alloc"], version = "0.3" }
+pin-project-lite = "0.2"
+scuffle-context = { path = "../context", version = "0.1" }
+thiserror = "2"
+tokio = "1"
 
 # HTTP parsing
-bytes = "1.9.0"
-http = "1.2.0"
-http-body = "1.0.1"
+bytes = "1"
+http = "1"
+http-body = "1"
 
 # Tracing
-tracing = { optional = true, version = "0.1.41" }
+tracing = { optional = true, version = "0.1" }
 
 # HTTP/1.1, HTTP/2
-hyper = { default-features = false, features = ["server"], optional = true, version = "1.6.0" }
-hyper-util = { default-features = false, features = ["server", "tokio"], optional = true, version = "0.1.10" }
-libc = { default-features = false, optional = true, version = "0.2.169" }
+hyper = { default-features = false, features = ["server"], optional = true, version = "1" }
+hyper-util = { default-features = false, features = ["server", "tokio"], optional = true, version = "0.1" }
+libc = { default-features = false, optional = true, version = "0.2" }
 
 # QUIC + HTTP/3
 h3 = { default-features = false, optional = true, version = "0.0.8" }
 h3-quinn = { default-features = false, optional = true, version = "0.0.10" }
-quinn = { default-features = false, features = ["platform-verifier", "runtime-tokio", "rustls-aws-lc-rs"], optional = true, version = "0.11.6" }
+quinn = { default-features = false, features = ["platform-verifier", "runtime-tokio", "rustls-aws-lc-rs"], optional = true, version = "0.11" }
 
 # TLS
-rustls = { default-features = false, features = ["aws_lc_rs", "std", "tls12"], optional = true, version = "0.23.21" }
-tokio-rustls = { default-features = false, features = ["aws_lc_rs", "tls12"], optional = true, version = "0.26.1" }
+rustls = { default-features = false, features = ["aws_lc_rs", "std", "tls12"], optional = true, version = "0.23" }
+tokio-rustls = { default-features = false, features = ["aws_lc_rs", "tls12"], optional = true, version = "0.26" }
 
 # Tower Services
-tower = { default-features = false, features = ["make"], optional = true, version = "0.5.2" }
+tower = { default-features = false, features = ["make"], optional = true, version = "0.5" }
 
 document-features = { optional = true, version = "0.2" }
-scuffle-changelog = { optional = true, path = "../changelog", version = "0.1.0" }
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1" }
 
 [dev-dependencies]
 # The http3 feature requires a custom build flag (see .cargo/config.toml)
-axum = { features = ["ws"], version = "0.8.1" }
-reqwest = { default-features = false, features = ["http2", "http3-aws-lc-rs", "rustls-tls-no-provider"], version = "0.12.15" }
-rustls-pemfile = "2.2.0"
+axum = { features = ["ws"], version = "0.8" }
+reqwest = { default-features = false, features = ["http2", "http3-aws-lc-rs", "rustls-tls-no-provider"], version = "0.12" }
+rustls-pemfile = "2"
 scuffle-future-ext = { path = "../future-ext" }
-tokio-test = "0.4.4"
+tokio-test = "0.4"
 
 # For examples:
-tokio = { features = ["full"], version = "1.43.0" }
-tracing = { version = "0.1.41" }
-tracing-subscriber = { features = ["env-filter"], version = "0.3.19" }
+tokio = { features = ["full"], version = "1" }
+tracing = { version = "0.1" }
+tracing-subscriber = { features = ["env-filter"], version = "0.3" }
 
 [package.metadata.docs.rs]
 all-features = true

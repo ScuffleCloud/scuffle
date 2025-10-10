@@ -43,6 +43,10 @@ run bin *args:
         bazel run //cloud/core:bin -- {{ args }}
     elif [ {{ bin }} == "email" ]; then
         bazel run //cloud/email:bin -- {{ args }}
+    elif [ {{ bin }} == "ingest" ]; then
+        bazel run //cloud/video/ingest:bin -- {{ args }}
+    elif [ {{ bin }} == "video-api" ]; then
+        bazel run //cloud/video/api:bin -- {{ args }}
     else
         echo "Unknown binary: {{ bin }}"
         exit 1
@@ -96,9 +100,6 @@ alias sync-rdme := sync-readme
 
 sync-readme:
     bazel run //tools/cargo/sync-readme:fix
-
-sync-diesel-schema:
-    bazel run //tools/diesel-schema:fix
 
 test *targets="//...":
     #!/usr/bin/env bash

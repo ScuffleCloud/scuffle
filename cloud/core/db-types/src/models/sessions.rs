@@ -4,7 +4,6 @@ use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
 use super::impl_enum;
-use crate::id::{Id, PrefixedId};
 use crate::models::users::{User, UserId};
 
 impl_enum!(DeviceAlgorithm, crate::schema::sql_types::DeviceAlgorithm, {
@@ -27,7 +26,7 @@ impl From<pb::scufflecloud::core::v1::DeviceAlgorithm> for DeviceAlgorithm {
     }
 }
 
-pub type UserSessionRequestId = Id<UserSessionRequest>;
+id::impl_id!(pub UserSessionRequestId, "sr_");
 
 #[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::user_session_requests)]
@@ -42,10 +41,6 @@ pub struct UserSessionRequest {
     pub expires_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl PrefixedId for UserSessionRequest {
-    const PREFIX: &'static str = "sr";
-}
-
 impl From<UserSessionRequest> for pb::scufflecloud::core::v1::UserSessionRequest {
     fn from(value: UserSessionRequest) -> Self {
         pb::scufflecloud::core::v1::UserSessionRequest {
@@ -58,7 +53,7 @@ impl From<UserSessionRequest> for pb::scufflecloud::core::v1::UserSessionRequest
     }
 }
 
-pub type MagicLinkRequestId = Id<MagicLinkRequest>;
+id::impl_id!(pub MagicLinkRequestId, "ml_");
 
 #[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::magic_link_requests)]
@@ -72,11 +67,7 @@ pub struct MagicLinkRequest {
     pub expires_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl PrefixedId for MagicLinkRequest {
-    const PREFIX: &'static str = "ml";
-}
-
-pub type UserSessionTokenId = Id<UserSessionToken>;
+id::impl_id!(pub UserSessionTokenId, "st_");
 
 /// Does not represent a real database table as it is always part of a [`UserSession`].
 #[derive(Debug, serde::Serialize)]
@@ -84,10 +75,6 @@ pub struct UserSessionToken {
     pub id: UserSessionTokenId,
     pub token: Vec<u8>,
     pub expires_at: chrono::DateTime<chrono::Utc>,
-}
-
-impl PrefixedId for UserSessionToken {
-    const PREFIX: &'static str = "st";
 }
 
 #[derive(

@@ -42,9 +42,9 @@ impl GeneratedMethod {
             tinc_pb_prost::http_endpoint_options::Method::Patch(path) => (openapiv3_1::HttpMethod::Patch, path),
         };
 
-        let trimmed_path = path.trim_start_matches('/');
+        let trimmed_path = path.trim_matches('/');
         let full_path = if let Some(prefix) = &service.options.prefix {
-            format!("/{}/{}", prefix.trim_end_matches('/'), trimmed_path)
+            format!("/{}/{}", prefix.trim_matches('/'), trimmed_path)
         } else {
             format!("/{trimmed_path}")
         };

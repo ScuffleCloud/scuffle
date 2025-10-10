@@ -36,7 +36,7 @@ fn handle_oneof(
     let mut variant_from_str_fn = Vec::new();
     let mut variant_fields = Vec::new();
     let mut variant_enum_ident = Vec::new();
-    let mut deserializer_impl = Vec::new();
+    let mut deserializer_impl_fn = Vec::new();
     let mut validate_message_impl = Vec::new();
 
     let tagged_impl = if let Some(Tagged { tag, content }) = &oneof.options.tagged {
@@ -118,7 +118,7 @@ fn handle_oneof(
             });
             let enum_ident = field.rust_ident();
             variant_enum_ident.push(enum_ident.clone());
-            deserializer_impl.push(quote! {
+            deserializer_impl_fn.push(quote! {
                 #variant_identifier_ident::#ident => {
                     let tracker = match tracker {
                         ::core::option::Option::None => {
@@ -250,9 +250,12 @@ fn handle_oneof(
 
     let oneof_path = oneof.rust_path(&message.package);
     let oneof_ident = oneof_path.segments.last().unwrap().ident.clone();
+    let bug_message = quote::quote!(::core::unreachable!(
+        "oneof has no valid variants, this should never happen, please report this as a bug in tinc"
+    ));
 
     package.push_item(parse_quote! {
-        #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens)]
+        #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens, unreachable_patterns, unreachable_code)]
         const _: () = {
             #tagged_impl
 
@@ -276,7 +279,8 @@ fn handle_oneof(
 
                 fn name(&self) -> &'static str {
                     match self {
-                        #(#variant_name_fn),*
+                        #(#variant_name_fn,)*
+                        _ => #bug_message,
                     }
                 }
             }
@@ -317,7 +321,8 @@ fn handle_oneof(
                     D: ::tinc::__private::DeserializeContent<'de>
                 {
                     match variant {
-                        #(#deserializer_impl),*
+                        #(#deserializer_impl_fn,)*
+                        _ => #bug_message,
                     }
 
                     ::core::result::Result::Ok(())
@@ -325,13 +330,15 @@ fn handle_oneof(
 
                 fn tracker_to_identifier(v: &___Tracker) -> #variant_identifier_ident {
                     match v {
-                        #(___Tracker::#variant_enum_ident(_) => #variant_identifier_ident::#variant_idents),*
+                        #(___Tracker::#variant_enum_ident(_) => #variant_identifier_ident::#variant_idents,)*
+                        _ => #bug_message,
                     }
                 }
 
                 fn value_to_identifier(v: &#oneof_path) -> #variant_identifier_ident {
                     match v {
-                        #(#oneof_path::#variant_enum_ident(_) => #variant_identifier_ident::#variant_idents),*
+                        #(#oneof_path::#variant_enum_ident(_) => #variant_identifier_ident::#variant_idents,)*
+                        _ => #bug_message,
                     }
                 }
             }
@@ -340,9 +347,8 @@ fn handle_oneof(
                 fn validate(&self, tracker: Option<&<#oneof_path as ::tinc::__private::TrackerFor>::Tracker>) -> ::core::result::Result<(), ::tinc::__private::ValidationError> {
                     let tracker = tracker.and_then(|t| t.as_ref());
                     match self {
-                        #(#validate_message_impl)*
-                        #[allow(unreachable_patterns)]
-                        _ => {}
+                        #(#validate_message_impl,)*
+                        _ => #bug_message,
                     }
 
                     ::core::result::Result::Ok(())
@@ -842,13 +848,17 @@ pub(super) fn handle_message(
         )?;
     }
 
+    let bug_message = quote::quote!(::core::unreachable!(
+        "message has no fields, this should never happen, please report this as a bug in tinc"
+    ));
+
     let message_path = registry
         .resolve_rust_path(&message.package, &message.full_name)
         .expect("message not found");
     let message_ident = message_path.segments.last().unwrap().ident.clone();
 
     package.push_item(parse_quote! {
-        #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens)]
+        #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens, unreachable_patterns, unreachable_code)]
         const _: () = {
             #[derive(
                 ::std::fmt::Debug,
@@ -870,7 +880,8 @@ pub(super) fn handle_message(
 
                 fn name(&self) -> &'static str {
                     match self {
-                        #(#field_enum_name_fn),*
+                        #(#field_enum_name_fn,)*
+                        _ => #bug_message,
                     }
                 }
             }
@@ -902,7 +913,8 @@ pub(super) fn handle_message(
                     D: ::tinc::__private::DeserializeContent<'de>,
                 {
                     match field {
-                        #(#deserializer_fn),*
+                        #(#deserializer_fn,)*
+                        _ => #bug_message,
                     }
 
                     ::core::result::Result::Ok(())
@@ -978,9 +990,12 @@ pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package, registry
     }
 
     let proto_path = enum_.full_name.as_ref();
+    let bug_message = quote::quote!(::core::unreachable!(
+        "enum has no variants, this should never happen, please report this as a bug in tinc"
+    ));
 
     package.push_item(parse_quote! {
-        #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens)]
+        #[allow(clippy::all, dead_code, unused_imports, unused_variables, unused_parens, unreachable_patterns, unreachable_code)]
         const _: () = {
             impl ::tinc::__private::Expected for #enum_path {
                 fn expecting(formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -1000,7 +1015,8 @@ pub(super) fn handle_enum(enum_: &ProtoEnumType, package: &mut Package, registry
                 to_serde: |tag| {
                     match <#enum_path as std::convert::TryFrom<i32>>::try_from(tag) {
                         Ok(value) => match value {
-                            #(#to_serde_matchers),*
+                            #(#to_serde_matchers,)*
+                            _ => #bug_message,
                         }
                         Err(_) => ::tinc::__private::cel::CelValue::Null,
                     }

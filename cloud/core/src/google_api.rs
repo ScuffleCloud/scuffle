@@ -56,21 +56,27 @@ pub(crate) enum GoogleTokenError {
     RequestFailed(#[from] reqwest::Error),
 }
 
-fn redirect_uri<G: core_traits::Global>(global: &Arc<G>) -> String {
-    global.dashboard_origin().join("/oauth2-callback/google").unwrap().to_string()
+fn redirect_uri(dashboard_origin: &url::Url) -> String {
+    dashboard_origin.join("/oauth2-callback/google").unwrap().to_string()
 }
 
-pub(crate) fn authorization_url<G: core_traits::Global>(global: &Arc<G>, state: &str) -> String {
+pub(crate) fn authorization_url<G: core_traits::Global>(
+    global: &Arc<G>,
+    dashboard_origin: &url::Url,
+    state: &str,
+) -> String {
     format!(
-        "https://accounts.google.com/o/oauth2/v2/auth?client_id={}&redirect_uri={}&response_type=code&scope={}&state={state}",
+        "https://accounts.google.com/o/oauth2/v2/auth?client_id={}&redirect_uri={}&response_type=code&scope={}&state={}",
         global.google_oauth2_config().client_id,
-        urlencoding::encode(&redirect_uri(global)),
+        urlencoding::encode(&redirect_uri(dashboard_origin)),
         ALL_SCOPES.join("%20"), // URL-encoded space
+        urlencoding::encode(state),
     )
 }
 
 pub(crate) async fn request_tokens<G: core_traits::Global>(
     global: &Arc<G>,
+    dashboard_origin: &url::Url,
     code: &str,
 ) -> Result<GoogleToken, GoogleTokenError> {
     let tokens: GoogleToken = global
@@ -81,7 +87,7 @@ pub(crate) async fn request_tokens<G: core_traits::Global>(
             ("client_secret", global.google_oauth2_config().client_secret.as_ref()),
             ("code", code),
             ("grant_type", "authorization_code"),
-            ("redirect_uri", &redirect_uri(global)),
+            ("redirect_uri", &redirect_uri(dashboard_origin)),
         ])
         .send()
         .await?

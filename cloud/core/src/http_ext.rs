@@ -22,6 +22,14 @@ pub(crate) trait CoreRequestExt: ext_traits::RequestExt {
             ErrorDetails::new(),
         )
     }
+
+    fn dashboard_origin<G: core_traits::ConfigInterface + 'static>(&self) -> Result<url::Url, tonic::Status> {
+        self.global::<G>()?
+            .dashboard_origin()
+            .cloned()
+            .or_else(|| self.origin())
+            .ok_or_else(|| tonic::Status::invalid_argument("missing origin header and no dashboard origin configured"))
+    }
 }
 
 impl<T> CoreRequestExt for T where T: ext_traits::RequestExt {}

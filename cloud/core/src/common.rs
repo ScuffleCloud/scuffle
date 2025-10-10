@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
 use argon2::{Argon2, PasswordVerifier};
-use core_db_types::id::Id;
 use core_db_types::models::{
     MfaRecoveryCode, MfaWebauthnCredential, Organization, OrganizationId, User, UserEmail, UserId, UserSession,
+    UserSessionTokenId,
 };
 use core_db_types::schema::{
     mfa_recovery_codes, mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, organizations,
@@ -252,6 +252,7 @@ pub(crate) async fn mfa_options(
 pub(crate) async fn create_session<G: core_traits::Global>(
     global: &Arc<G>,
     tx: &mut impl diesel_async::AsyncConnection<Backend = diesel::pg::Pg>,
+    dashboard_origin: &url::Url,
     user: &User,
     device: pb::scufflecloud::core::v1::Device,
     ip_info: &IpAddressInfo,
@@ -267,7 +268,7 @@ pub(crate) async fn create_session<G: core_traits::Global>(
     } else {
         chrono::Utc::now() + global.timeout_config().user_session
     };
-    let token_id = Id::new();
+    let token_id = UserSessionTokenId::new();
     let token_expires_at = chrono::Utc::now() + global.timeout_config().user_session_token;
 
     let token = generate_random_bytes().into_tonic_internal_err("failed to generate token")?;
@@ -322,7 +323,7 @@ pub(crate) async fn create_session<G: core_traits::Global>(
             .into_tonic_internal_err("failed to lookup geoip info")?
             .map(Into::into)
             .unwrap_or_default();
-        let email = core_emails::new_device_email(global.dashboard_origin(), ip_info.ip_address, geo_info)
+        let email = core_emails::new_device_email(dashboard_origin, ip_info.ip_address, geo_info)
             .into_tonic_internal_err("failed to render email")?;
         let email = email_to_pb(global, primary_email.clone(), user.preferred_name.clone(), email);
 

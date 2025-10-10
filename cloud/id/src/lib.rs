@@ -1,168 +1,121 @@
-use std::fmt::{Debug, Display};
-use std::hash::Hash;
-use std::io::Write;
-use std::ops::Deref;
-use std::str::FromStr;
+use std::fmt::Debug;
 
-use diesel::deserialize::{FromSql, FromSqlRow};
-use diesel::expression::AsExpression;
-use diesel::serialize::ToSql;
-
-pub trait PrefixedId: Sized {
-    const PREFIX: &str;
+pub mod exports {
+    pub use {diesel, serde, ulid, uuid};
 }
 
-#[derive(FromSqlRow, AsExpression)]
-#[diesel(sql_type = diesel::sql_types::Uuid)]
-pub struct Id<T: PrefixedId> {
-    id: ulid::Ulid,
-    _phantom: std::marker::PhantomData<T>,
-}
+#[macro_export]
+macro_rules! impl_id {
+    ($vis:vis $type:ident, $prefix:literal) => {
+        #[derive(
+            $crate::exports::diesel::deserialize::FromSqlRow,
+            $crate::exports::diesel::expression::AsExpression,
+            Debug,
+            PartialEq,
+            Eq,
+            Hash,
+            Clone,
+            Copy,
+            Default,
+        )]
+        #[diesel(sql_type = $crate::exports::diesel::sql_types::Uuid)]
+        $vis struct $type($crate::exports::ulid::Ulid);
 
-impl<T: PrefixedId> Id<T> {
-    pub fn unprefixed(&self) -> ulid::Ulid {
-        self.id
-    }
-}
-
-impl<T: PrefixedId> Default for Id<T> {
-    fn default() -> Self {
-        Self {
-            id: ulid::Ulid::new(),
-            _phantom: std::marker::PhantomData,
+        impl ::std::convert::From<$type> for $crate::exports::ulid::Ulid {
+            fn from(value: $type) -> Self {
+                value.0
+            }
         }
-    }
-}
 
-impl<T: PrefixedId> Id<T> {
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
-
-impl<T: PrefixedId> Debug for Id<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(&self.id, f)
-    }
-}
-
-impl<T: PrefixedId> PartialEq for Id<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
-    }
-}
-
-impl<T: PrefixedId> Eq for Id<T> {}
-
-impl<T: PrefixedId> Hash for Id<T> {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.id.hash(state);
-    }
-}
-
-impl<T> Deref for Id<T>
-where
-    T: PrefixedId,
-{
-    type Target = ulid::Ulid;
-
-    fn deref(&self) -> &Self::Target {
-        &self.id
-    }
-}
-
-impl<T, I> From<I> for Id<T>
-where
-    T: PrefixedId,
-    I: Into<ulid::Ulid>,
-{
-    fn from(id: I) -> Self {
-        Self {
-            id: id.into(),
-            _phantom: std::marker::PhantomData,
+        impl ::std::convert::From<$crate::exports::ulid::Ulid> for $type {
+            fn from(value: $crate::exports::ulid::Ulid) -> Self {
+                Self(value)
+            }
         }
-    }
-}
 
-impl<T: PrefixedId> Display for Id<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}_{}", T::PREFIX, self.unprefixed())
-    }
-}
+        impl ::std::convert::From<$crate::exports::uuid::Uuid> for $type {
+            fn from(value: $crate::exports::uuid::Uuid) -> Self {
+                Self($crate::exports::ulid::Ulid::from(value))
+            }
+        }
 
-impl<T: PrefixedId> Clone for Id<T> {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
+        impl $crate::exports::diesel::deserialize::FromSql<$crate::exports::diesel::sql_types::Uuid, $crate::exports::diesel::pg::Pg> for $type {
+            fn from_sql(bytes: $crate::exports::diesel::pg::PgValue<'_>) -> $crate::exports::diesel::deserialize::Result<Self> {
+                let uuid: $crate::exports::uuid::Uuid = $crate::exports::diesel::deserialize::FromSql::from_sql(bytes)?;
 
-impl<T: PrefixedId> Copy for Id<T> {}
+                Ok(Self($crate::exports::ulid::Ulid::from(uuid)))
+            }
+        }
 
-impl<T: PrefixedId> From<Id<T>> for uuid::Uuid {
-    fn from(value: Id<T>) -> Self {
-        uuid::Uuid::from(value.id)
-    }
+        impl $crate::exports::diesel::serialize::ToSql<$crate::exports::diesel::sql_types::Uuid, $crate::exports::diesel::pg::Pg> for $type {
+            fn to_sql<'b>(&'b self, out: &mut $crate::exports::diesel::serialize::Output<'b, '_, $crate::exports::diesel::pg::Pg>) -> $crate::exports::diesel::serialize::Result {
+                ::std::io::Write::write_all(out, &self.0.to_bytes())
+                    .map(|_| $crate::exports::diesel::serialize::IsNull::No)
+                    .map_err(Into::into)
+            }
+        }
+
+        impl $type {
+            $vis const PREFIX: &'static str = $prefix;
+
+            $vis fn new() -> Self {
+                Self($crate::exports::ulid::Ulid::new())
+            }
+
+            $vis fn ulid(&self) -> $crate::exports::ulid::Ulid {
+                self.0
+            }
+
+            $vis fn from_ulid(ulid: $crate::exports::ulid::Ulid) -> Self {
+                Self(ulid)
+            }
+
+            $vis fn datetime(&self) -> ::std::time::SystemTime {
+                self.0.datetime()
+            }
+        }
+
+        impl ::std::str::FromStr for $type {
+            type Err = $crate::IdParseError;
+
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                let id = s.strip_prefix(Self::PREFIX).ok_or($crate::IdParseError::PrefixMismatch(Self::PREFIX))?;
+                let id = $crate::exports::ulid::Ulid::from_str(id)?;
+                Ok(Self::from_ulid(id))
+            }
+        }
+
+        impl ::std::fmt::Display for $type {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                write!(f, "{}{}", Self::PREFIX, self.0)
+            }
+        }
+
+        impl ::serde::Serialize for $type {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: ::serde::Serializer,
+            {
+                serializer.serialize_str(&self.to_string())
+            }
+        }
+
+        impl<'de> ::serde::Deserialize<'de> for $type {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: ::serde::Deserializer<'de>,
+            {
+                let s = ::std::string::String::deserialize(deserializer)?;
+                s.parse().map_err(serde::de::Error::custom)
+            }
+        }
+    };
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum IdParseError {
-    #[error("ID prefix does not match")]
-    PrefixMismatch,
-    #[error("invalid ID: {0}")]
+    #[error("id doesnt have prefix {0}")]
+    PrefixMismatch(&'static str),
+    #[error("invalid ulid: {0}")]
     Ulid(#[from] ulid::DecodeError),
-}
-
-impl<T: PrefixedId> FromStr for Id<T> {
-    type Err = IdParseError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut iter = s.rsplitn(2, '_');
-
-        let id = iter.next().ok_or(IdParseError::PrefixMismatch)?;
-        let prefix = iter.next().ok_or(IdParseError::PrefixMismatch)?;
-
-        if prefix != T::PREFIX {
-            return Err(IdParseError::PrefixMismatch);
-        }
-
-        let id = ulid::Ulid::from_str(id)?;
-        Ok(Self {
-            id,
-            _phantom: std::marker::PhantomData,
-        })
-    }
-}
-
-impl<T: PrefixedId> serde::Serialize for Id<T> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        self.to_string().serialize(serializer)
-    }
-}
-
-impl<T> FromSql<diesel::sql_types::Uuid, diesel::pg::Pg> for Id<T>
-where
-    T: PrefixedId,
-{
-    fn from_sql(bytes: diesel::pg::PgValue<'_>) -> diesel::deserialize::Result<Self> {
-        let uuid = uuid::Uuid::from_sql(bytes)?;
-
-        Ok(Self {
-            id: ulid::Ulid::from(uuid),
-            _phantom: std::marker::PhantomData,
-        })
-    }
-}
-
-impl<T> ToSql<diesel::sql_types::Uuid, diesel::pg::Pg> for Id<T>
-where
-    T: PrefixedId + Debug,
-{
-    fn to_sql<'b>(&'b self, out: &mut diesel::serialize::Output<'b, '_, diesel::pg::Pg>) -> diesel::serialize::Result {
-        out.write_all(&self.id.to_bytes())
-            .map(|_| diesel::serialize::IsNull::No)
-            .map_err(Into::into)
-    }
 }

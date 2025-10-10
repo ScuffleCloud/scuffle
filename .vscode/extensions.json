@@ -7,6 +7,6 @@
         "editorconfig.editorconfig",
         "bazelbuild.vscode-bazel",
         "skellock.just",
-        "zxh404.vscode-proto3"
+        "bufbuild.vscode-buf",
 	]
 }

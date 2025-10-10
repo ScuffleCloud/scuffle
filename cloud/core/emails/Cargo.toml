@@ -16,10 +16,10 @@ name = "scufflecloud-core-emails-render-preview"
 path = "bin/render_preview.rs"
 
 [dependencies]
-chrono = "0.4.41"
-maxminddb = "0.26.0"
-sailfish = "0.10.0"
-url = "2.5.4"
+chrono = "0.4"
+maxminddb = "0.26"
+sailfish = "0.10"
+url = "2"
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

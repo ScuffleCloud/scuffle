@@ -63,6 +63,6 @@ rust_library(
     deps = [
         "@cargo_vendor__guppy-workspace-hack-0.1.0//:guppy_workspace_hack",
         "@cargo_vendor__miette-7.6.0//:miette",
-        "@cargo_vendor__target-spec-3.5.0//:target_spec",
+        "@cargo_vendor__target-spec-3.5.2//:target_spec",
     ],
 )

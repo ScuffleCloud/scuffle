@@ -3,6 +3,7 @@ use ext_traits::{OptionExt, RequestExt};
 use sha2::Digest;
 
 use crate::google_api;
+use crate::http_ext::CoreRequestExt;
 use crate::operations::Operation;
 use crate::operations::user_sessions::{InvalidateUserSessionRequest, RefreshUserSessionRequest};
 use crate::services::CoreSvc;
@@ -35,13 +36,14 @@ impl<G: core_traits::Global> pb::scufflecloud::core::v1::sessions_service_server
         req: tonic::Request<pb::scufflecloud::core::v1::LoginWithGoogleRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::LoginWithGoogleResponse>, tonic::Status> {
         let global = &req.global::<G>()?;
+        let dashboard_origin = req.dashboard_origin::<G>()?;
         let payload = req.into_inner();
 
         let device = payload.device.require("device")?;
         let device_fingerprint = sha2::Sha256::digest(&device.public_key_data);
         let state = base64::prelude::BASE64_URL_SAFE.encode(device_fingerprint);
 
-        let authorization_url = google_api::authorization_url(global, &state);
+        let authorization_url = google_api::authorization_url(global, &dashboard_origin, &state);
 
         Ok(tonic::Response::new(pb::scufflecloud::core::v1::LoginWithGoogleResponse {
             authorization_url,

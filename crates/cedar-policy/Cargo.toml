@@ -14,9 +14,9 @@ description = "Some extensions to the cedar-policy crate."
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
-bon = "3.7"
-cedar-policy = "4.5"
-cedar-policy-core = "4.5"
+bon = "3"
+cedar-policy = "4"
+cedar-policy-core = "4"
 const_panic = "0.2"
 document-features = { optional = true, version = "0.2" }
 konst = "0.4"

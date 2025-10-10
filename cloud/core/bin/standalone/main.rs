@@ -7,7 +7,6 @@
 
 use std::net::SocketAddr;
 use std::path::PathBuf;
-use std::str::FromStr;
 use std::sync::Arc;
 
 use anyhow::Context;
@@ -40,10 +39,8 @@ pub struct Config {
     pub db_url: Option<String>,
     #[default(false)]
     pub swagger_ui: bool,
-    #[default = "scuffle.cloud"]
-    pub rp_id: String,
-    #[default(url::Url::from_str("https://dashboard.scuffle.cloud").unwrap())]
-    pub dashboard_origin: url::Url,
+    pub webauthn: config::WebauthnConfig,
+    pub dashboard_origin: config::DashboardOrigin,
     #[default = "1x0000000000000000000000000000000AA"]
     pub turnstile_secret_key: String,
     pub timeouts: config::TimeoutConfig,
@@ -84,8 +81,11 @@ struct Global {
 }
 
 impl core_traits::ConfigInterface for Global {
-    fn dashboard_origin(&self) -> &url::Url {
-        &self.config.dashboard_origin
+    fn dashboard_origin(&self) -> Option<&url::Url> {
+        match &self.config.dashboard_origin {
+            config::DashboardOrigin::Static(url) => Some(url),
+            config::DashboardOrigin::FromRequest => None,
+        }
     }
 
     fn email_from_name(&self) -> &str {
@@ -115,7 +115,7 @@ impl core_traits::ConfigInterface for Global {
         core_traits::TimeoutConfig {
             new_user_email_request: self.config.timeouts.new_user_email_request,
             magic_link_request: self.config.timeouts.magic_link_request,
-            max_request: self.config.timeouts.max_request_lifetime,
+            max_request_diff: self.config.timeouts.max_request_diff,
             mfa: self.config.timeouts.mfa,
             user_session: self.config.timeouts.user_session,
             user_session_request: self.config.timeouts.user_session_request,
@@ -311,7 +311,7 @@ impl scuffle_bootstrap::Global for Global {
             .build()
             .context("create HTTP client")?;
 
-        let webauthn = webauthn_rs::WebauthnBuilder::new(&config.rp_id, &config.dashboard_origin)
+        let webauthn = webauthn_rs::WebauthnBuilder::new(&config.webauthn.rp_id, &config.webauthn.rp_origin)
             .context("build webauthn")?
             .allow_subdomains(true)
             .timeout(config.timeouts.mfa)

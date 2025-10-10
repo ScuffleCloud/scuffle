@@ -1,0 +1,37 @@
+[package]
+name = "scufflecloud-video-api"
+version = "0.1.0"
+authors = ["Scuffle <opensource@scuffle.cloud>"]
+edition = "2024"
+license = "AGPL-3.0"
+publish = false
+readme = "README.md"
+repository = "https://github.com/scufflecloud/scuffle"
+description = "Video API server for scuffle.cloud"
+
+[[bin]]
+name = "scufflecloud-video-api-standalone"
+path = "bin/standalone/main.rs"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
+
+[dependencies]
+anyhow = "1"
+scuffle-bootstrap = { path = "../../../crates/bootstrap" }
+scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../../crates/bootstrap-telemetry" }
+scuffle-context = { path = "../../../crates/context" }
+scuffle-settings = { features = ["all-formats", "bootstrap"], path = "../../../crates/settings" }
+scuffle-signal = { features = ["bootstrap"], path = "../../../crates/signal" }
+serde = "1"
+serde_derive = "1"
+smart-default = "0.7"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+video-api-traits = { path = "./traits", package = "scufflecloud-video-api-traits" }
+
+[package.metadata.sync-readme.badges]
+docs-rs = false
+crates-io = false
+license = true
+codecov = true

@@ -118,12 +118,7 @@ impl<G: core_traits::Global> scuffle_bootstrap::Service<G> for CoreSvc<G> {
         builder.add_service(reflection_v1_svc);
         builder.add_service(reflection_v1alpha_svc);
 
-        let grpc_router = builder
-            .routes()
-            .prepare()
-            .into_axum_router()
-            .layer(tonic_web::GrpcWebLayer::new())
-            .layer(grpc_web_cors_layer());
+        let grpc_router = builder.routes().prepare().into_axum_router();
 
         let mut router = axum::Router::new()
             .nest("/v1", v1_rest_router)
@@ -132,6 +127,8 @@ impl<G: core_traits::Global> scuffle_bootstrap::Service<G> for CoreSvc<G> {
             .layer(geo_ip::middleware::middleware::<G>())
             .layer(TraceLayer::new_for_http())
             .layer(Extension(Arc::clone(&global)))
+            .layer(tonic_web::GrpcWebLayer::new())
+            .layer(grpc_web_cors_layer())
             .fallback(StatusCode::NOT_FOUND);
 
         if global.swagger_ui_enabled() {

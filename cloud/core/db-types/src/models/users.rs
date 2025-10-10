@@ -3,9 +3,7 @@ use std::time::SystemTime;
 use diesel::Selectable;
 use diesel::prelude::{AsChangeset, Associations, Identifiable, Insertable, Queryable};
 
-use crate::id::{Id, PrefixedId};
-
-pub type UserId = Id<User>;
+id::impl_id!(pub UserId, "u_");
 
 #[derive(Debug, Queryable, Selectable, Insertable, Identifiable, AsChangeset, serde_derive::Serialize, Clone)]
 #[diesel(table_name = crate::schema::users)]
@@ -24,10 +22,6 @@ pub struct User {
     pub primary_email: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub avatar_url: Option<String>,
-}
-
-impl PrefixedId for User {
-    const PREFIX: &'static str = "u";
 }
 
 impl From<User> for pb::scufflecloud::core::v1::User {
@@ -64,8 +58,6 @@ impl From<UserEmail> for pb::scufflecloud::core::v1::UserEmail {
     }
 }
 
-pub type NewUserEmailRequestId = Id<NewUserEmailRequest>;
-
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(table_name = crate::schema::new_user_email_requests)]
 #[diesel(belongs_to(User))]
@@ -78,9 +70,7 @@ pub struct NewUserEmailRequest {
     pub expires_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl PrefixedId for NewUserEmailRequest {
-    const PREFIX: &'static str = "er";
-}
+id::impl_id!(pub NewUserEmailRequestId, "er_");
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, AsChangeset, Associations, Debug, serde_derive::Serialize)]
 #[diesel(primary_key(sub))]

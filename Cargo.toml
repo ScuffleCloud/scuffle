@@ -11,6 +11,10 @@ members = [
     "cloud/geo-ip",
     "cloud/id",
     "cloud/proto",
+    "cloud/video/api",
+    "cloud/video/api/traits",
+    "cloud/video/ingest",
+    "cloud/video/ingest/traits",
     "crates/aac",
     "crates/amf0",
     "crates/av1",
@@ -52,6 +56,8 @@ members = [
     "misc/utils/rust/analyzer/check",
     "misc/utils/rust/analyzer/discover",
     "misc/utils/rust/clippy",
+    "misc/utils/rust/diesel_migration/copy",
+    "misc/utils/rust/diesel_migration/patcher",
     "misc/utils/rust/diesel_migration/runner",
     "misc/utils/rust/diesel_migration/test",
     "misc/utils/rust/doc/merger",
@@ -65,7 +71,6 @@ members = [
     "misc/utils/rust/test_runner",
     "tools/cargo/clippy",
     "tools/cargo/sync-readme",
-    "tools/diesel-schema",
 ]
 
 resolver = "3"

@@ -17,37 +17,37 @@ path = "bin/standalone/main.rs"
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
-anyhow = "1.0.98"
-async-trait = "0.1.88"
-axum = "0.8.4"
-base64 = "0.22.1"
+anyhow = "1"
+async-trait = "0.1"
+axum = "0.8"
+base64 = "0.22"
 email-traits = { path = "./traits", package = "scufflecloud-email-traits" }
 ext-traits = { path = "../ext-traits", package = "scufflecloud-ext-traits" }
-http = "1.3.1"
-mail-builder = "0.4.4"
+http = "1"
+mail-builder = "0.4"
 pb = { package = "scufflecloud-proto", path = "../proto" }
-prost = "0.14.1"
-reqsign = { version = "0.17.0", default-features = false, features = ["aws"] }
-reqwest = { features = ["rustls-tls-native-roots-no-provider"], version = "0.12.23", default-features = false }
-rustls = { default-features = false, version = "0.23.31", features = ["aws_lc_rs"] }
+prost = "0.14"
+reqsign = { version = "0.18", default-features = false, features = ["aws"] }
+reqwest = { features = ["rustls-tls-native-roots-no-provider"], version = "0.12", default-features = false }
+rustls = { default-features = false, version = "0.23", features = ["aws_lc_rs"] }
 scuffle-bootstrap = { path = "../../crates/bootstrap" }
 scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../crates/bootstrap-telemetry" }
 scuffle-context = { path = "../../crates/context" }
 scuffle-http = { features = ["tracing", "tls-rustls"], path = "../../crates/http" }
 scuffle-settings = { features = ["all-formats", "bootstrap"], path = "../../crates/settings" }
 scuffle-signal = { features = ["bootstrap"], path = "../../crates/signal" }
-serde = "1.0.219"
-serde_derive = "1.0.219"
-serde_json = "1.0.145"
-smart-default = "0.7.1"
-thiserror = "2.0.16"
+serde = "1"
+serde_derive = "1"
+serde_json = "1"
+smart-default = "0.7"
+thiserror = "2"
 tinc = { path = "../../crates/tinc" }
-tonic = "0.14.1"
-tonic-reflection = "0.14.1"
-tonic-types = "0.14.1"
-tower-http = { features = ["trace"], version = "0.6.6" }
-tracing = "0.1.41"
-tracing-subscriber = "0.3.19"
+tonic = "0.14"
+tonic-reflection = "0.14"
+tonic-types = "0.14"
+tower-http = { features = ["trace"], version = "0.6" }
+tracing = "0.1"
+tracing-subscriber = "0.3"
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

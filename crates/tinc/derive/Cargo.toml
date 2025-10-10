@@ -17,8 +17,8 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 proc-macro = true
 
 [dependencies]
-proc-macro2 = { version = "1.0" }
-quote = { version = "1.0" }
+proc-macro2 = { version = "1" }
+quote = { version = "1" }
 syn = { version = "2" }
 
 [package.metadata.docs.rs]

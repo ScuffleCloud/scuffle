@@ -8,7 +8,7 @@ type GlobalContext = {
 entity MfaTotpCredential {
   id: String,
   user_id: String,
-  name: String,
+  name?: String,
   secret: Set<Long>,
   last_used_at: String,
 };
@@ -16,7 +16,7 @@ entity MfaTotpCredential {
 entity MfaWebauthnCredential {
   id: String,
   user_id: String,
-  name: String,
+  name?: String,
   credential_id: Set<Long>,
   counter?: Long,
   last_used_at: String,

@@ -15,6 +15,7 @@ scuffle_package(
         env = {
             "ASSETS_DIR": "crates/settings/assets",
         },
+        insta = True,
     ),
     deps = ["//crates/bootstrap"],
 )

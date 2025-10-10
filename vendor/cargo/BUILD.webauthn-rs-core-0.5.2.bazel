@@ -77,7 +77,7 @@ rust_library(
         "@cargo_vendor__openssl-sys-0.9.109//:openssl_sys",
         "@cargo_vendor__rand-0.8.5//:rand",
         "@cargo_vendor__rand_chacha-0.3.1//:rand_chacha",
-        "@cargo_vendor__serde-1.0.220//:serde",
+        "@cargo_vendor__serde-1.0.228//:serde",
         "@cargo_vendor__serde_cbor_2-0.12.0-dev//:serde_cbor_2",
         "@cargo_vendor__serde_json-1.0.145//:serde_json",
         "@cargo_vendor__thiserror-1.0.69//:thiserror",

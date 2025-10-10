@@ -69,7 +69,7 @@ rust_library(
     }),
     version = "0.5.14",
     deps = [
-        "@cargo_vendor__libc-0.2.175//:libc",
+        "@cargo_vendor__libc-0.2.176//:libc",
         "@cargo_vendor__quinn-udp-0.5.14//:build_script_build",
         "@cargo_vendor__tracing-0.1.41//:tracing",
     ] + select({

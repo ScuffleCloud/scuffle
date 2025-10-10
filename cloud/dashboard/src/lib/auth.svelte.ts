@@ -186,25 +186,35 @@ export function authState() {
         /**
          * Call this function to initialize the auth state. This must be called prior to any other function.
          */
-        initialize() {
+        async initialize() {
             if (!browser) return;
+
+            const time = Date.now();
+            console.log("Initializing auth state");
 
             if (!deviceKeypair) {
                 deviceKeypair = { state: "loading" };
-                loadDeviceKeypair().then((keypair) => {
+                try {
+                    const keypair = await loadDeviceKeypair();
                     deviceKeypair = { state: "loaded", data: keypair };
-                }).catch((err) => {
+                    console.log("Loaded device key");
+                } catch (err) {
                     console.error("Failed to load device key", err);
                     deviceKeypair = { state: "loaded", data: null };
-                });
+                }
             }
 
             if (!user) {
                 user = { state: "loading" };
-                loadUser(userSessionToken).then((loadedUser) => {
-                    user = loadedUser;
-                });
+                try {
+                    user = await loadUser(userSessionToken);
+                } catch (err) {
+                    console.error("Failed to load user", err);
+                    user = { state: "error", error: "Failed to load user" };
+                }
             }
+
+            console.log("Finished initializing auth state, took", Date.now() - time, "ms");
         },
         /**
          * Generates a new device, persists it and returns it.

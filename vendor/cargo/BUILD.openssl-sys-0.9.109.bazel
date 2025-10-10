@@ -77,8 +77,8 @@ cargo_build_script(
         allow_empty = True,
     ),
     build_script_env = {
-        "OPENSSL_INCLUDE_DIR": "$(location @openssl//:gen_dir)/include",
-        "OPENSSL_LIB_DIR": "$(location @openssl//:gen_dir)/lib",
+        "OPENSSL_INCLUDE_DIR": "$(location @//misc/toolchains/openssl:include)",
+        "OPENSSL_LIB_DIR": "$(location @//misc/toolchains/openssl:lib)",
         "OPENSSL_NO_VENDOR": "1",
         "OPENSSL_STATIC": "1",
     },
@@ -109,7 +109,8 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ) + [
-        "@openssl//:gen_dir",
+        "@//misc/toolchains/openssl:include",
+        "@//misc/toolchains/openssl:lib",
     ],
     edition = "2021",
     links = "openssl",

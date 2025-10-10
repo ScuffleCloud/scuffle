@@ -2,12 +2,13 @@ load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_vendor", "render_c
 
 openssl_annotation = crate.annotation(
     build_script_data = [
-        "@openssl//:gen_dir",
+        "@//misc/toolchains/openssl:include",
+        "@//misc/toolchains/openssl:lib",
     ],
     build_script_env = {
         "OPENSSL_NO_VENDOR": "1",
-        "OPENSSL_LIB_DIR": "$(location @openssl//:gen_dir)/lib",
-        "OPENSSL_INCLUDE_DIR": "$(location @openssl//:gen_dir)/include",
+        "OPENSSL_LIB_DIR": "$(location @//misc/toolchains/openssl:lib)",
+        "OPENSSL_INCLUDE_DIR": "$(location @//misc/toolchains/openssl:include)",
         "OPENSSL_STATIC": "1",
     },
 )
@@ -129,10 +130,10 @@ crates_vendor(
         "pq-src": [
             crate.annotation(
                 build_script_data = [
-                    "@openssl//:gen_dir",
+                    "@//misc/toolchains/openssl:include",
                 ],
                 build_script_env = {
-                    "BINDGEN_EXTRA_CLANG_ARGS": "$(CFLAGS) -I$(location @openssl//:gen_dir)/include",
+                    "BINDGEN_EXTRA_CLANG_ARGS": "$(CFLAGS) -I$(location @//misc/toolchains/openssl:include)",
                 },
             ),
         ],

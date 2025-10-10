@@ -18,8 +18,8 @@ runs:
           build --build_metadata=VISIBILITY=PUBLIC
           build --remote_header=x-buildbuddy-api-key=${{ inputs.build_buddy_token }}
           build --color=yes
-          build --jobs=250
-          common --remote_max_connections=500
+          build --jobs=75
+          common --remote_max_connections=100
           build --nokeep_going
           common --announce_rc
           common --experimental_async_execution

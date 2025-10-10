@@ -21,22 +21,26 @@ jobs:
           build_buddy_token: ${{ secrets.build_buddy_token }}
 
       - name: Format bazel
-        run: ./tools/scripts/buildifier $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
+        run: bazel run //tools/buildifier -- $(git ls-files "*.bzl" "*.bazel" | xargs ls 2>/dev/null)
 
       - name: Format dprint
-        run: ./tools/scripts/dprint fmt
+        run: bazel run //tools/dprint -- fmt
 
       - name: Format buf
-        run: ./tools/scripts/buf format -w --disable-symlinks --debug
+        run: bazel run //tools/buf -- format -w --disable-symlinks --debug
 
       - name: Format just
-        run: ./tools/scripts/just --unstable --fmt
+        run: bazel run //tools/just -- --unstable --fmt
 
       - name: Format shfmt
-        run: ./tools/scripts/shfmt -w .
+        run: bazel run //tools/shfmt -- -w .
 
       - name: Format cedar
-        run: git ls-files "*.cedar" | xargs ls 2>/dev/null | xargs -I {} ./tools/scripts/cedar format -w -p {}
+        run: |
+          binary=$(bazel cquery //tools/cedar --output=files --build)
+          exec_root=$(bazel info execution_root)
+          cedar="${exec_root}/${binary}"
+          git ls-files "*.cedar" | xargs ls 2>/dev/null | xargs -I {} "${cedar}" format -w -p {}
 
       - name: Exit on diff
         run: git diff --exit-code

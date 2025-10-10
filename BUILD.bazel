@@ -1,3 +1,4 @@
+load("@bazel_env.bzl", "bazel_env")
 load("@npm//:defs.bzl", "npm_link_all_packages")
 
 exports_files([
@@ -9,3 +10,31 @@ exports_files([
 ])
 
 npm_link_all_packages()
+
+bazel_env(
+    name = "bazel_env",
+    tools = {
+        "cargo": "//tools/cargo",
+        "cargo-deny": "//tools/cargo/deny",
+        "cargo-insta": "//tools/cargo/insta",
+        "cedar": "//tools/cedar",
+        "buf": "//tools/buf",
+        "buildifier": "//tools/buildifier",
+        "dprint": "//tools/dprint",
+        "ffmpeg": "//tools/ffmpeg",
+        "ffprobe": "//tools/ffmpeg:ffprobe",
+        "protoc": "//tools/protoc",
+        "node": "//tools/node",
+        "pnpm": "//tools/pnpm",
+        "just": "//tools/just",
+        "miniserve": "//tools/miniserve",
+        "valgrind": "//tools/valgrind",
+        "ibazel": "//tools/ibazel",
+        "bazel-diff": "//tools/bazel-diff",
+        "rust-analyzer": "//tools/rust-analyzer",
+        "rust-analyzer-discover": "//tools/rust-analyzer:discover",
+        "rust-analyzer-check": "//tools/rust-analyzer:check",
+        "shfmt": "//tools/shfmt",
+        "diesel": "//tools/diesel",
+    },
+)

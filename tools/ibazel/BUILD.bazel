@@ -15,4 +15,5 @@ sh_binary(
     name = "ibazel",
     srcs = [":ibazel_file"],
     tags = ["manual"],
+    visibility = ["//visibility:public"],
 )

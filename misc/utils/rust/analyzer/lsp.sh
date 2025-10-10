@@ -2,11 +2,7 @@
 
 set -euo pipefail
 
-SCRIPT="${BASH_SOURCE[0]}"
-SCRIPT_DIR="$(dirname "${SCRIPT}")"
-
-cd "${SCRIPT_DIR}/../../../../"
-
-export PATH="$(pwd)/tools/scripts:$PATH"
+SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+source "${SCRIPT_DIR}/env.sh"
 
 exec rust-analyzer $@

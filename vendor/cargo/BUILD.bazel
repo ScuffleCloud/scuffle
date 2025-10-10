@@ -1690,26 +1690,26 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "toml-0.9.7",
-    actual = "@cargo_vendor__toml-0.9.7//:toml",
+    name = "toml-0.9.8",
+    actual = "@cargo_vendor__toml-0.9.8//:toml",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "toml",
-    actual = "@cargo_vendor__toml-0.9.7//:toml",
+    actual = "@cargo_vendor__toml-0.9.8//:toml",
     tags = ["manual"],
 )
 
 transition_alias_opt(
-    name = "toml_edit-0.23.6",
-    actual = "@cargo_vendor__toml_edit-0.23.6//:toml_edit",
+    name = "toml_edit-0.23.7",
+    actual = "@cargo_vendor__toml_edit-0.23.7//:toml_edit",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "toml_edit",
-    actual = "@cargo_vendor__toml_edit-0.23.6//:toml_edit",
+    actual = "@cargo_vendor__toml_edit-0.23.7//:toml_edit",
     tags = ["manual"],
 )
 

@@ -37,7 +37,6 @@ tracing = [
     "h3-quinn?/tracing",
     "h3?/tracing",
     "tokio-rustls?/logging",
-    "rustls?/logging",
 ]
 ## Enables http1 support
 http1 = [
@@ -58,7 +57,7 @@ http2 = [
 ## Enables http3 support
 http3 = ["dep:quinn", "dep:h3-quinn", "dep:h3"]
 ## Enables tls via rustls
-tls-rustls = ["dep:tokio-rustls", "dep:rustls"]
+tls-rustls = ["dep:tokio-rustls"]
 ## Alias for ["http3", "tls-rustls"]
 http3-tls-rustls = ["http3", "tls-rustls"]
 ## Enables tower service support
@@ -93,7 +92,6 @@ h3-quinn = { default-features = false, optional = true, version = "0.0.10" }
 quinn = { default-features = false, features = ["platform-verifier", "runtime-tokio", "rustls-aws-lc-rs"], optional = true, version = "0.11" }
 
 # TLS
-rustls = { default-features = false, features = ["aws_lc_rs", "std", "tls12"], optional = true, version = "0.23" }
 tokio-rustls = { default-features = false, features = ["aws_lc_rs", "tls12"], optional = true, version = "0.26" }
 
 # Tower Services

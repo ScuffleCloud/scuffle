@@ -40,7 +40,7 @@ pub struct Http3Backend<F> {
     ///
     /// Use this field to set the server into TLS mode.
     /// It will only accept TLS connections when this is set.
-    rustls_config: rustls::ServerConfig,
+    rustls_config: tokio_rustls::rustls::ServerConfig,
 }
 
 impl<F> Http3Backend<F>

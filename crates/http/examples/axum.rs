@@ -3,7 +3,7 @@ use std::{fs, io};
 use axum::body::Body;
 use axum::http::Request;
 use axum::response::Response;
-use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use tokio_rustls::rustls::pki_types::{CertificateDer, PrivateKeyDer};
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -57,11 +57,11 @@ async fn main() {
         .expect("server failed");
 }
 
-pub fn get_tls_config() -> io::Result<rustls::ServerConfig> {
+pub fn get_tls_config() -> io::Result<tokio_rustls::rustls::ServerConfig> {
     let certs = load_certs("local/fullchain.pem")?;
     let key = load_private_key("local/privkey.pem")?;
 
-    let server_config = rustls::ServerConfig::builder()
+    let server_config = tokio_rustls::rustls::ServerConfig::builder()
         .with_no_client_auth()
         .with_single_cert(certs, key)
         .unwrap();

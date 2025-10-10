@@ -42,7 +42,7 @@ pub struct HttpServer<F> {
     /// Use this field to set the server into TLS mode.
     /// It will only accept TLS connections when this is set.
     #[cfg(feature = "tls-rustls")]
-    rustls_config: Option<rustls::ServerConfig>,
+    rustls_config: Option<tokio_rustls::rustls::ServerConfig>,
 }
 
 #[cfg(feature = "http3")]

@@ -14,7 +14,7 @@
         useCreateWebauthnCredential,
         useDeleteWebauthnCredential,
         useUpdateWebauthnName,
-    } from "./credential-mutations.svelte";
+    } from "./credentialMutations.svelte";
     interface Props {
         methods: MfaCredential[];
         isLoading?: boolean;
@@ -52,7 +52,6 @@
     let deleteModal: Modal;
 
     // --Mutations--
-
     const createWebAuthnMutation = useCreateWebauthnCredential(userId);
     const updateNameMutation = useUpdateWebauthnName(userId);
     const deleteCredentialMutation = useDeleteWebauthnCredential(

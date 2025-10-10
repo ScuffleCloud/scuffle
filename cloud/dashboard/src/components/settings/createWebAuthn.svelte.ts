@@ -1,8 +1,12 @@
 import { usersServiceClient } from "$lib/grpcClient";
-import { arrayBufferToBase64url, base64urlToArrayBuffer } from "$lib/utils";
-import { getWebAuthnErrorMessage, WEB_AUTHN_NOT_ALLOWED_ERROR } from "./utils";
+import { arrayBufferToBase64url, base64urlToArrayBuffer, isWebauthnSupported } from "$lib/utils";
+import { getWebAuthnErrorMessage, WEB_AUTHN_NOT_ALLOWED_ERROR } from "../../lib/two-factor/utils";
 
 export async function createWebauthnCredential(userId: string): Promise<string> {
+    if (!isWebauthnSupported()) {
+        throw new Error("WebAuthn not supported on this browser");
+    }
+
     const createCall = usersServiceClient.createWebauthnCredential({ id: userId });
     const createStatus = await createCall.status;
 
@@ -65,8 +69,4 @@ export async function createWebauthnCredential(userId: string): Promise<string> 
 
     const completeResponse = await completeCall.response;
     return completeResponse.id;
-}
-
-export function isWebauthnSupported(): boolean {
-    return !!(navigator.credentials && navigator.credentials.create);
 }

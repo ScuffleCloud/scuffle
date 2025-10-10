@@ -1,8 +1,7 @@
-import { rpcErrorToString, usersServiceClient } from "$lib/grpcClient";
-import { createWebauthnCredential } from "$lib/two-factor/webAuthn.svelte";
+import { createWebauthnCredential } from "$components/settings/createWebAuthn.svelte";
+import { usersServiceClient } from "$lib/grpcClient";
 import type { MfaCredential } from "$lib/types";
 import { withRpcErrorHandling } from "$lib/utils";
-import { type RpcError } from "@protobuf-ts/runtime-rpc";
 import { createMutation, QueryClient, useQueryClient } from "@tanstack/svelte-query";
 
 type UpdateWebauthnNameType = {

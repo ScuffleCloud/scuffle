@@ -1,6 +1,7 @@
 <script lang="ts">
     import LoginOrDivider from "$components/login-or-divider.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
+    import { onMount } from "svelte";
     import RecoveryCodeCollapsible from "./recovery-code-collapsible.svelte";
 
     interface Props {

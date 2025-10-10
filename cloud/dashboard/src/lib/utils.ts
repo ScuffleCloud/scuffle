@@ -1,6 +1,19 @@
 import { rpcErrorToString } from "$lib/grpcClient";
 import type { RpcError } from "@protobuf-ts/runtime-rpc";
 
+// Wrapper to handle RPC errors in mutations
+export async function withRpcErrorHandling<T>(fn: () => Promise<T>): Promise<T> {
+    try {
+        return await fn();
+    } catch (err) {
+        throw new Error(rpcErrorToString(err as RpcError));
+    }
+}
+
+export function isWebauthnSupported(): boolean {
+    return !!(navigator.credentials && navigator.credentials.create);
+}
+
 export function getCssVar(varName: string): string {
     if (typeof window === "undefined") {
         return "";
@@ -34,11 +47,79 @@ export function arrayBufferToBase64url(buffer: ArrayBuffer): string {
     );
 }
 
-// Wrapper to handle RPC errors in mutations
-export async function withRpcErrorHandling<T>(fn: () => Promise<T>): Promise<T> {
-    try {
-        return await fn();
-    } catch (err) {
-        throw new Error(rpcErrorToString(err as RpcError));
-    }
+/**
+ * For creation: Converts server credential options to browser-compatible format
+ */
+export function parseCredentialCreationOptions(optionsJson: string): PublicKeyCredentialCreationOptions {
+    const options = JSON.parse(optionsJson).publicKey;
+
+    return {
+        ...options,
+        challenge: base64urlToArrayBuffer(options.challenge),
+        user: {
+            ...options.user,
+            id: base64urlToArrayBuffer(options.user.id),
+        },
+        excludeCredentials: options.excludeCredentials?.map((cred: any) => ({
+            ...cred,
+            id: base64urlToArrayBuffer(cred.id),
+        })) || [],
+    };
+}
+
+/**
+ * For creation: Serializes credential creation response for server
+ */
+export function serializeCredentialCreationResponse(credential: PublicKeyCredential): string {
+    return JSON.stringify({
+        id: credential.id,
+        rawId: arrayBufferToBase64url(credential.rawId),
+        response: {
+            attestationObject: arrayBufferToBase64url(
+                (credential.response as AuthenticatorAttestationResponse).attestationObject,
+            ),
+            clientDataJSON: arrayBufferToBase64url(credential.response.clientDataJSON),
+        },
+        type: credential.type,
+        authenticatorAttachment: credential.authenticatorAttachment,
+    });
+}
+
+/**
+ * For challenge: Converts server credential request options to browser-compatible format
+ */
+export function parseCredentialRequestOptions(optionsJson: string): PublicKeyCredentialRequestOptions {
+    const options = JSON.parse(optionsJson).publicKey;
+    console.log(options);
+
+    return {
+        ...options,
+        challenge: base64urlToArrayBuffer(options.challenge),
+        allowCredentials: options.allowCredentials?.map((cred: any) => ({
+            ...cred,
+            id: base64urlToArrayBuffer(cred.id),
+        })) || [],
+    };
+}
+
+/**
+ * For challenge: Serializes credential assertion response for server
+ */
+export function serializeCredentialAssertionResponse(credential: PublicKeyCredential): string {
+    const response = credential.response as AuthenticatorAssertionResponse;
+    console.log(response);
+    return JSON.stringify({
+        id: credential.id,
+        rawId: arrayBufferToBase64url(credential.rawId),
+        response: {
+            authenticatorData: arrayBufferToBase64url(response.authenticatorData),
+            clientDataJSON: arrayBufferToBase64url(credential.response.clientDataJSON),
+            signature: arrayBufferToBase64url(response.signature),
+            userHandle: response.userHandle
+                ? arrayBufferToBase64url(response.userHandle)
+                : null,
+        },
+        type: credential.type,
+        authenticatorAttachment: credential.authenticatorAttachment,
+    });
 }

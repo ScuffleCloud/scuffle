@@ -35,7 +35,7 @@
     function handleDone() {
         currentStep = "confirm";
         generatedCodes = [];
-        modal.closeDialog();
+        modal.closeModal();
     }
 
     function handleCopy() {
@@ -90,7 +90,7 @@
             <div class="button-group">
                 <button
                     class="button button-secondary"
-                    onclick={() => modal.closeDialog()}
+                    onclick={() => handleDone()}
                 >
                     Cancel
                 </button>

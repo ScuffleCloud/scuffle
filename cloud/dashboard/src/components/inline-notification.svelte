@@ -52,21 +52,12 @@
       gap: 1rem;
       padding: 1rem;
       border-radius: 0.5rem;
-      border: 2px solid;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       transition: all 0.2s ease;
-      font-family: system-ui, -apple-system, sans-serif;
-    }
-
-    .notification:hover {
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+      width: 100%;
     }
 
     .notification-icon {
       flex-shrink: 0;
-      width: 2.5rem;
-      height: 2.5rem;
-      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -74,7 +65,6 @@
     }
 
     .notification-message {
-      flex: 1;
       font-weight: 500;
       font-size: 1rem;
     }
@@ -97,18 +87,10 @@
       opacity: 0.7;
     }
 
-    /* Error variant */
     .notification-error {
-      background-color: #fee;
-      border-color: #fcc;
-      color: #7f1d1d;
+      background-color: var(--colors-red10);
+      color: var(--colors-red70);
     }
-
-    .notification-error .notification-icon {
-      background-color: #b91c1c;
-    }
-
-    /* Warning variant */
     .notification-warning {
       background-color: #fef3c7;
       border-color: #fde68a;

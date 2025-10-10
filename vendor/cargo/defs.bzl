@@ -1013,7 +1013,7 @@ _NORMAL_DEPENDENCIES = {
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "syn": Label("@cargo_vendor//:syn-2.0.106"),
                 "target-triple": Label("@cargo_vendor//:target-triple-0.1.4"),
-                "toml": Label("@cargo_vendor//:toml-0.9.7"),
+                "toml": Label("@cargo_vendor//:toml-0.9.8"),
             },
         },
     },
@@ -1209,7 +1209,7 @@ _NORMAL_DEPENDENCIES = {
                 "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
                 "sha2": Label("@cargo_vendor//:sha2-0.10.9"),
-                "toml_edit": Label("@cargo_vendor//:toml_edit-0.23.6"),
+                "toml_edit": Label("@cargo_vendor//:toml_edit-0.23.7"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
             },
@@ -1370,7 +1370,7 @@ _NORMAL_DEPENDENCIES = {
                 "rustdoc-types": Label("@cargo_vendor//:rustdoc-types-0.56.0"),
                 "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
-                "toml": Label("@cargo_vendor//:toml-0.9.7"),
+                "toml": Label("@cargo_vendor//:toml-0.9.8"),
             },
         },
     },
@@ -1414,7 +1414,7 @@ _NORMAL_DEPENDENCIES = {
                 "nextest-metadata": Label("@cargo_vendor//:nextest-metadata-0.12.2"),
                 "nextest-runner": Label("@cargo_vendor//:nextest-runner-0.88.0"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
-                "toml_edit": Label("@cargo_vendor//:toml_edit-0.23.6"),
+                "toml_edit": Label("@cargo_vendor//:toml_edit-0.23.7"),
                 "walkdir": Label("@cargo_vendor//:walkdir-2.5.0"),
             },
         },
@@ -9821,12 +9821,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__serde_spanned-1.0.2",
-        sha256 = "5417783452c2be558477e104686f7de5dae53dba813c28435e0e70f82d9b04ee",
+        name = "cargo_vendor__serde_spanned-1.0.3",
+        sha256 = "e24345aa0fe688594e73770a5f6d1b216508b4f93484c0026d521acd30134392",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/serde_spanned/1.0.2/download"],
-        strip_prefix = "serde_spanned-1.0.2",
-        build_file = Label("//vendor/cargo:BUILD.serde_spanned-1.0.2.bazel"),
+        urls = ["https://static.crates.io/crates/serde_spanned/1.0.3/download"],
+        strip_prefix = "serde_spanned-1.0.3",
+        build_file = Label("//vendor/cargo:BUILD.serde_spanned-1.0.3.bazel"),
     )
 
     maybe(
@@ -10631,12 +10631,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__toml-0.9.7",
-        sha256 = "00e5e5d9bf2475ac9d4f0d9edab68cc573dc2fd644b0dba36b0c30a92dd9eaa0",
+        name = "cargo_vendor__toml-0.9.8",
+        sha256 = "f0dc8b1fb61449e27716ec0e1bdf0f6b8f3e8f6b05391e8497b8b6d7804ea6d8",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/toml/0.9.7/download"],
-        strip_prefix = "toml-0.9.7",
-        build_file = Label("//vendor/cargo:BUILD.toml-0.9.7.bazel"),
+        urls = ["https://static.crates.io/crates/toml/0.9.8/download"],
+        strip_prefix = "toml-0.9.8",
+        build_file = Label("//vendor/cargo:BUILD.toml-0.9.8.bazel"),
     )
 
     maybe(
@@ -10651,12 +10651,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__toml_datetime-0.7.2",
-        sha256 = "32f1085dec27c2b6632b04c80b3bb1b4300d6495d1e129693bdda7d91e72eec1",
+        name = "cargo_vendor__toml_datetime-0.7.3",
+        sha256 = "f2cdb639ebbc97961c51720f858597f7f24c4fc295327923af55b74c3c724533",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/toml_datetime/0.7.2/download"],
-        strip_prefix = "toml_datetime-0.7.2",
-        build_file = Label("//vendor/cargo:BUILD.toml_datetime-0.7.2.bazel"),
+        urls = ["https://static.crates.io/crates/toml_datetime/0.7.3/download"],
+        strip_prefix = "toml_datetime-0.7.3",
+        build_file = Label("//vendor/cargo:BUILD.toml_datetime-0.7.3.bazel"),
     )
 
     maybe(
@@ -10671,22 +10671,22 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__toml_edit-0.23.6",
-        sha256 = "f3effe7c0e86fdff4f69cdd2ccc1b96f933e24811c5441d44904e8683e27184b",
+        name = "cargo_vendor__toml_edit-0.23.7",
+        sha256 = "6485ef6d0d9b5d0ec17244ff7eb05310113c3f316f2d14200d4de56b3cb98f8d",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/toml_edit/0.23.6/download"],
-        strip_prefix = "toml_edit-0.23.6",
-        build_file = Label("//vendor/cargo:BUILD.toml_edit-0.23.6.bazel"),
+        urls = ["https://static.crates.io/crates/toml_edit/0.23.7/download"],
+        strip_prefix = "toml_edit-0.23.7",
+        build_file = Label("//vendor/cargo:BUILD.toml_edit-0.23.7.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "cargo_vendor__toml_parser-1.0.3",
-        sha256 = "4cf893c33be71572e0e9aa6dd15e6677937abd686b066eac3f8cd3531688a627",
+        name = "cargo_vendor__toml_parser-1.0.4",
+        sha256 = "c0cbe268d35bdb4bb5a56a2de88d0ad0eb70af5384a99d648cd4b3d04039800e",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/toml_parser/1.0.3/download"],
-        strip_prefix = "toml_parser-1.0.3",
-        build_file = Label("//vendor/cargo:BUILD.toml_parser-1.0.3.bazel"),
+        urls = ["https://static.crates.io/crates/toml_parser/1.0.4/download"],
+        strip_prefix = "toml_parser-1.0.4",
+        build_file = Label("//vendor/cargo:BUILD.toml_parser-1.0.4.bazel"),
     )
 
     maybe(
@@ -10701,12 +10701,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__toml_writer-1.0.3",
-        sha256 = "d163a63c116ce562a22cda521fcc4d79152e7aba014456fb5eb442f6d6a10109",
+        name = "cargo_vendor__toml_writer-1.0.4",
+        sha256 = "df8b2b54733674ad286d16267dcfc7a71ed5c776e4ac7aa3c3e2561f7c637bf2",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/toml_writer/1.0.3/download"],
-        strip_prefix = "toml_writer-1.0.3",
-        build_file = Label("//vendor/cargo:BUILD.toml_writer-1.0.3.bazel"),
+        urls = ["https://static.crates.io/crates/toml_writer/1.0.4/download"],
+        strip_prefix = "toml_writer-1.0.4",
+        build_file = Label("//vendor/cargo:BUILD.toml_writer-1.0.4.bazel"),
     )
 
     maybe(
@@ -11973,8 +11973,8 @@ def crate_repositories():
         struct(repo = "cargo_vendor__tokio-1.47.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__tokio-rustls-0.26.4", is_dev_dep = False),
         struct(repo = "cargo_vendor__tokio-util-0.7.16", is_dev_dep = False),
-        struct(repo = "cargo_vendor__toml-0.9.7", is_dev_dep = False),
-        struct(repo = "cargo_vendor__toml_edit-0.23.6", is_dev_dep = False),
+        struct(repo = "cargo_vendor__toml-0.9.8", is_dev_dep = False),
+        struct(repo = "cargo_vendor__toml_edit-0.23.7", is_dev_dep = False),
         struct(repo = "cargo_vendor__tonic-0.14.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__tonic-build-0.14.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__tonic-prost-0.14.2", is_dev_dep = False),

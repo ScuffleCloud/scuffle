@@ -117,7 +117,7 @@ rust_library(
         "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__tokio-stream-0.1.17//:tokio_stream",
         "@cargo_vendor__toml-0.8.23//:toml",
-        "@cargo_vendor__toml_edit-0.23.6//:toml_edit",
+        "@cargo_vendor__toml_edit-0.23.7//:toml_edit",
         "@cargo_vendor__tracing-0.1.41//:tracing",
         "@cargo_vendor__unicode-ident-1.0.19//:unicode_ident",
         "@cargo_vendor__unicode-normalization-0.1.24//:unicode_normalization",

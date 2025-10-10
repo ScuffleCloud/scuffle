@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "toml_datetime",
+    name = "toml_parser",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -37,7 +37,6 @@ rust_library(
     crate_features = [
         "alloc",
         "default",
-        "serde",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -50,7 +49,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=toml_datetime",
+        "crate-name=toml_parser",
         "manual",
         "noclippy",
         "norustfmt",
@@ -65,8 +64,8 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.7.2",
+    version = "1.0.4",
     deps = [
-        "@cargo_vendor__serde_core-1.0.228//:serde_core",
+        "@cargo_vendor__winnow-0.7.13//:winnow",
     ],
 )

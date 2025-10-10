@@ -17,7 +17,7 @@ path = "bin/standalone/main.rs"
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
-anyhow = "1.0.98"
+anyhow = "1"
 ingest-traits = { path = "./traits", package = "scufflecloud-ingest-traits" }
 scuffle-bootstrap = { path = "../../../crates/bootstrap" }
 scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../../crates/bootstrap-telemetry" }
@@ -25,13 +25,13 @@ scuffle-context = { path = "../../../crates/context" }
 scuffle-rtmp = { path = "../../../crates/rtmp" }
 scuffle-settings = { features = ["all-formats", "bootstrap"], path = "../../../crates/settings" }
 scuffle-signal = { features = ["bootstrap"], path = "../../../crates/signal" }
-serde = "1.0.219"
-serde_derive = "1.0.219"
-smart-default = "0.7.1"
-tokio = "1.47.1"
-tokio-rustls = "0.26.4"
-tracing = "0.1.41"
-tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
+serde = "1"
+serde_derive = "1"
+smart-default = "0.7"
+tokio = "1"
+tokio-rustls = "0.26"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

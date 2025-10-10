@@ -6170,6 +6170,7 @@ dependencies = [
  "serde_derive",
  "smart-default",
  "tokio",
+ "tokio-rustls",
  "tracing",
  "tracing-subscriber",
 ]
@@ -6177,6 +6178,9 @@ dependencies = [
 [[package]]
 name = "scufflecloud-ingest-traits"
 version = "0.1.0"
+dependencies = [
+ "rustls",
+]
 
 [[package]]
 name = "scufflecloud-proto"

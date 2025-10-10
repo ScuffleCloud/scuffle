@@ -15,9 +15,9 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 core-db-types = { path = "../../../core/db-types", package = "scufflecloud-core-db-types" }
 diesel = { version = "2", default-features = false }
 id = { path = "../../../id", package = "scufflecloud-id" }
+pb = { path = "../../../proto", package = "scufflecloud-proto" }
 serde = "1"
 serde_derive = "1"
-pb = { path = "../../../proto", package = "scufflecloud-proto" }
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

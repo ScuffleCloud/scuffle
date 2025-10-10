@@ -4,12 +4,12 @@ load("//misc/utils/rust:package.bzl", "scuffle_package")
 cargo_toml()
 
 scuffle_package(
-    crate_name = "scufflecloud-video-api-traits",
-    deps = [
-        "//crates/batching",
-        "//cloud/video/api/db-types",
-    ],
     aliases = {
         "//cloud/video/api/db-types": "db_types",
     },
+    crate_name = "scufflecloud-video-api-traits",
+    deps = [
+        "//cloud/video/api/db-types",
+        "//crates/batching",
+    ],
 )

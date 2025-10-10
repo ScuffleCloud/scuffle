@@ -1,9 +1,7 @@
 use db_types::models::{Stream, StreamId};
 use db_types::schema::streams;
 use diesel_async::RunQueryDsl;
-use ext_traits::RequestExt;
-use ext_traits::ResultExt;
-use ext_traits::{DisplayExt, OptionExt};
+use ext_traits::{OptionExt, RequestExt, ResultExt};
 use petname::Generator;
 use tonic_types::ErrorDetails;
 

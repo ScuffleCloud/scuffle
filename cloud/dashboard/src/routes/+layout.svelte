@@ -22,13 +22,8 @@
         LOGIN_ROUTES,
         OAUTH_CALLBACK_ROUTES,
     } from "$lib/consts";
-    import { onMount } from "svelte";
 
     const auth = $derived(authState());
-
-    onMount(() => {
-        auth.initialize();
-    });
 
     const isOAuthCallbackRoute = $derived(
         OAUTH_CALLBACK_ROUTES.some(route =>

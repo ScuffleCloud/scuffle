@@ -14,6 +14,7 @@ id::impl_id!(pub MfaTotpCredentialId, "mft_");
 pub struct MfaTotpCredential {
     pub id: MfaTotpCredentialId,
     pub user_id: UserId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     pub secret: Vec<u8>,
     pub last_used_at: chrono::DateTime<chrono::Utc>,
@@ -50,6 +51,7 @@ id::impl_id!(pub MfaWebauthnCredentialId, "mfw_");
 pub struct MfaWebauthnCredential {
     pub id: MfaWebauthnCredentialId,
     pub user_id: UserId,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
     pub credential_id: Vec<u8>,
     #[serde(skip)] // cedar doesn't support json values

@@ -1,0 +1,23 @@
+alias(
+    name = "include",
+    actual = select({
+        "//misc/platforms:linux-x86_64": "@openssl-linux-x86_64//:include",
+        "//misc/platforms:linux-aarch64": "@openssl-linux-aarch64//:include",
+        "//misc/platforms:macos-x86_64": "@openssl-macos-x86_64//:include",
+        "//misc/platforms:macos-aarch64": "@openssl-macos-aarch64//:include",
+        "//conditions:default": "@platforms//:incompatible",
+    }),
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "lib",
+    actual = select({
+        "//misc/platforms:linux-x86_64": "@openssl-linux-x86_64//:lib",
+        "//misc/platforms:linux-aarch64": "@openssl-linux-aarch64//:lib",
+        "//misc/platforms:macos-x86_64": "@openssl-macos-x86_64//:lib",
+        "//misc/platforms:macos-aarch64": "@openssl-macos-aarch64//:lib",
+        "//conditions:default": "@platforms//:incompatible",
+    }),
+    visibility = ["//visibility:public"],
+)

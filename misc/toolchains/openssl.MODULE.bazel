@@ -1,0 +1,53 @@
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+_BUILD_FILE = """
+load("@aspect_bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
+
+copy_to_directory(
+    name = "include",
+    srcs = glob(["include/**"]),
+    root_paths = ["include"],
+    include_external_repositories = ["*"],
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+
+copy_to_directory(
+    name = "lib",
+    srcs = glob(["{lib}/**"]),
+    root_paths = ["{lib}"],
+    include_external_repositories = ["*"],
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+"""
+
+base_url = "https://github.com/ScuffleCloud/toolchains/releases/download/openssl-3/{file}"
+
+http_archive(
+    name = "openssl-linux-x86_64",
+    build_file_content = _BUILD_FILE.format(lib = "lib64"),
+    sha256 = "69608275a8745912bbefc107b06e0cbe40ff57a0ecd9932311c5833731bdd9ff",
+    url = base_url.format(file = "openssl-3.6.0_linux_x86_64.tar.zst"),
+)
+
+http_archive(
+    name = "openssl-linux-aarch64",
+    build_file_content = _BUILD_FILE.format(lib = "lib"),
+    sha256 = "46418be937b42243fcdc0f814b34f306a236bac7d449ab3d72a8d05ee3e1dc09",
+    url = base_url.format(file = "openssl-3.6.0_linux_aarch64.tar.zst"),
+)
+
+http_archive(
+    name = "openssl-macos-x86_64",
+    build_file_content = _BUILD_FILE.format(lib = "lib"),
+    sha256 = "203429619d0653e868e6e5de913dc68e0ceb967ee75eb3b89eef95f59b610eaa",
+    url = base_url.format(file = "openssl-3.6.0_darwin_x86_64.tar.zst"),
+)
+
+http_archive(
+    name = "openssl-macos-aarch64",
+    build_file_content = _BUILD_FILE.format(lib = "lib"),
+    sha256 = "e7d20ef55d7e533a8fbfd8d809ffd686117f0c2e4e8a25139b35de676668296a",
+    url = base_url.format(file = "openssl-3.6.0_darwin_aarch64.tar.zst"),
+)

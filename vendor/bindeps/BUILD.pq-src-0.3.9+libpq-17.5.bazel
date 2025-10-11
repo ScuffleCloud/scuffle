@@ -79,7 +79,7 @@ cargo_build_script(
         allow_empty = True,
     ),
     build_script_env = {
-        "BINDGEN_EXTRA_CLANG_ARGS": "$(CFLAGS) -I$(location @openssl//:gen_dir)/include",
+        "BINDGEN_EXTRA_CLANG_ARGS": "$(CFLAGS) -I$(location @//misc/toolchains/openssl:include)",
     },
     compile_data = glob(
         include = ["**"],
@@ -111,7 +111,7 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ) + [
-        "@openssl//:gen_dir",
+        "@//misc/toolchains/openssl:include",
     ],
     edition = "2021",
     link_deps = [

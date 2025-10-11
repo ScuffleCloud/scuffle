@@ -11,7 +11,6 @@ bazel_dep(name = "rules_cc", version = "0.2.4")
 bazel_dep(name = "aspect_bazel_lib", version = "2.21.1")
 bazel_dep(name = "rules_python", version = "1.5.3")
 bazel_dep(name = "rules_go", version = "0.57.0")
-bazel_dep(name = "openssl", version = "3.3.1.bcr.7")
 bazel_dep(name = "rules_java", version = "8.15.2")
 bazel_dep(name = "bazel_features", version = "1.32.0")
 
@@ -38,3 +37,5 @@ include("//misc/toolchains:bazel-diff.MODULE.bazel")
 include("//misc/toolchains:valgrind.MODULE.bazel")
 
 include("//misc/toolchains:assets.MODULE.bazel")
+
+include("//misc/toolchains:openssl.MODULE.bazel")

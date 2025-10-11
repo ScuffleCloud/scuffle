@@ -9,12 +9,16 @@ use scuffle_context::ContextFutExt;
 #[cfg(feature = "tracing")]
 use tracing::Instrument;
 use utils::copy_response_body;
+#[cfg(feature = "webtransport")]
+use {h3::ext::Protocol, h3_webtransport as h3wt};
 
 use crate::error::HttpError;
 use crate::service::{HttpService, HttpServiceFactory};
 
 pub mod body;
 mod utils;
+#[cfg(feature = "webtransport")]
+pub mod webtransport;
 
 /// A backend that handles incoming HTTP3 connections.
 ///
@@ -129,6 +133,7 @@ where
                                 loop {
                                     match h3_conn.accept().with_context(&ctx).await {
                                         Some(Ok(Some(resolver))) => {
+                                            // Resolve the request
                                             let (req, stream) = match resolver.resolve_request().await {
                                                 Ok(r) => r,
                                                 Err(_err) => {
@@ -141,6 +146,71 @@ where
                                             #[cfg(feature = "tracing")]
                                             tracing::debug!(method = %req.method(), uri = %req.uri(), "received request");
 
+                                            // Check if this is a WebTransport CONNECT request
+                                            #[cfg(feature = "webtransport")]
+                                            if req.extensions().get::<Protocol>() == Some(&Protocol::WEB_TRANSPORT)
+                                                && req.method() == http::Method::CONNECT
+                                            {
+                                                #[cfg(feature = "tracing")]
+                                                tracing::debug!("starting WebTransport session");
+
+                                                // Store the original request for passing to the service
+                                                let (parts, _) = req.into_parts();
+
+                                                // Accept the WebTransport session
+                                                let session = match h3wt::server::WebTransportSession::accept(
+                                                    http::Request::from_parts(parts.clone(), ()),
+                                                    stream,
+                                                    h3_conn,
+                                                )
+                                                .await
+                                                {
+                                                    Ok(session) => session,
+                                                    Err(_err) => {
+                                                        #[cfg(feature = "tracing")]
+                                                        tracing::warn!(err = %_err, "failed to accept WebTransport session");
+                                                        break;
+                                                    }
+                                                };
+
+                                                let wt_session =
+                                                    webtransport::WebTransportSession::new(std::sync::Arc::new(session));
+
+                                                // Create an empty body for the WebTransport request
+                                                // Since WebTransport operates on streams, not the request body
+                                                let empty_body = crate::body::IncomingBody::Empty;
+
+                                                // Reconstruct the request with the session in extensions
+                                                let mut wt_req = http::Request::from_parts(parts, empty_body);
+                                                wt_req.extensions_mut().insert(wt_session); // Call the service with the WebTransport request
+                                                tokio::spawn({
+                                                    let ctx = ctx.clone();
+                                                    let mut http_service = http_service.clone();
+                                                    async move {
+                                                        let _res: Result<_, HttpError<F>> = async move {
+                                                            let _resp = http_service
+                                                                .call(wt_req)
+                                                                .await
+                                                                .map_err(|e| HttpError::ServiceError(e))?;
+
+                                                            #[cfg(feature = "tracing")]
+                                                            tracing::debug!("WebTransport session handler completed");
+
+                                                            Ok(())
+                                                        }
+                                                        .await;
+
+                                                        #[cfg(feature = "tracing")]
+                                                        if let Err(e) = _res {
+                                                            tracing::warn!(err = %e, "WebTransport session handler error");
+                                                        }
+
+                                                        drop(ctx);
+                                                    }
+                                                });
+
+                                                break;
+                                            }
                                             let (mut send, recv) = stream.split();
 
                                             let size_hint = req
@@ -150,30 +220,32 @@ where
                                             let body = QuicIncomingBody::new(recv, size_hint);
                                             let req = req.map(|_| crate::body::IncomingBody::from(body));
 
-                                            let ctx = ctx.clone();
-                                            let mut http_service = http_service.clone();
-                                            tokio::spawn(async move {
-                                                let _res: Result<_, HttpError<F>> = async move {
-                                                    let resp = http_service
-                                                        .call(req)
-                                                        .await
-                                                        .map_err(|e| HttpError::ServiceError(e))?;
-                                                    let (parts, body) = resp.into_parts();
+                                            tokio::spawn({
+                                                let ctx = ctx.clone();
+                                                let mut http_service = http_service.clone();
+                                                async move {
+                                                    let _res: Result<_, HttpError<F>> = async move {
+                                                        let resp = http_service
+                                                            .call(req)
+                                                            .await
+                                                            .map_err(|e| HttpError::ServiceError(e))?;
+                                                        let (parts, body) = resp.into_parts();
 
-                                                    send.send_response(http::Response::from_parts(parts, ())).await?;
-                                                    copy_response_body(send, body).await?;
+                                                        send.send_response(http::Response::from_parts(parts, ())).await?;
+                                                        copy_response_body(send, body).await?;
 
-                                                    Ok(())
+                                                        Ok(())
+                                                    }
+                                                    .await;
+
+                                                    #[cfg(feature = "tracing")]
+                                                    if let Err(e) = _res {
+                                                        tracing::warn!(err = %e, "error handling request");
+                                                    }
+
+                                                    // This moves the context into the async block because it is dropped here
+                                                    drop(ctx);
                                                 }
-                                                .await;
-
-                                                #[cfg(feature = "tracing")]
-                                                if let Err(e) = _res {
-                                                    tracing::warn!(err = %e, "error handling request");
-                                                }
-
-                                                // This moves the context into the async block because it is dropped here
-                                                drop(ctx);
                                             });
                                         }
                                         // indicating no more streams to be received

@@ -35,6 +35,7 @@ rust_library(
         ],
     ),
     crate_features = [
+        "datagram",
         "tracing",
     ],
     crate_root = "src/lib.rs",
@@ -67,6 +68,7 @@ rust_library(
         "@cargo_vendor__bytes-1.10.1//:bytes",
         "@cargo_vendor__futures-0.3.31//:futures",
         "@cargo_vendor__h3-0.0.8//:h3",
+        "@cargo_vendor__h3-datagram-0.0.2//:h3_datagram",
         "@cargo_vendor__quinn-0.11.9//:quinn",
         "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__tokio-util-0.7.16//:tokio_util",

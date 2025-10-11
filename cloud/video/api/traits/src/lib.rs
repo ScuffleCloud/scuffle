@@ -8,9 +8,11 @@
 mod config;
 mod database;
 mod dataloader;
+mod mtls;
 
 pub use config::*;
 pub use database::*;
 pub use dataloader::*;
+pub use mtls::*;
 
-pub trait Global: ConfigInterface + DatabaseInterface + DataloaderInterface + Send + Sync + 'static {}
+pub trait Global: ConfigInterface + DatabaseInterface + DataloaderInterface + MtlsInterface + Send + Sync + 'static {}

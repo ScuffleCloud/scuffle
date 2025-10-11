@@ -1,16 +1,24 @@
 import { browser } from "$app/environment";
 import { PUBLIC_GRPC_BASE_URL } from "$env/static/public";
 import { GrpcWebFetchTransport } from "@protobuf-ts/grpcweb-transport";
-import { type RpcOptions, UnaryCall, Deferred, type RpcMetadata, type RpcStatus, type RpcInterceptor, type RpcError } from "@protobuf-ts/runtime-rpc";
+import { base64decode } from "@protobuf-ts/runtime";
+import {
+    Deferred,
+    type RpcError,
+    type RpcInterceptor,
+    type RpcMetadata,
+    type RpcOptions,
+    type RpcStatus,
+    UnaryCall,
+} from "@protobuf-ts/runtime-rpc";
+import { DebugInfo } from "@scufflecloud/proto/google/rpc/error_details.js";
+import { Status } from "@scufflecloud/proto/google/rpc/status.js";
 import { OrganizationInvitationsServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/organization_invitations_service.client.js";
 import { OrganizationsServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/organizations_service.client.js";
 import { SessionsServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.client.js";
 import { UsersServiceClient } from "@scufflecloud/proto/scufflecloud/core/v1/users_service.client.js";
-import { Status } from "@scufflecloud/proto/google/rpc/status.js";
-import { DebugInfo } from "@scufflecloud/proto/google/rpc/error_details.js";
 import { authState } from "./auth.svelte";
 import { arrayBufferToBase64 } from "./utils";
-import { base64decode } from '@protobuf-ts/runtime';
 
 function generateRandomNonce(): ArrayBuffer {
     if (!browser) throw new Error("Not in browser");
@@ -23,9 +31,9 @@ function generateRandomNonce(): ArrayBuffer {
 // https://github.com/timostamm/protobuf-ts/issues/628#issuecomment-1999999960
 export function rpcErrorToString(error: RpcError): string {
     let status = null;
-    const statusMeta = error.meta['grpc-status-details-bin'];
+    const statusMeta = error.meta["grpc-status-details-bin"];
     if (statusMeta) {
-        const b64StatusBin = typeof statusMeta === 'string' ? statusMeta : statusMeta[statusMeta.length - 1];
+        const b64StatusBin = typeof statusMeta === "string" ? statusMeta : statusMeta[statusMeta.length - 1];
         status = Status.fromBinary(base64decode(b64StatusBin));
     }
 

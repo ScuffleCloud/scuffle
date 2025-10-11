@@ -7,9 +7,16 @@
     import IconOverviewKey from "$lib/images/icon-overview-key.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
     import type { MfaCredential } from "$lib/types";
+    import { useQueryClient } from "@tanstack/svelte-query";
 
+    import Badge from "$components/badge.svelte";
     import Modal from "../modal.svelte";
     import AuthMethodActionsMenu from "./auth-method-actions-menu.svelte";
+    import {
+        type AuthStepType,
+        DEFAULT_WEBAUTHN_AUTH_NAME,
+        STEP_TO_TITLE,
+    } from "./consts";
     import {
         useCreateWebauthnCredential,
         useDeleteWebauthnCredential,
@@ -22,19 +29,14 @@
 
     let { methods, isLoading }: Props = $props();
 
+    const queryClient = useQueryClient();
     const userId = authState().user?.id;
     const enabled = $derived(methods.length > 0);
 
     // Flow states. Add one for TOPT later
-    let currentStep = $state<"select" | "waiting" | "success">(
+    let currentStep = $state<AuthStepType>(
         "select",
     );
-
-    const stepToTitle = {
-        select: "New 2FA method",
-        waiting: "Waiting for results...",
-        success: "Passkey added",
-    };
 
     // Webauthn setup flow
     let credentialId = $state("");
@@ -60,10 +62,17 @@
 
     // --Webauthn setup flow--
     function handleReset() {
+        // If exited in the last step without naming then refetch the list
+        if (currentStep === "success") {
+            queryClient.invalidateQueries({
+                queryKey: ["webauthn-list"],
+            });
+        }
         passkeyName = "";
         credentialId = "";
         currentStep = "select";
         createWebAuthnMutation.reset();
+        updateNameMutation.reset();
     }
 
     function handlePasskeySetup() {
@@ -82,6 +91,20 @@
         createWebAuthnMutation.mutate();
     }
 
+    function handlePasskeyNameSubmit() {
+        if (passkeyName.trim()) {
+            updateNameMutation.mutate({
+                id: credentialId,
+                name: passkeyName.trim(),
+            }, {
+                onSuccess: () => {
+                    modal.closeModal();
+                },
+            });
+        }
+    }
+    // --End Webauthn setup flow--
+
     // --Webauthn edit modals--
     function onEditMethod(method: MfaCredential) {
         editingCredentialId = method.id;
@@ -92,9 +115,10 @@
     function handleEditModalClose() {
         editingCredentialId = null;
         editingName = "";
+        updateNameMutation.reset();
     }
 
-    function handleEditSubmit() {
+    function handleEditModalSubmit() {
         if (editingCredentialId && editingName.trim()) {
             updateNameMutation.mutate({
                 id: editingCredentialId,
@@ -106,6 +130,7 @@
             });
         }
     }
+    // --End Webauthn edit modals--
 
     // --Webauthn delete modals--
     function onDeleteMethod(method: MfaCredential) {
@@ -115,6 +140,7 @@
 
     function handleDeleteModalClose() {
         methodToDelete = null;
+        deleteCredentialMutation.reset();
     }
 
     function handleDeleteConfirm() {
@@ -126,10 +152,11 @@
             });
         }
     }
+    // --End Webauthn delete modals--
 </script>
 <SettingsCard
     title="Two-factor authentication"
-    status={{
+    badge={{
         label: enabled ? "Enabled" : "Disabled",
         variant: enabled ? "enabled" : "disabled",
     }}
@@ -150,9 +177,9 @@
                     <div class="method-info">
                         <div class="method-name-row">
                             <span class="method-name">{method.name}</span>
-                            <!-- {#if method.isPrimary}
-                                <span class="primary-badge">Primary</span>
-                            {/if} -->
+                            <Badge variant="info">{
+                                method.type.toUpperCase()
+                            }</Badge>
                         </div>
                     </div>
                     <AuthMethodActionsMenu
@@ -172,7 +199,7 @@
         <Modal
             triggerLabel="Add a method"
             triggerClass="add-method-button"
-            title={stepToTitle[currentStep]}
+            title={STEP_TO_TITLE[currentStep]}
             onClose={handleReset}
             hideCloseButton={currentStep === "waiting"}
             closeOnOutsideClick={currentStep === "waiting" || currentStep === "success"}
@@ -242,13 +269,19 @@
                     <input
                         type="text"
                         bind:value={passkeyName}
-                        placeholder="passkeyname"
+                        placeholder={DEFAULT_WEBAUTHN_AUTH_NAME}
                         class="passkey-input"
                     />
-
+                    {#if updateNameMutation.isError}
+                        <InlineNotification
+                            type="error"
+                            message={updateNameMutation.error?.message
+                            || "Failed to update name"}
+                        />
+                    {/if}
                     <button
                         class="done-button"
-                        onclick={() => modal.closeModal()}
+                        onclick={handlePasskeyNameSubmit}
                     >
                         Done
                     </button>
@@ -284,7 +317,7 @@
         <div class="button-group">
             <button
                 class="done-button"
-                onclick={handleEditSubmit}
+                onclick={handleEditModalSubmit}
                 disabled={updateNameMutation.isPending
                 || !editingName.trim()}
             >

@@ -23,7 +23,7 @@
         OAUTH_CALLBACK_ROUTES,
     } from "$lib/consts";
 
-    const auth = $derived(authState());
+    const auth = authState();
 
     const isOAuthCallbackRoute = $derived(
         OAUTH_CALLBACK_ROUTES.some(route =>
@@ -125,27 +125,30 @@
             <LoginFooter />
         </div>
     {/if}
-{:else if hasPendingMfa}
-    <div class="login-page-container">
-        <LoginHeader />
-        <TwoFactorPage />
-        <LoginFooter />
-    </div>
 {:else}
-    <div class="app">
-        <QueryClientProvider client={queryClient}>
-            <Navbar />
-            <main>
-                <TopNav />
-                <div class="content">
-                    <div class="main-content">
-                        {@render children()}
+    <!-- Authenticated -->
+    <QueryClientProvider client={queryClient}>
+        {#if hasPendingMfa}
+            <div class="login-page-container">
+                <LoginHeader />
+                <TwoFactorPage />
+                <LoginFooter />
+            </div>
+        {:else}
+            <div class="app">
+                <Navbar />
+                <main>
+                    <TopNav />
+                    <div class="content">
+                        <div class="main-content">
+                            {@render children()}
+                        </div>
+                        <RightNav />
                     </div>
-                    <RightNav />
-                </div>
-            </main>
-        </QueryClientProvider>
-    </div>
+                </main>
+            </div>
+        {/if}
+    </QueryClientProvider>
 {/if}
 
 <style>

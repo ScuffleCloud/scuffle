@@ -54,6 +54,7 @@
       border-radius: 0.5rem;
       transition: all 0.2s ease;
       width: 100%;
+      text-align: left;
     }
 
     .notification-icon {

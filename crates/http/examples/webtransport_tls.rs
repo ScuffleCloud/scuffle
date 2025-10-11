@@ -13,10 +13,10 @@ fn assets_path(item: &str) -> std::path::PathBuf {
     }
 }
 
-fn rustls_config() -> rustls::ServerConfig {
+fn rustls_config() -> tokio_rustls::rustls::ServerConfig {
     static ONCE: std::sync::Once = std::sync::Once::new();
     ONCE.call_once(|| {
-        rustls::crypto::aws_lc_rs::default_provider()
+        tokio_rustls::rustls::crypto::aws_lc_rs::default_provider()
             .install_default()
             .expect("failed to install aws lc provider");
     });
@@ -30,7 +30,7 @@ fn rustls_config() -> rustls::ServerConfig {
         .expect("failed to load key")
         .expect("no key found");
 
-    rustls::ServerConfig::builder()
+    tokio_rustls::rustls::ServerConfig::builder()
         .with_no_client_auth()
         .with_single_cert(certs, key)
         .expect("failed to build config")
@@ -51,7 +51,7 @@ async fn main() {
             let resp = http::Response::builder()
                 .status(StatusCode::OK)
                 .header(http::header::CONTENT_TYPE, "text/html; charset=utf-8")
-                .body(WT_CLIENT_HTML)
+                .body(WT_CLIENT_HTML.to_string())
                 .unwrap();
             Ok::<_, Infallible>(resp)
         } else if req.uri().path() == "/wt" && req.method() == Method::CONNECT {

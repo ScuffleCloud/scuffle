@@ -4,7 +4,12 @@ forbid (
   resource
 )
 when { context.user_session_mfa_pending == true }
-unless { action == Action::"validate_mfa_for_user_session" };
+unless
+{
+  action == Action::"create_webauthn_challenge" ||
+  action == Action::"validate_mfa_for_user_session" ||
+  action == Action::"invalidate_user_session"
+};
 
 permit (
   principal is User,

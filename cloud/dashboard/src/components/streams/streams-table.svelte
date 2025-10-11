@@ -4,7 +4,7 @@
     import StreamStatusPill from "$lib/shared-components/stream-status-pill.svelte";
     import type { VideoStream } from "./types";
 
-    export let streams: VideoStream[];
+    let { streams }: { streams: VideoStream[] } = $props();
 
     // Map stream statuses to text that gets displayed here
     const iconMap = {
@@ -25,18 +25,14 @@
         </thead>
         <tbody>
             {#each streams as stream (stream.id)}
+                {@const StatusIcon = iconMap[stream.status]}
                 <tr class="stream-row">
                     <td colspan="4" class="row-cell">
                         <a href="streams/{stream.id}" class="row-link">
                             <div class="row-content">
                                 <div class="status-column-content">
                                     <div class="status-wrapper">
-                                        <svelte:component
-                                            this={iconMap[
-                                                stream
-                                                    .status
-                                            ]}
-                                        />
+                                        <StatusIcon />
                                         <StreamStatusPill
                                             status={stream
                                             .status}

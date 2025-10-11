@@ -1,165 +1,57 @@
 <script lang="ts">
     import SettingsBlock from "$components/settings-block.svelte";
-    import type { Card } from "$components/settings-block.svelte";
-    import IconBell from "$lib/images/icon-bell.svelte";
+    import SettingsCard from "$components/settings-card.svelte";
+    import { authState } from "$lib/auth.svelte";
+    import { usersServiceClient } from "$lib/grpcClient";
     import IconShield from "$lib/images/icon-shield.svelte";
-    import type { UserSettings } from "$msw/mocks/settings";
+    import { useTotpAuth } from "$lib/two-factor/toptAuth.svelte";
+    import type { MfaCredential } from "$lib/types";
+    import { createQuery } from "@tanstack/svelte-query";
+    import {
+        DEFAULT_TOTP_AUTH_NAME,
+        DEFAULT_WEBAUTHN_AUTH_NAME,
+    } from "./consts";
+    import RecoveryCodesButton from "./recovery-codes-button.svelte";
+    import TwoFactorSettingsCard from "./two-factor-settings-card.svelte";
 
-    interface Props {
-        settings: UserSettings;
-    }
+    const user = authState().user;
 
-    const { settings }: Props = $props();
-
-    let userSettings = $state(settings);
-
-    const twoFactorCards = $derived<Card[]>([
-        {
-            id: "two-factor-auth",
-            title: "Two-factor authentication",
-            description:
-                "Enables a second layer of security, by requiring at least two methods of authentication for signing in.",
-            status: {
-                label: userSettings.twoFactorAuth.enabled
-                    ? "Enabled"
-                    : "Disabled",
-                variant: userSettings.twoFactorAuth.enabled
-                    ? "enabled"
-                    : "disabled",
-            },
-            actions: [
-                {
-                    label: userSettings.twoFactorAuth.enabled
-                        ? "Disable 2FA"
-                        : "Enable 2FA",
-                    variant: "primary",
-                    onClick: () => {
-                        userSettings.twoFactorAuth.enabled =
-                            !userSettings
-                                .twoFactorAuth
-                                .enabled;
-                        console.log(
-                            "2FA toggled:",
-                            userSettings.twoFactorAuth.enabled,
-                        );
-                    },
-                },
-            ],
+    const totpListQuery = createQuery(() => ({
+        queryKey: ["totp-list"],
+        queryFn: async () => {
+            const call = usersServiceClient.listTotpCredentials({
+                id: user!.id,
+            });
+            const response = await call.response;
+            return response.credentials;
         },
-        {
-            id: "recovery-codes",
-            title: "Recovery Codes",
-            description:
-                "Generate backup codes to access your account if you lose your authenticator device.",
-            actions: [
-                {
-                    label:
-                        userSettings.twoFactorAuth.backupCodesGenerated
-                            ? "Regenerate Codes"
-                            : "Generate Codes",
-                    variant: "secondary",
-                    disabled: !userSettings.twoFactorAuth.enabled,
-                    onClick: () => {
-                        userSettings.twoFactorAuth
-                            .backupCodesGenerated = true;
-                        console.log("Recovery codes generated");
-                    },
-                },
-            ],
+        enabled: !!user,
+    }));
+
+    const webauthnListQuery = createQuery(() => ({
+        queryKey: ["webauthn-list"],
+        queryFn: async () => {
+            const call = usersServiceClient.listWebauthnCredentials({
+                id: user!.id,
+            });
+            const response = await call.response;
+            return response.credentials;
         },
+        enabled: !!user,
+    }));
+
+    const activeMethods = $state([
+        {
+            id: "1",
+            name: "Google Authenticator",
+            type: "TOTP",
+            isPrimary: true,
+        },
+        { id: "2", name: "Passkey", type: "WEBAUTH" },
+        { id: "3", name: "Passkey", type: "WEBAUTH" },
     ]);
 
-    // Notification Cards
-    const notificationCards = $derived<Card[]>([
-        {
-            id: "email-notifications",
-            title: "Email Notifications",
-            description:
-                "Receive notifications about important account activities via email.",
-            actions: [
-                {
-                    variant: "toggle",
-                    isToggled: userSettings.notifications.email.enabled,
-                    onClick: () => {
-                        userSettings.notifications.email.enabled =
-                            !userSettings
-                                .notifications
-                                .email.enabled;
-                        console.log(
-                            "Email notifications toggled:",
-                            userSettings.notifications.email.enabled,
-                        );
-                    },
-                },
-            ],
-        },
-        {
-            id: "marketing-emails",
-            title: "Marketing Communications",
-            description:
-                "Receive updates about new features and promotional offers.",
-            actions: [
-                {
-                    variant: "toggle",
-                    isToggled:
-                        userSettings.notifications.email.marketing,
-                    onClick: () => {
-                        userSettings.notifications.email.marketing =
-                            !userSettings
-                                .notifications.email.marketing;
-                        console.log(
-                            "Marketing emails toggled:",
-                            userSettings.notifications.email.marketing,
-                        );
-                    },
-                },
-            ],
-        },
-    ]);
-
-    // Security & Privacy Cards
-    const securityCards = $derived<Card[]>([
-        {
-            id: "critical-notifications",
-            title: "Critical Notifications",
-            description:
-                "Receive critical notifications about important account activities.",
-            actions: [
-                {
-                    variant: "toggle",
-                    isToggled:
-                        userSettings.notifications.email.criticalAlerts,
-                    enabledText: "On",
-                    disabledText: "Off",
-                    onClick: () => {
-                        userSettings.notifications.email
-                            .criticalAlerts = !userSettings
-                                .notifications.email.criticalAlerts;
-                        console.log(
-                            "Critical notifications toggled:",
-                            userSettings.notifications.email
-                                .criticalAlerts,
-                        );
-                    },
-                },
-            ],
-        },
-        {
-            id: "password",
-            title: "Password",
-            description:
-                "Change your password to keep your account secure.",
-            actions: [
-                {
-                    label: "Change Password",
-                    variant: "secondary",
-                    onClick: () => {
-                        console.log("Change password clicked");
-                    },
-                },
-            ],
-        },
-    ]);
+    const totpAuth = useTotpAuth();
 
     // Account Settings Cards
     // const accountCards = $derived<Card[]>([
@@ -250,27 +142,207 @@
     //         ],
     //     },
     // ]);
+
+    // For webauthn
+    let webauthnCredentialName = $state("");
+
+    let totpCredentialName = $state("");
+
+    const hasAnyError = $derived(
+        totpListQuery.isError || webauthnListQuery.isError,
+    );
+
+    const isLoading = $derived(
+        totpListQuery.isLoading || webauthnListQuery.isLoading
+            || hasAnyError,
+    );
+
+    const authCredentials: MfaCredential[] = $derived(
+        (() => {
+            const totpCreds = (totpListQuery.data || []).map((
+                cred,
+            ) => ({
+                ...cred,
+                type: "totp" as const,
+                name: cred.name || DEFAULT_TOTP_AUTH_NAME,
+            }));
+
+            const webauthnCreds = (webauthnListQuery.data || []).map((
+                cred,
+            ) => ({
+                ...cred,
+                type: "webauthn" as const,
+                name: cred.name || DEFAULT_WEBAUTHN_AUTH_NAME,
+            }));
+
+            return [...totpCreds, ...webauthnCreds];
+        })(),
+    );
+
+    // So only one error is shown on fetch errors
+    // All cards should be stuck in loading until all queries pass
+    let errorShown = $state(false);
+
+    $effect(() => {
+        if (hasAnyError && !errorShown) {
+            errorShown = true;
+        }
+        if (totpListQuery.isSuccess && webauthnListQuery.isSuccess) {
+            errorShown = false;
+        }
+    });
 </script>
 
 <div class="settings-page">
+    <!-- WEBAUTHN -->
+    <!-- <div class="two-factor-auth">
+    <div class="two-factor-auth">
+        <button onclick={() => totpList()}>
+            Load TOTP Credentials
+        </button>
+        <br>
+        Here:
+        <button onclick={() => totpAuth.initiateTotpSetup()}>
+            Initiate TOTP Setup
+        </button>
+        {#if totpAuth.qrCodeData()}
+            <div>
+                QR Code generated! Scan with your authenticator app.
+                <br>
+                Secret URL: {totpAuth.qrCodeData()?.secretUrl}
+            </div>
+        {/if}
+        <input
+            type="text"
+            bind:value={totpCredentialName}
+            placeholder="Credential name"
+        />
+        <br>
+        <input
+            type="text"
+            bind:value={totpCode}
+            placeholder="6-digit code from app"
+        />
+        <br>
+        <button
+            onclick={() =>
+            totpAuth.completeTotpSetup(
+                totpCredentialName,
+                totpCode,
+            )}
+            disabled={!totpAuth.qrCodeData() || !totpCredentialName
+            || !totpCode}
+        >
+            Complete TOTP Setup
+        </button>
+        <br>
+
+        Loading: {totpAuth.loading()}
+        <br>
+        Error: {totpAuth.error()}
+        <br>
+    </div> -->
     <SettingsBlock
         title="Two-factor Authentication"
         subtitle="(2FA)"
-        cards={twoFactorCards}
         icon={IconShield}
-    />
+    >
+        <TwoFactorSettingsCard
+            methods={authCredentials}
+            {isLoading}
+        />
+        <SettingsCard
+            title="Recovery Codes"
+            description="Generate backup codes to access your account if you lose your authenticator device."
+            {isLoading}
+        >
+            <RecoveryCodesButton
+                enabled={activeMethods.length > 0}
+                hasExistingCodes={activeMethods.length > 0}
+            />
+        </SettingsCard>
+    </SettingsBlock>
 
-    <SettingsBlock
+    <!-- Notification Settings -->
+    <!-- <SettingsBlock
         title="Notification Settings"
-        cards={notificationCards}
         icon={IconBell}
-    />
-
+    >
+        <SettingsCard
+            title="Email Notifications"
+            description="Receive notifications about important account activities via email."
+            {isLoading}
+        >
+            <Switch
+                checked={userSettings.notifications.email.enabled}
+                onchange={(checked) => {
+                    userSettings.notifications.email.enabled =
+                        checked;
+                    console.log(
+                        "Email notifications toggled:",
+                        checked,
+                    );
+                }}
+                showStateText={true}
+                size="medium"
+            />
+        </SettingsCard>
+        <SettingsCard
+            title="Marketing Communications"
+            description="Receive updates about new features and promotional offers."
+        >
+            <Switch
+                checked={userSettings.notifications.email.marketing}
+                onchange={(checked) => {
+                    userSettings.notifications.email.marketing =
+                        checked;
+                    console.log(
+                        "Marketing emails toggled:",
+                        checked,
+                    );
+                }}
+                showStateText={true}
+                size="medium"
+            />
+        </SettingsCard>
+    </SettingsBlock>
     <SettingsBlock
         title="Security & Privacy"
-        cards={securityCards}
         icon={IconShield}
-    />
+    >
+        <SettingsCard
+            title="Critical Notifications"
+            description="Receive critical notifications about important account activities."
+        >
+            <Switch
+                checked={userSettings.notifications.email.criticalAlerts}
+                onchange={(checked) => {
+                    userSettings.notifications.email
+                        .criticalAlerts = checked;
+                    console.log(
+                        "Critical notifications toggled:",
+                        checked,
+                    );
+                }}
+                showStateText={true}
+                enabledText="On"
+                disabledText="Off"
+                size="medium"
+            />
+        </SettingsCard>
+
+        <SettingsCard
+            title="Password"
+            description="Change your password to keep your account secure."
+        >
+            <button
+                class="action-button action-secondary"
+                onclick={() => console.log("Change password clicked")}
+            >
+                Change Password
+            </button>
+        </SettingsCard>
+    </SettingsBlock> -->
 </div>
 
 <style>

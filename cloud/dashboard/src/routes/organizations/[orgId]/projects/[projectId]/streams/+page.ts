@@ -2,16 +2,14 @@ export const ssr = false;
 
 import type { VideoStream } from "$components/streams/types";
 import type { ListResponse } from "$lib/types";
+import { mockStreamsListResponse } from "../../../../../../msw/mocks/streams";
 import type { PageLoad } from "./$types";
 
-export const load = (async ({ depends, fetch }) => {
+export const load = (async ({ depends }) => {
     depends("streams:data");
 
     const fetchStreams = async (): Promise<ListResponse<VideoStream>> => {
-        // Fill with generic list response
-        const response = await fetch("/api/v1/video-streams/");
-        if (!response.ok) throw new Error(`Failed to fetch streams: ${response.statusText}`);
-        return response.json();
+        return mockStreamsListResponse;
     };
 
     return {

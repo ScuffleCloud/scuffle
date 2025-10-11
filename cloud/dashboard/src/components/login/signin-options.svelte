@@ -1,33 +1,28 @@
 <script lang="ts">
-    import type { LoginMode } from "$components/streams/types";
-    import { type GoogleAuthProps } from "$lib/auth/googleAuth.svelte";
+    import LoginOrDivider from "$components/login-or-divider.svelte";
     import IconGoogle from "$lib/images/icon-google.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
+    import type { LoginMode } from "$lib/types";
 
     interface Props {
-        googleAuth: GoogleAuthProps;
+        onSubmit: () => Promise<void>;
         onModeChange: (mode: LoginMode) => void;
         isLoading?: boolean;
     }
 
-    let { googleAuth, onModeChange, isLoading = false }: Props =
-        $props();
-
-    $effect(() => {
-        googleAuth.handleOAuthCallback();
-    });
+    let { onSubmit, onModeChange, isLoading = false }: Props = $props();
 
     function handlePasskeyLogin() {
         onModeChange("passkey");
     }
 </script>
 
-<div class="divider">OR</div>
+<LoginOrDivider />
 <button
     type="button"
-    onclick={googleAuth.initiateLogin}
+    onclick={onSubmit}
     class="btn-social google"
-    disabled={isLoading || googleAuth.loading()}
+    disabled={isLoading}
 >
     <IconGoogle />
     Continue with Google
@@ -44,31 +39,6 @@
 </button>
 
 <style>
-    .divider {
-      display: flex;
-      align-items: center;
-      margin: 2rem 0;
-      color: #9ca3af;
-      font-size: 0.875rem;
-      text-transform: uppercase;
-    }
-
-    .divider::before,
-    .divider::after {
-      content: "";
-      flex: 1;
-      height: 1px;
-      background: #d1d5db;
-    }
-
-    .divider::before {
-      margin-right: 0.325rem;
-    }
-
-    .divider::after {
-      margin-left: 0.325rem;
-    }
-
     .btn-social {
       width: 100%;
       padding: 0.75rem;

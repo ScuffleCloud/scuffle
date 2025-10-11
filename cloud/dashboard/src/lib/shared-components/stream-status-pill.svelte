@@ -1,6 +1,6 @@
 <script lang="ts">
     type Status = "live" | "finished";
-    export let status: Status;
+    let { status }: { status: Status } = $props();
 </script>
 
 <span

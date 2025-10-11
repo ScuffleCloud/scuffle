@@ -1,17 +1,17 @@
 <script lang="ts">
     /* eslint-disable @typescript-eslint/no-explicit-any */
 
-    import { goto } from "$app/navigation";
     import { melt } from "@melt-ui/svelte";
-    import { createMutation } from "@tanstack/svelte-query";
 
-    export let open: boolean;
-    export let portalled: any;
-    export let overlay: any;
-    export let content: any;
-    export let title: any;
+    let { open, portalled, overlay, content, title }: {
+        open: boolean;
+        portalled: any;
+        overlay: any;
+        content: any;
+        title: any;
+    } = $props();
 
-    let selectedOption: "left" | "right" = "left";
+    let selectedOption: "left" | "right" = $state("left");
 
     // Might need this later but don't need dialogs right now
     // const {
@@ -22,27 +22,27 @@
     //     forceVisible: true,
     // });
 
-    const mutation = createMutation({
-        mutationFn: async () => {
-            const response = await fetch("/api/v1/video-streams/new", {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+    // const mutation = createMutation({
+    //     mutationFn: async () => {
+    //         const response = await fetch("/api/v1/video-streams/new", {
+    //             method: "PUT",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //             },
+    //         });
 
-            const data = await response.json();
-            return data;
-        },
-        onSuccess: (data) => {
-            console.log("Successfully created stream:", data);
-            // onOpenChange(false);
-            goto(`/streams/${data.newId}`);
-        },
-        onError: (error) => {
-            console.error("Error creating stream:", error);
-        },
-    });
+    //         const data = await response.json();
+    //         return data;
+    //     },
+    //     onSuccess: (data) => {
+    //         console.log("Successfully created stream:", data);
+    //         // onOpenChange(false);
+    //         goto(`/streams/${data.newId}`);
+    //     },
+    //     onError: (error) => {
+    //         console.error("Error creating stream:", error);
+    //     },
+    // });
 </script>
 
 {#if open}
@@ -53,20 +53,20 @@
             <div class="options-container">
                 <button
                     class="option-box {selectedOption === 'left' ? 'selected' : ''}"
-                    on:click={() => (selectedOption = "left")}
+                    onclick={() => (selectedOption = "left")}
                 >
                     <h3>Left Option</h3>
                     <p>Description for left option</p>
                 </button>
                 <button
                     class="option-box {selectedOption === 'right' ? 'selected' : ''}"
-                    on:click={() => (selectedOption = "right")}
+                    onclick={() => (selectedOption = "right")}
                 >
                     <h3>Right Option</h3>
                     <p>Description for right option</p>
                 </button>
             </div>
-            <button
+            <!-- <button
                 class="continue-button"
                 on:click={() => $mutation.mutate()}
                 disabled={$mutation.isPending}
@@ -76,7 +76,7 @@
                 {:else}
                     Continue
                 {/if}
-            </button>
+            </button> -->
         </div>
     </div>
 {/if}

@@ -1,21 +1,22 @@
 import { goto } from "$app/navigation";
 import { authState } from "$lib/auth.svelte";
-import { sessionsServiceClient } from "$lib/grpcClient";
+import { LANDING_ROUTE } from "$lib/consts";
+import { rpcErrorToString, sessionsServiceClient } from "$lib/grpcClient";
+import { type RpcError } from "@protobuf-ts/runtime-rpc";
 
 /**
  * Initiates Google OAuth login flow
  */
-export async function initiateGoogleLogin(): Promise<void> {
+async function initiateGoogleLogin(): Promise<void> {
     const device = await authState().getDeviceOrInit();
 
-    const call = sessionsServiceClient.loginWithGoogle({ device });
-    const status = await call.status;
-
-    if (status.code === "OK") {
+    try {
+        const call = sessionsServiceClient.loginWithGoogle({ device });
         const response = await call.response;
+
         window.location.href = response.authorizationUrl;
-    } else {
-        throw new Error(status.detail || "Google login failed");
+    } catch (err) {
+        throw new Error(rpcErrorToString(err as RpcError));
     }
 }
 
@@ -31,42 +32,42 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
         device,
     });
 
-    const status = await call.status;
-    console.log("Google completion status:", status);
-
-    if (status.code === "OK") {
+    try {
         const response = await call.response;
         console.log("Google completion response:", response);
 
-        // TODO: Implement /two-factor here
-
-        // if (response.newUserSessionToken?.sessionMfaPending) {
-        //     // Redirect to MFA page
-        //     goto("/mfa");
-        //     return;
-        // }
-
         if (response.newUserSessionToken) {
             await authState().handleNewUserSessionToken(response.newUserSessionToken);
-            goto("/projects");
+
+            if (response.newUserSessionToken?.sessionMfaPending) return;
+
+            goto(LANDING_ROUTE);
         } else {
             throw new Error("No session token received");
         }
-    } else {
-        throw new Error(status.detail || "Google login completion failed");
+    } catch (err) {
+        throw new Error(rpcErrorToString(err as RpcError));
     }
 }
 
 /**
- * Checks URL parameters for OAuth callback. Place in $effect.
+ * Checks URL parameters for OAuth callback
  */
-export function handleGoogleOAuthCallback(): void {
+
+let isProcessingGoogleOAuth = false;
+
+async function handleGoogleOAuthCallback(): Promise<void> {
+    // So not affected by $effect in layout
+    if (isProcessingGoogleOAuth) return;
+
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
     const state = urlParams.get("state");
 
     if (code && state) {
-        completeGoogleLogin(code, state).catch(console.error);
+        isProcessingGoogleOAuth = true;
+        await completeGoogleLogin(code, state).catch(console.error);
+        isProcessingGoogleOAuth = false;
     }
 }
 
@@ -78,7 +79,7 @@ export interface GoogleAuthProps {
 }
 
 /**
- * Hook for Google authentication with reactive state
+ * Access Google authentication functions and states
  */
 export function useGoogleAuth(): GoogleAuthProps {
     let loading = $state(false);

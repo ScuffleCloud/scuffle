@@ -4,7 +4,7 @@
     import IconPuzzle from "$lib/images/icon-puzzle.svelte";
     import StreamStatusPill from "$lib/shared-components/stream-status-pill.svelte";
     import type { VideoStream } from "./types";
-    export let stream: VideoStream;
+    let { stream }: { stream: VideoStream } = $props();
 </script>
 
 <div class="stream-header">

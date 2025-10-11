@@ -8,38 +8,89 @@
         QueryClientProvider,
     } from "@tanstack/svelte-query";
     import "@fontsource-variable/archivo";
-    import { browser, dev } from "$app/environment";
+    import { browser } from "$app/environment";
+    import { goto } from "$app/navigation";
+    import { page } from "$app/state";
+    import TwoFactorPage from "$components/login-two-factor/two-factor-page.svelte";
     import LoginFooter from "$components/login/login-footer.svelte";
     import LoginHeader from "$components/login/login-header.svelte";
     import LoginPage from "$components/login/login-page.svelte";
     import RightNav from "$components/right-nav/right-nav.svelte";
-    import { PUBLIC_VITE_MSW_ENABLED } from "$env/static/public";
     import { authState } from "$lib/auth.svelte";
-    import { onMount } from "svelte";
+    import {
+        LANDING_ROUTE,
+        LOGIN_ROUTES,
+        OAUTH_CALLBACK_ROUTES,
+    } from "$lib/consts";
 
-    onMount(() => {
-        authState().initialize();
-    });
+    const auth = authState();
 
-    // Maybe don't need this code since we'll mock functions in a different way but leaving it for now
-    const requireMsw = dev && browser
-        && PUBLIC_VITE_MSW_ENABLED === "true";
-    let mockingReady = $state(!requireMsw);
+    const isOAuthCallbackRoute = $derived(
+        OAUTH_CALLBACK_ROUTES.some(route =>
+            page.url.pathname.startsWith(route)
+        ),
+    );
 
-    // TODO: Remove this mocking logic eventually
-    // We can probably have an organization with sample data setup in a dev env
+    // Let's handle routing here, or at least call it in this layout function. Maybe move elsewhere and reference here
+    // We can't put any changes in authState in the +page.ts files because they don't have access to the authState
+    // Until after the routing has been determined so we might as well do it here I'd imagine
+    // Can see if there's a better way of doing this. Open to other options.
+    // This routing all sucks though and feels so weak. I'd rather not route someone to 2fa
+    // They should be able to back out of this flow would be ideal. TBD. Maybe call a few functions here
+
     $effect(() => {
-        if (requireMsw && !mockingReady) {
-            console.log("Loading MSW");
-            import("$msw/setup").then(({ enableMocking }) =>
-                enableMocking()
-            ).then(() => {
-                mockingReady = true;
-            }).catch((error) => {
-                console.error("Failed to load MSW:", error);
-            });
+        const pathname = page.url.pathname;
+
+        // These routes should all load the /login route unless user is authed with nonpending 2fa
+        const isLoginRoute = LOGIN_ROUTES.includes(pathname);
+
+        if (auth.userSessionToken.state === "loading") return;
+
+        // Root redirect only can redirect to login or landing
+        if (pathname === "/") {
+            if (auth.userSessionToken.state === "authenticated") {
+                goto(LANDING_ROUTE, { replaceState: true });
+            } else {
+                goto("/login", { replaceState: true });
+            }
+            return;
+        }
+
+        // Skip routing for oauth callbacks let them manage their own routing
+        if (
+            isOAuthCallbackRoute
+            && auth.userSessionToken.state !== "authenticated"
+        ) {
+            return;
+        }
+
+        // Don't redirect 2FA if accessed correctly
+        if (
+            auth.userSessionToken.state === "authenticated"
+            && auth.hasPendingMfa
+            && pathname === "/two-factor"
+        ) {
+            return;
+        }
+
+        // Otherwise redirect to login
+        if (
+            !isLoginRoute
+            && auth.userSessionToken.state !== "authenticated"
+        ) {
+            // TODO: Add redirectTo logic later
+            goto(`/login`);
+        }
+
+        // Public routes logic
+        if (
+            (isLoginRoute || isOAuthCallbackRoute)
+            && auth.userSessionToken.state === "authenticated"
+        ) {
+            goto(LANDING_ROUTE);
         }
     });
+
     const { children } = $props();
     const queryClient = new QueryClient({
         defaultOptions: {
@@ -48,22 +99,43 @@
             },
         },
     });
+
+    const hasPendingMfa = $derived(
+        auth.userSessionToken.state === "authenticated"
+            && !!auth.userSessionToken.data.mfaPending?.length,
+    );
 </script>
 
+<!-- TODO: Add protection to routes if not logged in -->
+<!-- This should go on each route somewhere or here might be sufficient -->
 <!-- TODO: Clean this up at some point -->
-{#if mockingReady}
-    {#if authState().userSessionToken.state === "loading"}
-        <div>Loading...</div>
-    {:else if authState().userSessionToken.state === "unauthenticated"}
+{#if auth.userSessionToken.state === "loading"}
+    <div>Loading...</div>
+{:else if auth.userSessionToken.state === "unauthenticated"}
+    {#if isOAuthCallbackRoute}
         <div class="login-page-container">
-            <!-- TODO: Add protection to routes if not logged in -->
+            <LoginHeader />
+            {@render children()}
+            <LoginFooter />
+        </div>
+    {:else}
+        <div class="login-page-container">
             <LoginHeader />
             <LoginPage />
             <LoginFooter />
         </div>
-    {:else}
-        <div class="app">
-            <QueryClientProvider client={queryClient}>
+    {/if}
+{:else}
+    <!-- Authenticated -->
+    <QueryClientProvider client={queryClient}>
+        {#if hasPendingMfa}
+            <div class="login-page-container">
+                <LoginHeader />
+                <TwoFactorPage />
+                <LoginFooter />
+            </div>
+        {:else}
+            <div class="app">
                 <Navbar />
                 <main>
                     <TopNav />
@@ -74,11 +146,9 @@
                         <RightNav />
                     </div>
                 </main>
-            </QueryClientProvider>
-        </div>
-    {/if}
-{:else}
-    <div>Error loading mocks...</div>
+            </div>
+        {/if}
+    </QueryClientProvider>
 {/if}
 
 <style>

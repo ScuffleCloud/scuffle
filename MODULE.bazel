@@ -14,7 +14,6 @@ bazel_dep(name = "rules_go", version = "0.57.0")
 bazel_dep(name = "rules_java", version = "8.15.2")
 bazel_dep(name = "bazel_features", version = "1.32.0")
 bazel_dep(name = "rules_multitool", version = "1.9.0")
-bazel_dep(name = "buildozer", version = "8.2.1")
 
 bazel_dep(name = "bazel_env.bzl", version = "0.5.0", dev_dependency = True)
 

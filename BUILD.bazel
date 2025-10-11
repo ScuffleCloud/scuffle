@@ -20,8 +20,6 @@ bazel_env(
         "buf": "//tools/buf",
         "buildifier": "//tools/buildifier",
         "dprint": "//tools/dprint",
-        "ffmpeg": "//tools/ffmpeg",
-        "ffprobe": "//tools/ffmpeg:ffprobe",
         "protoc": "//tools/protoc",
         "node": "//tools/node",
         "pnpm": "//tools/pnpm",
@@ -35,5 +33,15 @@ bazel_env(
         "rust-analyzer-check": "//tools/rust-analyzer:check",
         "shfmt": "//tools/shfmt",
         "diesel": "//tools/diesel",
-    },
+    } | select({
+        "@platforms//os:linux": {
+            "ffmpeg": "//tools/ffmpeg",
+            "ffprobe": "//tools/ffmpeg:ffprobe",
+        },
+        "@platforms//os:windows": {
+            "ffmpeg": "//tools/ffmpeg",
+            "ffprobe": "//tools/ffmpeg:ffprobe",
+        },
+        "//conditions:default": {},
+    }),
 )

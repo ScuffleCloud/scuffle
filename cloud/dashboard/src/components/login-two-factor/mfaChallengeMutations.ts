@@ -1,3 +1,4 @@
+import { authState } from "$lib/auth.svelte";
 import { withRpcErrorHandling } from "$lib/utils";
 import { createMutation, QueryClient, useQueryClient } from "@tanstack/svelte-query";
 import { createMfaWebauthnChallenge } from "./createMfaWebauthnChallenge";
@@ -13,6 +14,8 @@ export function useCreateWebauthnChallenge(userId: string | undefined) {
             }),
         onSuccess: () => {
             console.log("Webauthn challenge successful");
+            authState().reloadUser();
+            console.log("reloaded user");
         },
     }));
 }

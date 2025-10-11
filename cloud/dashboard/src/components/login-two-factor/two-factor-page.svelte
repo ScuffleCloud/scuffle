@@ -8,7 +8,7 @@
     } from "$lib/types";
     import { MfaOption } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
     import RecoveryCodeForm from "./recovery-code-form.svelte";
-    import ToptForm from "./totp-form.svelte";
+    import ToptForm from "./topt-form.svelte";
     import WebAuthnnForm from "./web-authnn-form.svelte";
 
     const auth = authState();

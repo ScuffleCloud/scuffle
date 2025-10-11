@@ -36,6 +36,8 @@ fn rustls_config() -> rustls::ServerConfig {
         .expect("failed to build config")
 }
 
+const WT_CLIENT_HTML: &str = include_str!("web_transport_client.html");
+
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt()
@@ -46,76 +48,10 @@ async fn main() {
 
     let service = fn_http_service(|req: http_srv::IncomingRequest| async move {
         if req.uri().path() == "/" && req.method() == Method::GET {
-            let html = r#"<!doctype html>
-            <html>
-                <body>
-                    <h2>WebTransport demo</h2>
-                    <div id="log"></div>
-                    <script>
-                        const log = (msg) => {
-                            console.log(msg);
-                            document.getElementById('log').insertAdjacentHTML('beforeend', '<p>' + msg + '</p>');
-                        };
-
-                        (async () => {
-                        if (!('WebTransport' in window)) {
-                            log('WebTransport not supported');
-                            return;
-                        }
-                        try {
-                            const wt = new WebTransport('https://' + location.host + '/wt');
-                            await wt.ready;
-                            log('WebTransport connected');
-
-                            // Test unidirectional stream
-                            const uniWriter = await wt.createUnidirectionalStream();
-                            const encoder = new TextEncoder();
-                            await uniWriter.write(encoder.encode('Hello from uni stream'));
-                            await uniWriter.close();
-                            log('Sent uni stream');
-
-                            // Test bidirectional stream with echo
-                            const { readable, writable } = await wt.createBidirectionalStream();
-                            const writer = writable.getWriter();
-                            await writer.write(encoder.encode('Hello from bidi stream'));
-                            await writer.close();
-                            log('Sent bidi stream');
-
-                            const reader = readable.getReader();
-                            const { value, done } = await reader.read();
-                            if (!done && value) {
-                                const response = new TextDecoder().decode(value);
-                                log('Received echo: ' + response);
-                            }
-
-                            // Test datagram
-                            const dgWriter = wt.datagrams.writable.getWriter();
-                            await dgWriter.write(encoder.encode('Hello datagram'));
-                            dgWriter.releaseLock();
-                            log('Sent datagram');
-
-                            // Listen for incoming datagrams
-                            const dgReader = wt.datagrams.readable.getReader();
-                            const { value: dgValue, done: dgDone } = await dgReader.read();
-                            if (!dgDone && dgValue) {
-                                const dgResponse = new TextDecoder().decode(dgValue);
-                                log('Received datagram: ' + dgResponse);
-                            }
-
-                            log('All tests completed successfully!');
-                        } catch (e) {
-                            console.error(e);
-                            log('WebTransport failed: ' + e);
-                        }
-                        })();
-                    </script>
-                </body>
-            </html>
-            "#;
             let resp = http::Response::builder()
                 .status(StatusCode::OK)
                 .header(http::header::CONTENT_TYPE, "text/html; charset=utf-8")
-                .body(html.to_string())
+                .body(WT_CLIENT_HTML)
                 .unwrap();
             Ok::<_, Infallible>(resp)
         } else if req.uri().path() == "/wt" && req.method() == Method::CONNECT {

@@ -1,5 +1,5 @@
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
-load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_example")
+load("//misc/utils/rust:package.bzl", "scuffle_example", "scuffle_package")
 
 cargo_toml()
 

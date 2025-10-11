@@ -1,8 +1,6 @@
-load("//misc/utils:exec_alias_rules.bzl", "exec_transition_alias_opt")
-
-exec_transition_alias_opt(
+alias(
     name = "miniserve",
-    actual = "@bindeps//:miniserve__miniserve",
+    actual = "@multitool//tools/miniserve",
     tags = ["manual"],
     visibility = ["//visibility:public"],
 )

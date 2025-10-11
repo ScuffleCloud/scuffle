@@ -35,12 +35,5 @@ jobs:
       - name: Format shfmt
         run: bazel run //tools/shfmt -- -w .
 
-      - name: Format cedar
-        run: |
-          binary=$(bazel cquery //tools/cedar --output=files --build)
-          exec_root=$(bazel info execution_root)
-          cedar="${exec_root}/${binary}"
-          git ls-files "*.cedar" | xargs ls 2>/dev/null | xargs -I {} "${cedar}" format -w -p {}
-
       - name: Exit on diff
         run: git diff --exit-code

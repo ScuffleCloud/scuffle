@@ -6,15 +6,12 @@
         "indentWidth": 4,
         "trailingCommas": "never"
     },
-    "markdown": {
-    },
+    "markdown": {},
     "toml": {
         "indentWidth": 4
     },
-    "dockerfile": {
-    },
-    "malva": {
-    },
+    "dockerfile": {},
+    "malva": {},
     "markup": {
         "indentWidth": 4,
         "svelteAttrShorthand": true,
@@ -22,8 +19,8 @@
         "scriptIndent": true,
         "styleIndent": true
     },
-    "yaml": {
-    },
+    "cedar": {},
+    "yaml": {},
     "excludes": [
         "**/node_modules",
         "**/*-lock.json",
@@ -40,6 +37,7 @@
         "https://plugins.dprint.dev/g-plane/malva-v0.14.2.wasm",
         "https://plugins.dprint.dev/g-plane/markup_fmt-v0.23.2.wasm",
         "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.1.wasm",
-        "https://plugins.dprint.dev/ruff-0.4.8.wasm"
+        "https://plugins.dprint.dev/ruff-0.4.8.wasm",
+        "https://github.com/ScuffleCloud/dprint-plugin-cedar/releases/download/commit-79d0bfa58bb082c19b8955c19159c3f81e677857/dprint_plugin_cedar.wasm"
     ]
 }

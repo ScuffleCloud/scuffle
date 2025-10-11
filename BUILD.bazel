@@ -17,7 +17,6 @@ bazel_env(
         "cargo": "//tools/cargo",
         "cargo-deny": "//tools/cargo/deny",
         "cargo-insta": "//tools/cargo/insta",
-        "cedar": "//tools/cedar",
         "buf": "//tools/buf",
         "buildifier": "//tools/buildifier",
         "dprint": "//tools/dprint",

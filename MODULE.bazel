@@ -13,6 +13,7 @@ bazel_dep(name = "rules_python", version = "1.5.3")
 bazel_dep(name = "rules_go", version = "0.57.0")
 bazel_dep(name = "rules_java", version = "8.15.2")
 bazel_dep(name = "bazel_features", version = "1.32.0")
+bazel_dep(name = "rules_multitool", version = "1.9.0")
 
 bazel_dep(name = "bazel_env.bzl", version = "0.5.0", dev_dependency = True)
 
@@ -28,14 +29,14 @@ include("//misc/toolchains:js.MODULE.bazel")
 
 include("//misc/toolchains:ffmpeg.MODULE.bazel")
 
-include("//misc/toolchains:ibazel.MODULE.bazel")
-
-include("//misc/toolchains:shfmt.MODULE.bazel")
-
-include("//misc/toolchains:bazel-diff.MODULE.bazel")
-
 include("//misc/toolchains:valgrind.MODULE.bazel")
 
 include("//misc/toolchains:assets.MODULE.bazel")
 
+include("//misc/toolchains:bazel-diff.MODULE.bazel")
+
 include("//misc/toolchains:openssl.MODULE.bazel")
+
+multitool = use_extension("@rules_multitool//multitool:extension.bzl", "multitool")
+multitool.hub(lockfile = "//:multitool.lock.json")
+use_repo(multitool, "multitool")

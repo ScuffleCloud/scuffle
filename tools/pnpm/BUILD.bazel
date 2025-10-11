@@ -7,6 +7,6 @@ binary_wrapper(
         "set -- \"-C\" \"$(pwd)\" \"$@\"",
         "cd \"${pwd}\"",
     ],
-    visibility = ["//visibility:public"],
     tags = ["manual"],
+    visibility = ["//visibility:public"],
 )

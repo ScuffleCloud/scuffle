@@ -3,8 +3,8 @@ load("//misc/utils:exec_alias_rules.bzl", "exec_transition_alias_opt")
 alias(
     name = "rust-analyzer",
     actual = "@multitool//tools/rust-analyzer",
-    visibility = ["//visibility:public"],
     tags = ["manual"],
+    visibility = ["//visibility:public"],
 )
 
 exec_transition_alias_opt(

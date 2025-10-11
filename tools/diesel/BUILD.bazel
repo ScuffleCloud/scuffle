@@ -1,6 +1,6 @@
 alias(
     name = "diesel",
     actual = "@multitool//tools/diesel",
-    visibility = ["//visibility:public"],
     tags = ["manual"],
+    visibility = ["//visibility:public"],
 )

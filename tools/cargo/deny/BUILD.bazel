@@ -1,6 +1,6 @@
 alias(
     name = "deny",
     actual = "@multitool//tools/cargo-deny",
-    visibility = ["//visibility:public"],
     tags = ["manual"],
+    visibility = ["//visibility:public"],
 )

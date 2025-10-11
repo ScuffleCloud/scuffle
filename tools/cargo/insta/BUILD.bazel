@@ -1,6 +1,6 @@
 alias(
     name = "insta",
     actual = "@multitool//tools/cargo-insta",
-    visibility = ["//visibility:public"],
     tags = ["manual"],
+    visibility = ["//visibility:public"],
 )

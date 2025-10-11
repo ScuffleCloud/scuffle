@@ -2,4 +2,5 @@ alias(
     name = "shfmt",
     actual = "@multitool//tools/shfmt",
     visibility = ["//visibility:public"],
+    tags = ["manual"],
 )

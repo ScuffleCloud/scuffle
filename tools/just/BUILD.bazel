@@ -2,4 +2,5 @@ alias(
     name = "just",
     actual = "@multitool//tools/just",
     visibility = ["//visibility:public"],
+    tags = ["manual"],
 )

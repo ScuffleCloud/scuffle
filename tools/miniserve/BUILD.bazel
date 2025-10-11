@@ -2,4 +2,5 @@ alias(
     name = "miniserve",
     actual = "@multitool//tools/miniserve",
     visibility = ["//visibility:public"],
+    tags = ["manual"],
 )

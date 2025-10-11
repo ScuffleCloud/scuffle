@@ -2,4 +2,5 @@ alias(
     name = "dprint",
     actual = "@multitool//tools/dprint",
     visibility = ["//visibility:public"],
+    tags = ["manual"],
 )

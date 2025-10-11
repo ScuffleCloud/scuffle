@@ -4,6 +4,7 @@ alias(
     name = "rust-analyzer",
     actual = "@multitool//tools/rust-analyzer",
     visibility = ["//visibility:public"],
+    tags = ["manual"],
 )
 
 exec_transition_alias_opt(

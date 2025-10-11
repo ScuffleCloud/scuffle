@@ -1,5 +1,5 @@
 [package]
-name = "scufflecloud-video-api-traits"
+name = "scufflecloud-video-api-db-types"
 version = "0.1.0"
 authors = ["Scuffle <opensource@scuffle.cloud>"]
 edition = "2024"
@@ -12,11 +12,12 @@ repository = "https://github.com/scufflecloud/scuffle"
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 
 [dependencies]
-anyhow = "1"
-db-types = { path = "../db-types", package = "scufflecloud-video-api-db-types" }
+core-db-types = { path = "../../../core/db-types", package = "scufflecloud-core-db-types" }
 diesel = { version = "2", default-features = false }
-diesel-async = { version = "0.7", default-features = false }
-scuffle-batching = { path = "../../../../crates/batching" }
+id = { path = "../../../id", package = "scufflecloud-id" }
+pb = { path = "../../../proto", package = "scufflecloud-proto" }
+serde = "1"
+serde_derive = "1"
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

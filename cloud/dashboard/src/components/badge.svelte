@@ -50,7 +50,7 @@
     }
 
     .badge-disabled {
-      background: var(--colors-gray90);
+      background: var(--colors-gray40);
       color: var(--colors-gray90);
     }
 

@@ -2,10 +2,14 @@ import { rpcErrorToString } from "$lib/grpcClient";
 import type { RpcError } from "@protobuf-ts/runtime-rpc";
 
 // Wrapper to handle RPC errors in mutations
+// Support throwing non-rpc errors too
 export async function withRpcErrorHandling<T>(fn: () => Promise<T>): Promise<T> {
     try {
         return await fn();
     } catch (err) {
+        if (err instanceof Error && !(err as any).meta) {
+            throw err;
+        }
         throw new Error(rpcErrorToString(err as RpcError));
     }
 }

@@ -1,6 +1,6 @@
 import { usersServiceClient } from "$lib/grpcClient";
-import { arrayBufferToBase64url, base64urlToArrayBuffer, isWebauthnSupported } from "$lib/utils";
-import { getWebAuthnErrorMessage, WEB_AUTHN_NOT_ALLOWED_ERROR } from "../../lib/two-factor/utils";
+import { isWebauthnSupported, parseCredentialCreationOptions, serializeCredentialCreationResponse } from "$lib/utils";
+import { getWebAuthnErrorMessage, WEB_AUTHN_NOT_ALLOWED_ERROR } from "./utils";
 
 export async function createWebauthnCredential(userId: string): Promise<string> {
     if (!isWebauthnSupported()) {
@@ -15,20 +15,7 @@ export async function createWebauthnCredential(userId: string): Promise<string> 
     }
 
     const createResponse = await createCall.response;
-    const options = JSON.parse(createResponse.optionsJson).publicKey;
-
-    const publicKey: PublicKeyCredentialCreationOptions = {
-        ...options,
-        challenge: base64urlToArrayBuffer(options.challenge),
-        user: {
-            ...options.user,
-            id: base64urlToArrayBuffer(options.user.id),
-        },
-        excludeCredentials: options.excludeCredentials?.map((cred: any) => ({
-            ...cred,
-            id: base64urlToArrayBuffer(cred.id),
-        })) || [],
-    };
+    const publicKey = parseCredentialCreationOptions(createResponse.optionsJson);
 
     let credential: PublicKeyCredential | null = null;
     try {
@@ -43,18 +30,7 @@ export async function createWebauthnCredential(userId: string): Promise<string> 
         throw new Error(WEB_AUTHN_NOT_ALLOWED_ERROR);
     }
 
-    const responseJson = JSON.stringify({
-        id: credential.id,
-        rawId: arrayBufferToBase64url(credential.rawId),
-        response: {
-            attestationObject: arrayBufferToBase64url(
-                (credential.response as AuthenticatorAttestationResponse).attestationObject,
-            ),
-            clientDataJSON: arrayBufferToBase64url(credential.response.clientDataJSON),
-        },
-        type: credential.type,
-        authenticatorAttachment: credential.authenticatorAttachment,
-    });
+    const responseJson = serializeCredentialCreationResponse(credential);
 
     const completeCall = usersServiceClient.completeCreateWebauthnCredential({
         id: userId,

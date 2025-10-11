@@ -147,7 +147,6 @@
     let webauthnCredentialName = $state("");
 
     let totpCredentialName = $state("");
-    let totpCode = $state("");
 
     const hasAnyError = $derived(
         totpListQuery.isError || webauthnListQuery.isError,
@@ -197,30 +196,6 @@
 <div class="settings-page">
     <!-- WEBAUTHN -->
     <!-- <div class="two-factor-auth">
-        Here:
-        <button onclick={() => webAuthList()}>
-            Load WebAuthn Credentials
-        </button>
-        <br>
-        2fa information here testing flows:
-        <br>
-        <input type="text" bind:value={webauthnCredentialName} />
-        <br>
-        <button
-            onclick={() =>
-            webauthnAuth.createCredential(
-                webauthnCredentialName,
-            )}
-        >
-            Test WebAuthn
-        </button>
-        <br>
-        Is supported: {webauthnAuth.isSupported()}
-        <br>
-        Loading: {webauthnAuth.loading()}
-        <br>
-        Error: {webauthnAuth.error()}
-    </div>
     <div class="two-factor-auth">
         <button onclick={() => totpList()}>
             Load TOTP Credentials

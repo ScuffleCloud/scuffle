@@ -9,6 +9,7 @@ type UpdateWebauthnNameType = {
     name: string;
 };
 
+// --Webauthn mutations--
 export function useCreateWebauthnCredential(userId: string | undefined) {
     return createMutation(() => ({
         mutationFn: () =>
@@ -82,5 +83,52 @@ export function useDeleteWebauthnCredential(userId: string | undefined) {
                 (old: MfaCredential[] | undefined) => old?.filter(cred => cred.id !== id),
             );
         },
+    }));
+}
+
+// --TOTP mutations--
+export function useCreateTotpCredential(userId: string | undefined) {
+    return createMutation(() => ({
+        mutationFn: () =>
+            withRpcErrorHandling(async () => {
+                if (!userId) throw new Error("User not authenticated");
+
+                const createCall = usersServiceClient.createTotpCredential({ id: userId });
+                const createStatus = await createCall.status;
+
+                if (createStatus.code !== "OK") {
+                    throw new Error(createStatus.detail || "Failed to initiate TOTP credential creation");
+                }
+
+                const createResponse = await createCall.response;
+                return {
+                    qrCode: createResponse.secretQrcodePng,
+                    secretUrl: createResponse.secretUrl,
+                };
+            }),
+    }));
+}
+
+export function useCompleteTotpCredential(userId: string | undefined) {
+    return createMutation(() => ({
+        mutationFn: ({ code, name }: { code: string; name?: string }) =>
+            withRpcErrorHandling(async () => {
+                if (!userId) throw new Error("User not authenticated");
+
+                const completeCall = usersServiceClient.completeCreateTotpCredential({
+                    id: userId,
+                    code,
+                    name,
+                });
+
+                const completeStatus = await completeCall.status;
+
+                if (completeStatus.code !== "OK") {
+                    throw new Error(completeStatus.detail || "Failed to complete TOTP credential creation");
+                }
+
+                const completeResponse = await completeCall.response;
+                return completeResponse;
+            }),
     }));
 }

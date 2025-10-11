@@ -945,6 +945,7 @@ _NORMAL_DEPENDENCIES = {
         },
         "webtransport": {
             _COMMON_CONDITION: {
+                "h3-datagram": Label("@cargo_vendor//:h3-datagram-0.0.2"),
                 "h3-webtransport": Label("@cargo_vendor//:h3-webtransport-0.1.2"),
             },
         },
@@ -11918,6 +11919,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__glob-0.3.3", is_dev_dep = False),
         struct(repo = "cargo_vendor__guppy-0.17.22", is_dev_dep = False),
         struct(repo = "cargo_vendor__h3-0.0.8", is_dev_dep = False),
+        struct(repo = "cargo_vendor__h3-datagram-0.0.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__h3-quinn-0.0.10", is_dev_dep = False),
         struct(repo = "cargo_vendor__h3-webtransport-0.1.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__heck-0.5.0", is_dev_dep = False),

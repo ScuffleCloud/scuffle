@@ -90,7 +90,7 @@ test *targets="//...":
     #!/usr/bin/env bash
     set -exuo pipefail
 
-    cargo insta reject > /dev/null
+    cargo-insta reject > /dev/null
 
     targets=$(bazel query 'tests(set({{ targets }}))')
 
@@ -106,7 +106,7 @@ test *targets="//...":
         ln -sf "$(realpath "$snap")" "$(dirname "$rel_path")/$(basename "$rel_path")"
     done
 
-    cargo insta review
+    cargo-insta review
 
     rm lcov.info || true
     ln -s "$(bazel info output_path)"/_coverage/_coverage_report.dat lcov.info
@@ -142,4 +142,4 @@ doc-serve: doc
     miniserve "$(bazel info execution_root)"/"$(bazel cquery --config=wrapper {{ rustdoc_target }} --output=files)" --index index.html --port 3000
 
 deny:
-    bazel run //tools/cargo/deny check
+    cargo-deny check

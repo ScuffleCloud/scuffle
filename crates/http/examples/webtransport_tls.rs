@@ -50,40 +50,62 @@ async fn main() {
             <html>
                 <body>
                     <h2>WebTransport demo</h2>
+                    <div id="log"></div>
                     <script>
+                        const log = (msg) => {
+                            console.log(msg);
+                            document.getElementById('log').insertAdjacentHTML('beforeend', '<p>' + msg + '</p>');
+                        };
+
                         (async () => {
                         if (!('WebTransport' in window)) {
-                            document.body.insertAdjacentHTML('beforeend', '<p>WebTransport not supported</p>');
+                            log('WebTransport not supported');
                             return;
                         }
                         try {
                             const wt = new WebTransport('https://' + location.host + '/wt');
                             await wt.ready;
-                            console.log('WT connected');
-                            document.body.insertAdjacentHTML('beforeend', '<p>WebTransport connected</p>');
+                            log('WebTransport connected');
 
+                            // Test unidirectional stream
                             const uniWriter = await wt.createUnidirectionalStream();
                             const encoder = new TextEncoder();
                             await uniWriter.write(encoder.encode('Hello from uni stream'));
                             await uniWriter.close();
-                            document.body.insertAdjacentHTML('beforeend', '<p>Sent uni stream</p>');
+                            log('Sent uni stream');
 
+                            // Test bidirectional stream with echo
                             const { readable, writable } = await wt.createBidirectionalStream();
                             const writer = writable.getWriter();
                             await writer.write(encoder.encode('Hello from bidi stream'));
                             await writer.close();
-                            document.body.insertAdjacentHTML('beforeend', '<p>Sent bidi stream</p>');
+                            log('Sent bidi stream');
 
                             const reader = readable.getReader();
                             const { value, done } = await reader.read();
                             if (!done && value) {
                                 const response = new TextDecoder().decode(value);
-                                console.log('Received:', response);
-                                document.body.insertAdjacentHTML('beforeend', '<p>Received: ' + response + '</p>');
+                                log('Received echo: ' + response);
                             }
+
+                            // Test datagram
+                            const dgWriter = wt.datagrams.writable.getWriter();
+                            await dgWriter.write(encoder.encode('Hello datagram'));
+                            dgWriter.releaseLock();
+                            log('Sent datagram');
+
+                            // Listen for incoming datagrams
+                            const dgReader = wt.datagrams.readable.getReader();
+                            const { value: dgValue, done: dgDone } = await dgReader.read();
+                            if (!dgDone && dgValue) {
+                                const dgResponse = new TextDecoder().decode(dgValue);
+                                log('Received datagram: ' + dgResponse);
+                            }
+
+                            log('All tests completed successfully!');
                         } catch (e) {
                             console.error(e);
-                            document.body.insertAdjacentHTML('beforeend', '<p>WebTransport failed: ' + e + '</p>');
+                            log('WebTransport failed: ' + e);
                         }
                         })();
                     </script>
@@ -97,7 +119,110 @@ async fn main() {
                 .unwrap();
             Ok::<_, Infallible>(resp)
         } else if req.uri().path() == "/wt" && req.method() == Method::CONNECT {
-            Ok::<_, Infallible>(http::Response::builder().status(StatusCode::NO_CONTENT).body(String::new()).unwrap())
+            // Extract the WebTransport session from the request
+            if let Some(session) = req.extensions().get::<http_srv::backend::h3::webtransport::WebTransportSession>() {
+                let session = session.clone();
+                tracing::info!("WebTransport session established");
+
+                // Spawn a task to handle incoming bidirectional streams
+                tokio::spawn({
+                    let session = session.clone();
+                    async move {
+                        use http_srv::backend::h3::webtransport::AcceptedBi;
+                        while let Some(Ok(accepted)) = session.accept_bi().await {
+                            match accepted {
+                                AcceptedBi::BidiStream(mut stream) => {
+                                    tokio::spawn(async move {
+                                        // Echo server: read all data and send it back
+                                        match stream.read_to_end(64 * 1024).await {
+                                            Ok(data) => {
+                                                tracing::info!("Received {} bytes on bidi stream, echoing back", data.len());
+                                                if let Err(e) = stream.write(data.clone()).await {
+                                                    tracing::warn!("Failed to write to bidi stream: {}", e);
+                                                } else if let Err(e) = stream.finish().await {
+                                                    tracing::warn!("Failed to finish bidi stream: {}", e);
+                                                }
+                                            }
+                                            Err(e) => {
+                                                tracing::warn!("Failed to read from bidi stream: {}", e);
+                                            }
+                                        }
+                                    });
+                                }
+                                AcceptedBi::Request(_req, _stream) => {
+                                    tracing::info!("Received HTTP request over WebTransport");
+                                    // Handle HTTP-over-WebTransport requests if needed
+                                }
+                            }
+                        }
+                        tracing::info!("Bidi stream acceptor finished");
+                    }
+                });
+
+                // Spawn a task to handle incoming unidirectional streams
+                tokio::spawn({
+                    let session = session.clone();
+                    async move {
+                        while let Some(Ok((_id, mut stream))) = session.accept_uni().await {
+                            tokio::spawn(async move {
+                                match stream.read_to_end(64 * 1024).await {
+                                    Ok(data) => {
+                                        tracing::info!("Received {} bytes on uni stream: {:?}",
+                                            data.len(),
+                                            String::from_utf8_lossy(&data));
+                                    }
+                                    Err(e) => {
+                                        tracing::warn!("Failed to read from uni stream: {}", e);
+                                    }
+                                }
+                            });
+                        }
+                        tracing::info!("Uni stream acceptor finished");
+                    }
+                });
+
+                // Spawn a task to handle incoming datagrams
+                tokio::spawn({
+                    let session = session.clone();
+                    async move {
+                        let mut datagram_reader = session.datagram_reader();
+                        let mut datagram_sender = session.datagram_sender();
+
+                        loop {
+                            match datagram_reader.read_datagram().await {
+                                Ok(datagram) => {
+                                    let payload = datagram.into_payload();
+                                    tracing::info!("Received datagram: {} bytes", payload.len());
+                                    let response = format!("Echo: {}", String::from_utf8_lossy(&payload));
+                                    if let Err(e) = datagram_sender.send_datagram(bytes::Bytes::from(response)) {
+                                        tracing::warn!("Failed to send datagram response: {}", e);
+                                        break;
+                                    }
+                                }
+                                Err(e) => {
+                                    tracing::warn!("Failed to read datagram: {}", e);
+                                    break;
+                                }
+                            }
+                        }
+                        tracing::info!("Datagram handler finished");
+                    }
+                });
+
+                return Ok::<_, Infallible>(
+                    http::Response::builder()
+                        .status(StatusCode::OK)
+                        .body(String::new())
+                        .unwrap()
+                );
+            }
+
+            Ok::<_, Infallible>(
+                http::Response::builder()
+                    .status(StatusCode::BAD_REQUEST)
+                    .body("WebTransport session not found".to_string())
+                    .unwrap()
+            )
         } else {
             Ok::<_, Infallible>(http::Response::builder().status(StatusCode::NOT_FOUND).body(String::new()).unwrap())
         }

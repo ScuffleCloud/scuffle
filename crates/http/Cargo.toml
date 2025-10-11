@@ -62,7 +62,7 @@ http2 = [
 ## Enables http3 support
 http3 = ["dep:quinn", "dep:h3-quinn", "dep:h3"]
 ## Enables WebTransport over HTTP/3 support (requires http3)
-webtransport = ["http3", "dep:h3-webtransport", "h3-quinn?/datagram"]
+webtransport = ["http3", "dep:h3-webtransport", "dep:h3-datagram", "h3-quinn?/datagram"]
 ## Enables tls via rustls
 tls-rustls = ["dep:tokio-rustls"]
 ## Alias for ["http3", "tls-rustls"]
@@ -95,6 +95,7 @@ libc = { default-features = false, optional = true, version = "0.2" }
 
 # QUIC + HTTP/3
 h3 = { default-features = false, optional = true, version = "0.0.8" }
+h3-datagram = { default-features = false, optional = true, version = "0.0.2" }
 h3-quinn = { default-features = false, optional = true, version = "0.0.10" }
 quinn = { default-features = false, features = ["platform-verifier", "runtime-tokio", "rustls-aws-lc-rs"], optional = true, version = "0.11" }
 h3-webtransport = { default-features = false, optional = true, version = "0.1" }

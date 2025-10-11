@@ -98,8 +98,6 @@ impl<G: video_api_traits::Global> scuffle_bootstrap::Service<G> for VideoApiSvc<
         let mut router = axum::Router::new()
             .nest("/v1", v1_rest_router)
             .merge(grpc_router)
-            // .route_layer(axum::middleware::from_fn(crate::middleware::auth::<G>))
-            // .layer(geo_ip::middleware::middleware::<G>())
             .layer(TraceLayer::new_for_http())
             .layer(Extension(Arc::clone(&global)))
             .fallback(StatusCode::NOT_FOUND);

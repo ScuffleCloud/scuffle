@@ -27,6 +27,9 @@ struct Global {
     database: bb8::Pool<diesel_async::AsyncPgConnection>,
     stream_loader: DataLoader<StreamLoader>,
     open_telemetry: opentelemetry::OpenTelemetry,
+    mtls_root_cert: Vec<u8>,
+    mtls_cert: Vec<u8>,
+    mtls_private_key: Vec<u8>,
 }
 
 impl video_api_traits::ConfigInterface for Global {
@@ -57,6 +60,20 @@ impl video_api_traits::DataloaderInterface for Global {
         impl DataLoaderFetcher<Key = db_types::models::StreamId, Value = db_types::models::Stream> + Send + Sync + 'static,
     > {
         &self.stream_loader
+    }
+}
+
+impl video_api_traits::MtlsInterface for Global {
+    fn mtls_root_cert_pem(&self) -> &[u8] {
+        &self.mtls_root_cert
+    }
+
+    fn mtls_cert_pem(&self) -> &[u8] {
+        &self.mtls_cert
+    }
+
+    fn mtls_private_key_pem(&self) -> &[u8] {
+        &self.mtls_private_key
     }
 }
 
@@ -106,6 +123,12 @@ impl scuffle_bootstrap::Global for Global {
 
         let stream_loader = StreamLoader::new(database.clone());
 
+        // mTLS
+        let root_cert = std::fs::read(&config.mtls.root_cert_path).context("failed to read mTLS root cert file")?;
+        let server_cert = std::fs::read(&config.mtls.cert_path).context("failed to read mTLS server cert file")?;
+        let server_private_key =
+            std::fs::read(&config.mtls.key_path).context("failed to read mTLS server private key file")?;
+
         let tracer = SdkTracerProvider::default();
         opentelemetry::global::set_tracer_provider(tracer.clone());
 
@@ -118,6 +141,9 @@ impl scuffle_bootstrap::Global for Global {
             database,
             stream_loader,
             open_telemetry,
+            mtls_root_cert: root_cert,
+            mtls_cert: server_cert,
+            mtls_private_key: server_private_key,
         }))
     }
 }

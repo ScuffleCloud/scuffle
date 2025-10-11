@@ -61,8 +61,8 @@ http2 = [
 ]
 ## Enables http3 support
 http3 = ["dep:quinn", "dep:h3-quinn", "dep:h3"]
-## Enables WebTransport over HTTP/3 support (requires http3)
-webtransport = ["http3", "dep:h3-webtransport", "dep:h3-datagram", "h3-quinn?/datagram"]
+## Enables WebTransport over HTTP/3 support (enables http3)
+webtransport = ["http3", "dep:h3-webtransport", "dep:h3-datagram", "h3-quinn/datagram"]
 ## Enables tls via rustls
 tls-rustls = ["dep:tokio-rustls"]
 ## Alias for ["http3", "tls-rustls"]

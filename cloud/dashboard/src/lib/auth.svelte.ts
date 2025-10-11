@@ -342,8 +342,27 @@ export function authState() {
                 this.handleNewUserSessionToken(response);
             }
         },
-        async reloadUser(): Promise<void> {
+        async reloadUserForMfaCompletion(): Promise<void> {
             user = { state: "loading" };
+
+            if (userSessionToken.state === "authenticated" && userSessionToken.data.mfaPending) {
+                const updatedToken: AuthState<UserSessionToken> = {
+                    state: "authenticated",
+                    data: {
+                        ...userSessionToken.data,
+                        mfaPending: null,
+                    },
+                };
+
+                userSessionToken = updatedToken;
+
+                const stored = {
+                    ...updatedToken,
+                    data: toStoredUserSessionToken(updatedToken.data),
+                };
+                window.localStorage.setItem("userSessionToken", JSON.stringify(stored));
+            }
+
             user = await loadUser(userSessionToken);
         },
         /**

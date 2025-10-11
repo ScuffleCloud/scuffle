@@ -2,6 +2,7 @@
     import IconAlarm from "$lib/images/icon-alarm.svelte";
     import IconCheckSmall from "$lib/images/icon-check-small.svelte";
     import IconInfo from "$lib/images/icon-info.svelte";
+    import type { Component } from "svelte";
 
     type NotificationType =
         | "error"
@@ -22,7 +23,7 @@
 
     let isVisible = $state(true);
 
-    const iconComponents: Record<NotificationType, any> = {
+    const iconComponents: Record<NotificationType, Component> = {
         error: IconAlarm,
         warning: IconInfo,
         success: IconCheckSmall,

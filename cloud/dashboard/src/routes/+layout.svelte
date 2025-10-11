@@ -11,11 +11,11 @@
     import { browser } from "$app/environment";
     import { goto } from "$app/navigation";
     import { page } from "$app/state";
+    import TwoFactorPage from "$components/login-two-factor/two-factor-page.svelte";
     import LoginFooter from "$components/login/login-footer.svelte";
     import LoginHeader from "$components/login/login-header.svelte";
     import LoginPage from "$components/login/login-page.svelte";
     import RightNav from "$components/right-nav/right-nav.svelte";
-    import TwoFactorPage from "$components/two-factor/two-factor-page.svelte";
     import { authState } from "$lib/auth.svelte";
     import {
         LANDING_ROUTE,

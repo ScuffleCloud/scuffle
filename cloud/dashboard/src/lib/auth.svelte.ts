@@ -341,6 +341,10 @@ export function authState() {
                 this.handleNewUserSessionToken(response);
             }
         },
+        async reloadUser(): Promise<void> {
+            user = { state: "loading" };
+            user = await loadUser(userSessionToken);
+        },
         /**
          * Returns the device public key. If the keypair is not yet loaded or does not exist, null is returned.
          */

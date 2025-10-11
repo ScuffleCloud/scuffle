@@ -1,5 +1,6 @@
 use db_types::models::{Stream, StreamId};
 use db_types::schema::streams;
+use diesel::{ExpressionMethods, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use ext_traits::{OptionExt, RequestExt, ResultExt};
 use petname::Generator;
@@ -58,6 +59,8 @@ impl<G: video_api_traits::Global> pb::scufflecloud::video::api::v1::stream_servi
         let payload = req.into_inner();
         let stream_id = payload.id.parse().into_tonic_err_with_field_violation("id", "invalid ID")?;
 
+        // TODO: check permissions
+
         let stream = global
             .stream_loader()
             .load(stream_id)
@@ -73,22 +76,43 @@ impl<G: video_api_traits::Global> pb::scufflecloud::video::api::v1::stream_servi
 
     async fn update(
         &self,
-        req: tonic::Request<pb::scufflecloud::video::api::v1::StreamUpdateRequest>,
+        _req: tonic::Request<pb::scufflecloud::video::api::v1::StreamUpdateRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::video::api::v1::StreamUpdateResponse>, tonic::Status> {
-        todo!()
+        Err(tonic::Status::unimplemented("not implemented yet"))
     }
 
     async fn delete(
         &self,
         req: tonic::Request<pb::scufflecloud::video::api::v1::StreamDeleteRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::video::api::v1::StreamDeleteResponse>, tonic::Status> {
-        todo!()
+        let global = req.global::<G>()?;
+
+        let payload = req.into_inner();
+        let stream_id: StreamId = payload.id.parse().into_tonic_err_with_field_violation("id", "invalid ID")?;
+
+        // TODO: check permissions
+
+        let mut conn = global
+            .db()
+            .await
+            .into_tonic_internal_err("failed to get database connection")?;
+
+        let stream = diesel::delete(streams::dsl::streams)
+            .filter(streams::dsl::id.eq(stream_id))
+            .returning(Stream::as_returning())
+            .get_result::<Stream>(&mut conn)
+            .await
+            .into_tonic_internal_err("failed to insert stream into database")?;
+
+        Ok(tonic::Response::new(pb::scufflecloud::video::api::v1::StreamDeleteResponse {
+            stream: Some(stream.into()),
+        }))
     }
 
     async fn list(
         &self,
-        req: tonic::Request<pb::scufflecloud::video::api::v1::StreamListRequest>,
+        _req: tonic::Request<pb::scufflecloud::video::api::v1::StreamListRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::video::api::v1::StreamListResponse>, tonic::Status> {
-        todo!()
+        Err(tonic::Status::unimplemented("not implemented yet"))
     }
 }

@@ -13,7 +13,7 @@ export type LoginMode =
 
 export type TwoFactorMode =
     | "webauthn"
-    | "topt"
+    | "totp"
     | "recovery-code";
 
 export type MfaCredential =

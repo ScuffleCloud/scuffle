@@ -8,7 +8,7 @@
     } from "$lib/types";
     import { MfaOption } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
     import RecoveryCodeForm from "./recovery-code-form.svelte";
-    import ToptForm from "./topt-form.svelte";
+    import ToptForm from "./totp-form.svelte";
     import WebAuthnnForm from "./web-authnn-form.svelte";
 
     const auth = authState();
@@ -32,7 +32,7 @@
 
     // The URL's are not updated by design
     function getInitialTwoFactorModeFromState(): TwoFactorMode {
-        if (mfaOptions.includes(MfaOption.TOTP)) return "topt";
+        if (mfaOptions.includes(MfaOption.TOTP)) return "totp";
         if (mfaOptions.includes(MfaOption.WEB_AUTHN)) return "webauthn";
         if (mfaOptions.includes(MfaOption.RECOVERY_CODES)) {
             return "recovery-code";
@@ -63,11 +63,11 @@
     {#if twoFactorMode === "webauthn"}
         <WebAuthnnForm
             onToptModeChange={mfaOptions.includes(MfaOption.TOTP)
-            ? (() => changeTwoFactorMode("topt"))
+            ? (() => changeTwoFactorMode("totp"))
             : null}
             onBackupCodeChange={() => changeTwoFactorMode("recovery-code")}
         />
-    {:else if twoFactorMode === "topt"}
+    {:else if twoFactorMode === "totp"}
         <ToptForm
             onModeChange={mfaOptions.includes(MfaOption.WEB_AUTHN)
             ? (() => changeTwoFactorMode("webauthn"))

@@ -10,19 +10,12 @@ type UpdateWebauthnNameType = {
 };
 
 export function useCreateWebauthnCredential(userId: string | undefined) {
-    const queryClient: QueryClient = useQueryClient();
-
     return createMutation(() => ({
         mutationFn: () =>
             withRpcErrorHandling(async () => {
                 if (!userId) throw new Error("User not authenticated");
                 return await createWebauthnCredential(userId);
             }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["webauthn-list"],
-            });
-        },
     }));
 }
 
@@ -46,10 +39,22 @@ export function useUpdateWebauthnName(userId: string | undefined) {
                 }
             }),
         onSuccess: (_data, { id, name }) => {
-            queryClient.setQueryData<MfaCredential[]>(
-                ["webauthn-list"],
-                (old) => old?.map(cred => cred.id === id ? { ...cred, name } : cred),
-            );
+            const existingData = queryClient.getQueryData<MfaCredential[]>(["webauthn-list"]);
+
+            // Check if the credential exists in the cache. They won't yet if the key was just added
+            const credentialExists = existingData?.some(cred => cred.id === id);
+
+            if (credentialExists) {
+                queryClient.setQueryData<MfaCredential[]>(
+                    ["webauthn-list"],
+                    (old) => old?.map(cred => cred.id === id ? { ...cred, name } : cred),
+                );
+            } else {
+                // Credential was just added, refetch the list
+                queryClient.invalidateQueries({
+                    queryKey: ["webauthn-list"],
+                });
+            }
         },
     }));
 }

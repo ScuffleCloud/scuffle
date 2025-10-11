@@ -7,6 +7,10 @@
     import { useTotpAuth } from "$lib/two-factor/toptAuth.svelte";
     import type { MfaCredential } from "$lib/types";
     import { createQuery } from "@tanstack/svelte-query";
+    import {
+        DEFAULT_TOTP_AUTH_NAME,
+        DEFAULT_WEBAUTHN_AUTH_NAME,
+    } from "./consts";
     import RecoveryCodesButton from "./recovery-codes-button.svelte";
     import TwoFactorSettingsCard from "./two-factor-settings-card.svelte";
 
@@ -155,20 +159,29 @@
     );
 
     const authCredentials: MfaCredential[] = $derived(
-        [
-            ...(totpListQuery.data?.map(cred => ({
+        (() => {
+            const totpCreds = (totpListQuery.data || []).map((
+                cred,
+            ) => ({
                 ...cred,
                 type: "totp" as const,
-            })) || []),
-            ...(webauthnListQuery.data?.map(cred => ({
+                name: cred.name || DEFAULT_TOTP_AUTH_NAME,
+            }));
+
+            const webauthnCreds = (webauthnListQuery.data || []).map((
+                cred,
+            ) => ({
                 ...cred,
                 type: "webauthn" as const,
-            })) || []),
-        ],
+                name: cred.name || DEFAULT_WEBAUTHN_AUTH_NAME,
+            }));
+
+            return [...totpCreds, ...webauthnCreds];
+        })(),
     );
 
-    $inspect(authCredentials);
-
+    // So only one error is shown on fetch errors
+    // All cards should be stuck in loading until all queries pass
     let errorShown = $state(false);
 
     $effect(() => {
@@ -179,8 +192,6 @@
             errorShown = false;
         }
     });
-
-    // All cards should be stuck in loading until all queries pass
 </script>
 
 <div class="settings-page">

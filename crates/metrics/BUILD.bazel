@@ -1,5 +1,5 @@
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
-load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
+load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test", "scuffle_example")
 load("//misc/utils/rust:postcompile.bzl", "postcompile_deps")
 
 cargo_toml()
@@ -24,4 +24,14 @@ scuffle_package(
         insta = True,
         deps = ["//crates/postcompile"],
     ),
+)
+
+scuffle_example(
+    name = "examples_derive",
+    srcs = ["examples/derive.rs"],
+)
+
+scuffle_example(
+    name = "examples_prometheus",
+    srcs = ["examples/prometheus.rs"],
 )

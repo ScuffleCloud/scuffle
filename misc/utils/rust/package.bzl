@@ -187,6 +187,7 @@ def scuffle_package(
         if test_insta:
             test_data += native.glob(["src/**/*"])
 
+        aliases = aliases | dep_aliases(package_name = package_name, features = features, normal = True, normal_dev = True, proc_macro = True, proc_macro_dev = True)
         all_test_deps = all_crate_deps(normal = True, normal_dev = True, package_name = package_name, features = features) + deps + test_deps + ["@rules_rust//rust/runfiles"]
         all_test_proc_macro_deps = all_crate_deps(proc_macro = True, proc_macro_dev = True, package_name = package_name, features = features) + proc_macro_deps + test_proc_macro_deps
 
@@ -198,7 +199,7 @@ def scuffle_package(
             env = test_env,
             tags = test_tags,
             crate = colon_name,
-            aliases = aliases | dep_aliases(package_name = package_name, features = features),
+            aliases = aliases,
             deps = all_test_deps,
             proc_macro_deps = all_test_proc_macro_deps,
             crate_features = features.select(),
@@ -448,8 +449,6 @@ def scuffle_example(
         deps = None,
         proc_macro_deps = None,
         data = None,
-        env = None,
-        tools = None,
         target_compatible_with = None):
     """Creates a cargo build script
 
@@ -487,25 +486,23 @@ def scuffle_example(
         data = []
     if features == None:
         features = crate_features(package_name = package_name)
-    if env == None:
-        env = {}
-    if tools == None:
-        tools = []
     if target_compatible_with == None:
         target_compatible_with = []
 
-    cargo_build_script(
+    aliases = aliases | dep_aliases(package_name = package_name, features = features, normal = True, normal_dev = True, proc_macro = True, proc_macro_dev = True)
+    all_test_deps = all_crate_deps(normal = True, normal_dev = True, package_name = package_name, features = features) + deps + ["@rules_rust//rust/runfiles", crate]
+    all_test_proc_macro_deps = all_crate_deps(proc_macro = True, proc_macro_dev = True, package_name = package_name, features = features) + proc_macro_deps
+
+    rust_binary(
         name = name,
         srcs = srcs,
         crate_features = features.select(),
-        aliases = aliases | dep_aliases(package_name = package_name, features = features, dev_dependency = True, dev_proc_macro = True),
-        deps = all_crate_deps(package_name = package_name, features = features, dev_dependency = True) + deps + ["@rules_rust//rust/runfiles", crate],
-        proc_macro_deps = all_crate_deps(package_name = package_name, features = features, dev_proc_macro = True) + proc_macro_deps,
+        aliases = aliases,
+        deps = all_test_deps,
+        proc_macro_deps = all_test_proc_macro_deps,
         visibility = visibility,
         data = data,
         compile_data = data,
-        build_script_env = env,
-        tools = tools,
         rustc_flags = [
             "--cfg=bazel_runfiles",
         ] + gc_arg,

@@ -1,5 +1,5 @@
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
-load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
+load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test", "scuffle_example")
 
 cargo_toml()
 
@@ -32,4 +32,9 @@ scuffle_package(
         "//crates/future-ext",
         "//crates/nutype-enum",
     ],
+)
+
+scuffle_example(
+    name = "examples_basic",
+    srcs = ["examples/basic.rs"],
 )

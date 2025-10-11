@@ -283,6 +283,7 @@ export function authState() {
                     // Persist session token to localStorage on change
                     const stored = { ...newUserSessionToken, data: toStoredUserSessionToken(newUserSessionToken.data) };
                     window.localStorage.setItem("userSessionToken", JSON.stringify(stored));
+
                     return loadUser(newUserSessionToken);
                 },
             ).catch((err) => {
@@ -397,6 +398,10 @@ export function authState() {
 async function loadUser(state: AuthState<UserSessionToken>): Promise<AuthState<User>> {
     if (state.state !== "authenticated") {
         return { ...state };
+    }
+
+    if (state.data.mfaPending) {
+        return { state: "error", error: "MFA required" };
     }
 
     try {

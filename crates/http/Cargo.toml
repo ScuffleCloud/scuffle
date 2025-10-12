@@ -97,8 +97,8 @@ libc = { default-features = false, optional = true, version = "0.2" }
 h3 = { default-features = false, optional = true, version = "0.0.8" }
 h3-datagram = { default-features = false, optional = true, version = "0.0.2" }
 h3-quinn = { default-features = false, optional = true, version = "0.0.10" }
-quinn = { default-features = false, features = ["platform-verifier", "runtime-tokio", "rustls-aws-lc-rs"], optional = true, version = "0.11" }
 h3-webtransport = { default-features = false, optional = true, version = "0.1" }
+quinn = { default-features = false, features = ["platform-verifier", "runtime-tokio", "rustls-aws-lc-rs"], optional = true, version = "0.11" }
 
 # TLS
 tokio-rustls = { default-features = false, features = ["aws_lc_rs", "tls12"], optional = true, version = "0.26" }

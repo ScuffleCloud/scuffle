@@ -946,6 +946,7 @@ _NORMAL_DEPENDENCIES = {
         "webtransport": {
             _COMMON_CONDITION: {
                 "h3-datagram": Label("@cargo_vendor//:h3-datagram-0.0.2"),
+                "h3-quinn": Label("@cargo_vendor//:h3-quinn-0.0.10"),
                 "h3-webtransport": Label("@cargo_vendor//:h3-webtransport-0.1.2"),
             },
         },

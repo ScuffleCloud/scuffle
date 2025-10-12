@@ -1,5 +1,8 @@
 <script lang="ts">
-    import { rpcErrorToString, sessionsServiceClient } from "$lib/grpcClient";
+    import {
+        rpcErrorToString,
+        sessionsServiceClient,
+    } from "$lib/grpcClient";
     import IconArrowLeft from "$lib/images/icon-arrow-left.svelte";
     import { type RpcError } from "@protobuf-ts/runtime-rpc";
 

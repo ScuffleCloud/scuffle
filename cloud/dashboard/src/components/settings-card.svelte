@@ -21,13 +21,13 @@
         description,
         isLoading = false,
         skeletonHeight = "200px",
-        children
+        children,
     }: Props = $props();
 </script>
 
 <div class="card">
     {#if isLoading}
-        <div class="skeleton-container" style="height: {skeletonHeight}">
+        <div class="skeleton-container" style:height={skeletonHeight}>
             <div class="skeleton skeleton-title"></div>
             <div class="skeleton skeleton-description"></div>
             <div class="skeleton skeleton-content"></div>

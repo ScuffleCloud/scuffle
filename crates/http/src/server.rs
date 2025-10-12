@@ -76,7 +76,10 @@ where
     /// Enable WebTransport support.
     ///
     /// First enable HTTP/3 by calling [`enable_http3`](HttpServerBuilder::enable_http3) to enable WebTransport.
-    pub fn enable_webtransport(self, enable_webtransport: bool) -> HttpServerBuilder<F, http_server_builder::SetEnableWebtransport<S>> {
+    pub fn enable_webtransport(
+        self,
+        enable_webtransport: bool,
+    ) -> HttpServerBuilder<F, http_server_builder::SetEnableWebtransport<S>> {
         self.enable_webtransport_internal(enable_webtransport)
     }
 }
@@ -93,7 +96,10 @@ where
     /// Corresponds to [h3::server::Builder::max_webtransport_sessions].
     ///
     /// Default is 1 when WebTransport is enabled.
-    pub fn max_webtransport_sessions(self, max_webtransport_sessions: u64) -> HttpServerBuilder<F, http_server_builder::SetMaxWebtransportSessions<S>> {
+    pub fn max_webtransport_sessions(
+        self,
+        max_webtransport_sessions: u64,
+    ) -> HttpServerBuilder<F, http_server_builder::SetMaxWebtransportSessions<S>> {
         self.max_webtransport_sessions_internal(max_webtransport_sessions)
     }
 }
@@ -249,7 +255,9 @@ where
                         .rustls_config(_rustls_config);
 
                     #[cfg(feature = "webtransport")]
-                    let builder = builder.enable_webtransport(self.enable_webtransport).max_webtransport_sessions(self.max_webtransport_sessions);
+                    let builder = builder
+                        .enable_webtransport(self.enable_webtransport)
+                        .max_webtransport_sessions(self.max_webtransport_sessions);
 
                     return builder.build().run().await;
                 }
@@ -295,7 +303,9 @@ where
                         .rustls_config(_rustls_config);
 
                     #[cfg(feature = "webtransport")]
-                    let http3_builder = http3_builder.enable_webtransport(self.enable_webtransport).max_webtransport_sessions(self.max_webtransport_sessions);
+                    let http3_builder = http3_builder
+                        .enable_webtransport(self.enable_webtransport)
+                        .max_webtransport_sessions(self.max_webtransport_sessions);
 
                     let http3 = http3_builder.build().run();
                     let http3 = std::pin::pin!(http3);

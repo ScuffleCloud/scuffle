@@ -19,15 +19,18 @@
                     return;
                 }
                 try {
-                    const url = "https://" + location.host + "/wt";
+                    const url = "https://" + location.host
+                        + "/wt";
                     log("Connecting to " + url);
                     const wt = new WebTransport(url);
                     await wt.ready;
                     log("WebTransport connected");
 
                     // Test unidirectional stream
-                    const writableStream = await wt.createUnidirectionalStream();
-                    const uniWriter = writableStream.getWriter();
+                    const writableStream = await wt
+                        .createUnidirectionalStream();
+                    const uniWriter = writableStream
+                        .getWriter();
 
                     const encoder = new TextEncoder();
                     await uniWriter.write(

@@ -1,8 +1,9 @@
 //! HTTP3 backend.
-use std::{fmt::Debug, time::Duration};
+use std::fmt::Debug;
 use std::io;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
 
 use body::QuicIncomingBody;
 use scuffle_context::ContextFutExt;
@@ -66,7 +67,10 @@ where
     /// Corresponds to [h3::server::Builder::max_webtransport_sessions].
     ///
     /// Default is 1 when WebTransport is enabled.
-    pub fn max_webtransport_sessions(self, max_webtransport_sessions: u64) -> Http3BackendBuilder<F, http3_backend_builder::SetMaxWebtransportSessions<S>> {
+    pub fn max_webtransport_sessions(
+        self,
+        max_webtransport_sessions: u64,
+    ) -> Http3BackendBuilder<F, http3_backend_builder::SetMaxWebtransportSessions<S>> {
         self.max_webtransport_sessions_internal(max_webtransport_sessions)
     }
 }
@@ -151,14 +155,16 @@ where
 
                                 #[cfg(feature = "webtransport")]
                                 if self.enable_webtransport {
-                                    h3_conn_builder.enable_webtransport(true)
+                                    h3_conn_builder
+                                        .enable_webtransport(true)
                                         .enable_extended_connect(true)
                                         .enable_datagram(true)
                                         .max_webtransport_sessions(self.max_webtransport_sessions)
                                         .send_grease(true);
                                 }
 
-                                let Some(mut h3_conn) = h3_conn_builder.build(h3_quinn::Connection::new(conn))
+                                let Some(mut h3_conn) = h3_conn_builder
+                                    .build(h3_quinn::Connection::new(conn))
                                     .with_context(&ctx)
                                     .await
                                     .transpose()?
@@ -198,7 +204,8 @@ where
 
                                             // Check if this is a WebTransport CONNECT request
                                             #[cfg(feature = "webtransport")]
-                                            if self.enable_webtransport && req.extensions().get::<Protocol>() == Some(&Protocol::WEB_TRANSPORT)
+                                            if self.enable_webtransport
+                                                && req.extensions().get::<Protocol>() == Some(&Protocol::WEB_TRANSPORT)
                                                 && req.method() == http::Method::CONNECT
                                             {
                                                 #[cfg(feature = "tracing")]

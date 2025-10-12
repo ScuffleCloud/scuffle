@@ -40,11 +40,35 @@ pub struct Http3Backend<F> {
     /// Use `[::]` for a dual-stack listener.
     /// For example, use `[::]:80` to bind to port 80 on both IPv4 and IPv6.
     bind: SocketAddr,
+    /// Enable WebTransport support.
+    #[builder(default = false)]
+    #[cfg(feature = "webtransport")]
+    enable_webtransport: bool,
+    #[builder(default = 1, setters(vis = "", name = max_webtransport_sessions_internal))]
+    #[cfg(feature = "webtransport")]
+    max_webtransport_sessions: u64,
     /// rustls config.
     ///
     /// Use this field to set the server into TLS mode.
     /// It will only accept TLS connections when this is set.
     rustls_config: tokio_rustls::rustls::ServerConfig,
+}
+
+#[cfg(feature = "webtransport")]
+impl<F, S> Http3BackendBuilder<F, S>
+where
+    S: http3_backend_builder::State,
+    S::MaxWebtransportSessions: http3_backend_builder::IsUnset,
+    S::EnableWebtransport: http3_backend_builder::IsSet,
+{
+    /// Set the maximum number of concurrent WebTransport sessions.
+    ///
+    /// Corresponds to [h3::server::Builder::max_webtransport_sessions].
+    ///
+    /// Default is 1 when WebTransport is enabled.
+    pub fn max_webtransport_sessions(self, max_webtransport_sessions: u64) -> Http3BackendBuilder<F, http3_backend_builder::SetMaxWebtransportSessions<S>> {
+        self.max_webtransport_sessions_internal(max_webtransport_sessions)
+    }
 }
 
 impl<F> Http3Backend<F>
@@ -122,17 +146,17 @@ where
                             let connection_fut = async move {
                                 #[cfg(not(feature = "webtransport"))]
                                 let h3_conn_builder = h3::server::builder();
+                                #[cfg(feature = "webtransport")]
+                                let mut h3_conn_builder = h3::server::builder();
 
                                 #[cfg(feature = "webtransport")]
-                                let h3_conn_builder = {
-                                    let mut builder = h3::server::builder();
-                                    builder.enable_webtransport(true)
+                                if self.enable_webtransport {
+                                    h3_conn_builder.enable_webtransport(true)
                                         .enable_extended_connect(true)
                                         .enable_datagram(true)
-                                        .max_webtransport_sessions(1)
+                                        .max_webtransport_sessions(self.max_webtransport_sessions)
                                         .send_grease(true);
-                                    builder
-                                };
+                                }
 
                                 let Some(mut h3_conn) = h3_conn_builder.build(h3_quinn::Connection::new(conn))
                                     .with_context(&ctx)
@@ -174,7 +198,7 @@ where
 
                                             // Check if this is a WebTransport CONNECT request
                                             #[cfg(feature = "webtransport")]
-                                            if req.extensions().get::<Protocol>() == Some(&Protocol::WEB_TRANSPORT)
+                                            if self.enable_webtransport && req.extensions().get::<Protocol>() == Some(&Protocol::WEB_TRANSPORT)
                                                 && req.method() == http::Method::CONNECT
                                             {
                                                 #[cfg(feature = "tracing")]

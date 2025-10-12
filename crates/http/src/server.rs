@@ -37,6 +37,12 @@ pub struct HttpServer<F> {
     #[builder(default = false, setters(vis = "", name = enable_http3_internal))]
     #[cfg(feature = "http3")]
     enable_http3: bool,
+    #[builder(default = false, setters(vis = "", name = enable_webtransport_internal))]
+    #[cfg(feature = "webtransport")]
+    enable_webtransport: bool,
+    #[builder(default = 1, setters(vis = "", name = max_webtransport_sessions_internal))]
+    #[cfg(feature = "webtransport")]
+    max_webtransport_sessions: u64,
     /// rustls config.
     ///
     /// Use this field to set the server into TLS mode.
@@ -57,6 +63,38 @@ where
     /// First enable TLS by calling [`rustls_config`](HttpServerBuilder::rustls_config) to enable HTTP/3.
     pub fn enable_http3(self, enable_http3: bool) -> HttpServerBuilder<F, http_server_builder::SetEnableHttp3<S>> {
         self.enable_http3_internal(enable_http3)
+    }
+}
+
+#[cfg(feature = "webtransport")]
+impl<F, S> HttpServerBuilder<F, S>
+where
+    S: http_server_builder::State,
+    S::EnableWebtransport: http_server_builder::IsUnset,
+    S::EnableHttp3: http_server_builder::IsSet,
+{
+    /// Enable WebTransport support.
+    ///
+    /// First enable HTTP/3 by calling [`enable_http3`](HttpServerBuilder::enable_http3) to enable WebTransport.
+    pub fn enable_webtransport(self, enable_webtransport: bool) -> HttpServerBuilder<F, http_server_builder::SetEnableWebtransport<S>> {
+        self.enable_webtransport_internal(enable_webtransport)
+    }
+}
+
+#[cfg(feature = "webtransport")]
+impl<F, S> HttpServerBuilder<F, S>
+where
+    S: http_server_builder::State,
+    S::MaxWebtransportSessions: http_server_builder::IsUnset,
+    S::EnableWebtransport: http_server_builder::IsSet,
+{
+    /// Set the maximum number of concurrent WebTransport sessions.
+    ///
+    /// Corresponds to [h3::server::Builder::max_webtransport_sessions].
+    ///
+    /// Default is 1 when WebTransport is enabled.
+    pub fn max_webtransport_sessions(self, max_webtransport_sessions: u64) -> HttpServerBuilder<F, http_server_builder::SetMaxWebtransportSessions<S>> {
+        self.max_webtransport_sessions_internal(max_webtransport_sessions)
     }
 }
 
@@ -165,6 +203,10 @@ where
             #[cfg(feature = "http3")]
             if self.enable_http3 {
                 rustls_config.alpn_protocols.push(b"h3".to_vec());
+                rustls_config.alpn_protocols.push(b"h3-32".to_vec());
+                rustls_config.alpn_protocols.push(b"h3-31".to_vec());
+                rustls_config.alpn_protocols.push(b"h3-30".to_vec());
+                rustls_config.alpn_protocols.push(b"h3-29".to_vec());
             }
         }
     }
@@ -199,15 +241,17 @@ where
             match (start_tcp_backend, enable_http3) {
                 #[cfg(feature = "http3")]
                 (false, true) => {
-                    let backend = crate::backend::h3::Http3Backend::builder()
+                    let builder = crate::backend::h3::Http3Backend::builder()
                         .ctx(self.ctx)
                         .worker_tasks(self.worker_tasks)
                         .service_factory(self.service_factory)
                         .bind(self.bind)
-                        .rustls_config(_rustls_config)
-                        .build();
+                        .rustls_config(_rustls_config);
 
-                    return backend.run().await;
+                    #[cfg(feature = "webtransport")]
+                    let builder = builder.enable_webtransport(self.enable_webtransport).max_webtransport_sessions(self.max_webtransport_sessions);
+
+                    return builder.build().run().await;
                 }
                 #[cfg(any(feature = "http1", feature = "http2"))]
                 (true, false) => {
@@ -243,14 +287,17 @@ where
 
                     let hyper = std::pin::pin!(builder.build().run());
 
-                    let http3 = crate::backend::h3::Http3Backend::builder()
+                    let http3_builder = crate::backend::h3::Http3Backend::builder()
                         .ctx(self.ctx)
                         .worker_tasks(self.worker_tasks)
                         .service_factory(self.service_factory)
                         .bind(self.bind)
-                        .rustls_config(_rustls_config)
-                        .build()
-                        .run();
+                        .rustls_config(_rustls_config);
+
+                    #[cfg(feature = "webtransport")]
+                    let http3_builder = http3_builder.enable_webtransport(self.enable_webtransport).max_webtransport_sessions(self.max_webtransport_sessions);
+
+                    let http3 = http3_builder.build().run();
                     let http3 = std::pin::pin!(http3);
 
                     let res = futures::future::select(hyper, http3).await;

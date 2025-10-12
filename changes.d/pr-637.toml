@@ -1,4 +1,4 @@
 [[scuffle-http]]
-category = "docs"
+category = "test"
 description = "clean up examples and tests"
 authors = ["@lennartkloock"]

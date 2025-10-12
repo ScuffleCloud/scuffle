@@ -24,19 +24,19 @@ common_tools = {
 
 bazel_env(
     name = "bazel_env_linux",
+    tags = ["manual"],
+    target_compatible_with = ["@platforms//os:linux"],
     tools = common_tools | {
         "ffmpeg": "//tools/ffmpeg",
         "ffprobe": "//tools/ffmpeg:ffprobe",
     },
-    tags = ["manual"],
-    target_compatible_with = ["@platforms//os:linux"],
 )
 
 bazel_env(
     name = "bazel_env_macos",
-    tools = common_tools,
     tags = ["manual"],
     target_compatible_with = ["@platforms//os:macos"],
+    tools = common_tools,
 )
 
 alias(

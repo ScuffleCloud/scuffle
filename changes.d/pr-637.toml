@@ -1,0 +1,4 @@
+[[scuffle-http]]
+category = "test"
+description = "clean up examples and tests"
+authors = ["@lennartkloock"]

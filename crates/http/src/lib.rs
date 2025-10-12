@@ -283,16 +283,16 @@ mod tests {
 
     #[cfg(feature = "tls-rustls")]
     fn rustls_config() -> tokio_rustls::rustls::ServerConfig {
+        use quinn::rustls::pki_types::pem::PemObject;
+
         install_provider();
 
-        let certfile = std::fs::File::open(file_path("cert.pem")).expect("cert not found");
-        let certs = rustls_pemfile::certs(&mut std::io::BufReader::new(certfile))
+        let certs = tokio_rustls::rustls::pki_types::CertificateDer::pem_file_iter(file_path("cert.pem"))
+            .expect("failed to parse certfile")
             .collect::<Result<Vec<_>, _>>()
-            .expect("failed to load certs");
-        let keyfile = std::fs::File::open(file_path("key.pem")).expect("key not found");
-        let key = rustls_pemfile::private_key(&mut std::io::BufReader::new(keyfile))
-            .expect("failed to load key")
-            .expect("no key found");
+            .expect("failed to parse cert");
+        let key = tokio_rustls::rustls::pki_types::PrivateKeyDer::from_pem_file(file_path("key.pem"))
+            .expect("failed to parse key");
 
         tokio_rustls::rustls::ServerConfig::builder()
             .with_no_client_auth()

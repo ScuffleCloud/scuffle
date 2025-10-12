@@ -104,7 +104,6 @@ scuffle-changelog = { optional = true, path = "../changelog", version = "0.1" }
 # The http3 feature requires a custom build flag (see .cargo/config.toml)
 axum = { features = ["ws"], version = "0.8" }
 reqwest = { default-features = false, features = ["http2", "http3-aws-lc-rs", "rustls-tls-no-provider"], version = "0.12" }
-rustls-pemfile = "2"
 scuffle-future-ext = { path = "../future-ext" }
 tokio-test = "0.4"
 

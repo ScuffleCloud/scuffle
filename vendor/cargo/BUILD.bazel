@@ -1366,18 +1366,6 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "rustls-pemfile-2.2.0",
-    actual = "@cargo_vendor__rustls-pemfile-2.2.0//:rustls_pemfile",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
-    name = "rustls-pemfile",
-    actual = "@cargo_vendor__rustls-pemfile-2.2.0//:rustls_pemfile",
-    tags = ["manual"],
-)
-
-transition_alias_opt(
     name = "rusty_ffmpeg-0.16.7+ffmpeg.8",
     actual = "@cargo_vendor__rusty_ffmpeg-0.16.7-ffmpeg.8//:rusty_ffmpeg",
     tags = ["manual"],

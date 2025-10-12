@@ -32,7 +32,7 @@ See the [changelog](./CHANGELOG.md) for a full release history.
 * **`http1`** *(enabled by default)* —  Enables http1 support
 * **`http2`** *(enabled by default)* —  Enabled http2 support
 * **`http3`** —  Enables http3 support
-* **`webtransport`** —  Enables WebTransport over HTTP/3 support (requires http3)
+* **`webtransport`** —  Enables WebTransport over HTTP/3 support (enables http3)
 * **`tls-rustls`** —  Enables tls via rustls
 * **`http3-tls-rustls`** —  Alias for \[“http3”, “tls-rustls”\]
 * **`tower`** *(enabled by default)* —  Enables tower service support

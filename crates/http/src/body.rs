@@ -32,6 +32,7 @@ pub enum IncomingBody {
     #[cfg(feature = "http3")]
     Quic(crate::backend::h3::body::QuicIncomingBody<h3_quinn::RecvStream>),
     /// An empty body (used for WebTransport sessions).
+    #[cfg(feature = "webtransport")]
     Empty,
 }
 
@@ -59,6 +60,7 @@ impl http_body::Body for IncomingBody {
             IncomingBody::Hyper(body) => body.is_end_stream(),
             #[cfg(feature = "http3")]
             IncomingBody::Quic(body) => body.is_end_stream(),
+            #[cfg(feature = "webtransport")]
             IncomingBody::Empty => true,
             #[cfg(not(any(feature = "http1", feature = "http2", feature = "http3")))]
             _ => false,
@@ -74,6 +76,7 @@ impl http_body::Body for IncomingBody {
             IncomingBody::Hyper(body) => std::pin::Pin::new(body).poll_frame(_cx).map_err(Into::into),
             #[cfg(feature = "http3")]
             IncomingBody::Quic(body) => std::pin::Pin::new(body).poll_frame(_cx).map_err(Into::into),
+            #[cfg(feature = "webtransport")]
             IncomingBody::Empty => std::task::Poll::Ready(None),
             #[cfg(not(any(feature = "http1", feature = "http2", feature = "http3")))]
             _ => std::task::Poll::Ready(None),
@@ -86,6 +89,7 @@ impl http_body::Body for IncomingBody {
             IncomingBody::Hyper(body) => body.size_hint(),
             #[cfg(feature = "http3")]
             IncomingBody::Quic(body) => body.size_hint(),
+            #[cfg(feature = "webtransport")]
             IncomingBody::Empty => http_body::SizeHint::with_exact(0),
             #[cfg(not(any(feature = "http1", feature = "http2", feature = "http3")))]
             _ => http_body::SizeHint::default(),

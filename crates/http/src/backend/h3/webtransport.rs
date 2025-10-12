@@ -22,9 +22,8 @@ use h3_webtransport::stream::{BidiStream, RecvStream as WtRecvStream, SendStream
 /// # Example
 ///
 /// ```rust,ignore
-/// use scuffle_http::{IncomingRequest, Response};
-/// use scuffle_http::backend::h3::webtransport::WebTransportSession;
-///
+/// # use scuffle_http::{IncomingRequest, Response};
+/// # use scuffle_http::backend::h3::webtransport::WebTransportSession;
 /// async fn handle_webtransport(req: IncomingRequest) -> Result<Response<String>, std::convert::Infallible> {
 ///     if let Some(session) = req.extensions().get::<WebTransportSession>() {
 ///         // Handle WebTransport session
@@ -67,8 +66,7 @@ impl WebTransportSession {
     /// # Example
     ///
     /// ```rust,ignore
-    /// use scuffle_http::backend::h3::webtransport::{WebTransportSession, AcceptedBi};
-    ///
+    /// # use scuffle_http::backend::h3::webtransport::{WebTransportSession, AcceptedBi};
     /// async fn handle_session(session: WebTransportSession) {
     ///     while let Some(Ok(accepted)) = session.accept_bi().await {
     ///         match accepted {
@@ -113,9 +111,14 @@ impl WebTransportSession {
     /// # Example
     ///
     /// ```rust,ignore
+    /// # use bytes::Bytes;
+    /// # use scuffle_http::backend::h3::webtransport::WebTransportSession;
+    /// # async fn dummy(session: WebTransportSession) -> Result<(), Box<dyn std::error::Error>> {
     /// let (mut send, mut recv) = session.open_bi().await?;
     /// send.write(Bytes::from("Hello")).await?;
     /// send.finish().await?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub async fn open_bi(&self) -> Result<(WebTransportSendStream, WebTransportRecvStream), h3::error::StreamError> {
         let stream = self.session.open_bi(WebTransportStreamId::next_session_id()).await?;
@@ -132,9 +135,14 @@ impl WebTransportSession {
     /// # Example
     ///
     /// ```rust,ignore
+    /// # use bytes::Bytes;
+    /// # use scuffle_http::backend::h3::webtransport::WebTransportSession;
+    /// # async fn dummy(session: WebTransportSession) -> Result<(), Box<dyn std::error::Error>> {
     /// let mut send = session.open_uni().await?;
     /// send.write(Bytes::from("Hello")).await?;
     /// send.finish().await?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub async fn open_uni(&self) -> Result<WebTransportSendStream, h3::error::StreamError> {
         let send = self.session.open_uni(WebTransportStreamId::next_session_id()).await?;
@@ -153,8 +161,13 @@ impl WebTransportSession {
     /// # Example
     ///
     /// ```rust,ignore
+    /// # use bytes::Bytes;
+    /// # use scuffle_http::backend::h3::webtransport::WebTransportSession;
+    /// # async fn dummy(session: WebTransportSession) -> Result<(), h3_datagram::datagram_handler::SendDatagramError> {
     /// let mut sender = session.datagram_sender();
     /// sender.send_datagram(Bytes::from("Hello"))?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn datagram_sender(
         &self,
@@ -170,10 +183,13 @@ impl WebTransportSession {
     /// # Example
     ///
     /// ```rust,ignore
+    /// # use scuffle_http::backend::h3::webtransport::WebTransportSession;
+    /// # async fn dummy(session: WebTransportSession) {
     /// let mut reader = session.datagram_reader();
     /// while let Ok(datagram) = reader.read_datagram().await {
     ///     println!("Received: {} bytes", datagram.payload().len());
     /// }
+    /// # }
     /// ```
     pub fn datagram_reader(
         &self,
@@ -211,6 +227,10 @@ impl WebTransportBidiStream {
     /// # Example
     ///
     /// ```rust,ignore
+    /// # use bytes::Bytes;
+    /// # use h3::quic::StreamErrorIncoming;
+    /// # use scuffle_http::backend::h3::webtransport::WebTransportBidiStream;
+    /// # async fn dummy(bidi_stream: WebTransportBidiStream) -> Result<(), StreamErrorIncoming> {
     /// let (mut send, mut recv) = bidi_stream.split();
     /// tokio::spawn(async move {
     ///     while let Ok(Some(data)) = recv.read().await {
@@ -218,6 +238,8 @@ impl WebTransportBidiStream {
     ///     }
     /// });
     /// send.write(Bytes::from("Hello")).await?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn split(self) -> (WebTransportSendStream, WebTransportRecvStream) {
         use h3::quic::BidiStream;
@@ -239,7 +261,11 @@ impl WebTransportBidiStream {
     /// # Example
     ///
     /// ```rust,ignore
+    /// # use scuffle_http::backend::h3::webtransport::WebTransportBidiStream;
+    /// # async fn dummy(mut bidi_stream: WebTransportBidiStream) -> Result<(), std::io::Error> {
     /// let data = bidi_stream.read_to_end(1024 * 1024).await?; // max 1MB
+    /// # Ok(())
+    /// # }
     /// ```
     pub async fn read_to_end(&mut self, max_size: usize) -> Result<Bytes, io::Error> {
         let mut chunks = Vec::new();
@@ -318,9 +344,12 @@ impl WebTransportRecvStream {
     /// # Example
     ///
     /// ```rust,ignore
+    /// # use scuffle_http::backend::h3::webtransport::WebTransportRecvStream;
+    /// # async fn dummy(mut recv_stream: WebTransportRecvStream) {
     /// while let Ok(Some(data)) = recv_stream.read().await {
     ///     println!("Received {} bytes", data.len());
     /// }
+    /// # }
     /// ```
     pub async fn read(&mut self) -> Result<Option<Bytes>, StreamErrorIncoming> {
         use h3::quic::RecvStream;
@@ -334,8 +363,12 @@ impl WebTransportRecvStream {
     /// # Example
     ///
     /// ```rust,ignore
+    /// # use scuffle_http::backend::h3::webtransport::WebTransportRecvStream;
+    /// # async fn dummy(mut recv_stream: WebTransportRecvStream) -> Result<(), std::io::Error> {
     /// let data = recv_stream.read_to_end(1024 * 1024).await?; // max 1MB
     /// println!("Received complete message: {} bytes", data.len());
+    /// # Ok(())
+    /// # }
     /// ```
     pub async fn read_to_end(&mut self, max_size: usize) -> Result<Bytes, io::Error> {
         let mut chunks = Vec::new();
@@ -397,8 +430,14 @@ impl WebTransportSendStream {
     /// # Example
     ///
     /// ```rust,ignore
+    /// # use bytes::Bytes;
+    /// # use h3::quic::StreamErrorIncoming;
+    /// # use scuffle_http::backend::h3::webtransport::WebTransportSendStream;
+    /// # async fn dummy(mut send_stream: WebTransportSendStream) -> Result<(), StreamErrorIncoming> {
     /// send_stream.write(Bytes::from("Hello, world!")).await?;
     /// send_stream.finish().await?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub async fn write(&mut self, data: Bytes) -> Result<(), StreamErrorIncoming> {
         use bytes::Buf;
@@ -422,7 +461,13 @@ impl WebTransportSendStream {
     /// # Example
     ///
     /// ```rust,ignore
+    /// # use bytes::Bytes;
+    /// # use h3::quic::StreamErrorIncoming;
+    /// # use scuffle_http::backend::h3::webtransport::WebTransportSendStream;
+    /// # async fn dummy(mut send_stream: WebTransportSendStream) -> Result<(), StreamErrorIncoming> {
     /// send_stream.write_all(Bytes::from("Complete message")).await?;
+    /// # Ok(())
+    /// # }
     /// ```
     pub async fn write_all(&mut self, data: Bytes) -> Result<(), StreamErrorIncoming> {
         self.write(data).await?;

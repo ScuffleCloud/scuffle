@@ -4,6 +4,7 @@ use std::net::SocketAddr;
 use http::{Method, StatusCode};
 use scuffle_http as http_srv;
 use scuffle_http::service::{fn_http_service, service_clone_factory};
+use tokio_rustls::rustls::pki_types::{CertificateDer, PrivateKeyDer, pem::PemObject};
 
 fn assets_path(item: &str) -> std::path::PathBuf {
     if let Some(env) = std::env::var_os("ASSETS_DIR") {
@@ -21,14 +22,11 @@ fn rustls_config() -> tokio_rustls::rustls::ServerConfig {
             .expect("failed to install aws lc provider");
     });
 
-    let certfile = std::fs::File::open(assets_path("cert.pem")).expect("cert not found");
-    let certs = rustls_pemfile::certs(&mut std::io::BufReader::new(certfile))
+    let certs = CertificateDer::pem_file_iter(assets_path("cert.pem"))
+        .expect("failed to load certfile")
         .collect::<Result<Vec<_>, _>>()
-        .expect("failed to load certs");
-    let keyfile = std::fs::File::open(assets_path("key.pem")).expect("key not found");
-    let key = rustls_pemfile::private_key(&mut std::io::BufReader::new(keyfile))
-        .expect("failed to load key")
-        .expect("no key found");
+        .expect("failed to load cert");
+    let key = PrivateKeyDer::from_pem_file(assets_path("key.pem")).expect("failed to load key");
 
     tokio_rustls::rustls::ServerConfig::builder()
         .with_no_client_auth()
@@ -56,7 +54,10 @@ async fn main() {
             Ok::<_, Infallible>(resp)
         } else if req.uri().path() == "/wt" && req.method() == Method::CONNECT {
             // Extract the WebTransport session from the request
-            if let Some(session) = req.extensions().get::<http_srv::backend::h3::webtransport::WebTransportSession>() {
+            if let Some(session) = req
+                .extensions()
+                .get::<http_srv::backend::h3::webtransport::WebTransportSession>()
+            {
                 let session = session.clone();
                 tracing::info!("WebTransport session established");
 
@@ -103,9 +104,11 @@ async fn main() {
                             tokio::spawn(async move {
                                 match stream.read_to_end(64 * 1024).await {
                                     Ok(data) => {
-                                        tracing::info!("Received {} bytes on uni stream: {:?}",
+                                        tracing::info!(
+                                            "Received {} bytes on uni stream: {:?}",
                                             data.len(),
-                                            String::from_utf8_lossy(&data));
+                                            String::from_utf8_lossy(&data)
+                                        );
                                     }
                                     Err(e) => {
                                         tracing::warn!("Failed to read from uni stream: {}", e);
@@ -145,22 +148,22 @@ async fn main() {
                     }
                 });
 
-                return Ok::<_, Infallible>(
-                    http::Response::builder()
-                        .status(StatusCode::OK)
-                        .body(String::new())
-                        .unwrap()
-                );
+                return Ok::<_, Infallible>(http::Response::builder().status(StatusCode::OK).body(String::new()).unwrap());
             }
 
             Ok::<_, Infallible>(
                 http::Response::builder()
                     .status(StatusCode::BAD_REQUEST)
                     .body("WebTransport session not found".to_string())
-                    .unwrap()
+                    .unwrap(),
             )
         } else {
-            Ok::<_, Infallible>(http::Response::builder().status(StatusCode::NOT_FOUND).body(String::new()).unwrap())
+            Ok::<_, Infallible>(
+                http::Response::builder()
+                    .status(StatusCode::NOT_FOUND)
+                    .body(String::new())
+                    .unwrap(),
+            )
         }
     });
 

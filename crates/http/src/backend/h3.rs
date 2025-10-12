@@ -1,5 +1,5 @@
 //! HTTP3 backend.
-use std::fmt::Debug;
+use std::{fmt::Debug, time::Duration};
 use std::io;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -68,7 +68,10 @@ where
         // not quite sure why this is necessary but it is
         self.rustls_config.max_early_data_size = u32::MAX;
         let crypto = h3_quinn::quinn::crypto::rustls::QuicServerConfig::try_from(self.rustls_config)?;
-        let server_config = h3_quinn::quinn::ServerConfig::with_crypto(Arc::new(crypto));
+        let mut server_config = h3_quinn::quinn::ServerConfig::with_crypto(Arc::new(crypto));
+        let mut transport_config = quinn::TransportConfig::default();
+        transport_config.keep_alive_interval(Some(Duration::from_secs(2)));
+        server_config.transport = Arc::new(transport_config);
 
         // Bind the UDP socket
         let socket = std::net::UdpSocket::bind(self.bind)?;
@@ -117,7 +120,21 @@ where
                             tracing::debug!(addr = %addr, "accepted quic connection");
 
                             let connection_fut = async move {
-                                let Some(mut h3_conn) = h3::server::Connection::new(h3_quinn::Connection::new(conn))
+                                #[cfg(not(feature = "webtransport"))]
+                                let h3_conn_builder = h3::server::builder();
+
+                                #[cfg(feature = "webtransport")]
+                                let h3_conn_builder = {
+                                    let mut builder = h3::server::builder();
+                                    builder.enable_webtransport(true)
+                                        .enable_extended_connect(true)
+                                        .enable_datagram(true)
+                                        .max_webtransport_sessions(1)
+                                        .send_grease(true);
+                                    builder
+                                };
+
+                                let Some(mut h3_conn) = h3_conn_builder.build(h3_quinn::Connection::new(conn))
                                     .with_context(&ctx)
                                     .await
                                     .transpose()?

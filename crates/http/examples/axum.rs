@@ -1,9 +1,7 @@
-use std::{fs, io};
-
 use axum::body::Body;
 use axum::http::Request;
 use axum::response::Response;
-use tokio_rustls::rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use tokio_rustls::rustls::pki_types::{self, CertificateDer, PrivateKeyDer, pem::PemObject};
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -16,7 +14,7 @@ async fn hello_world(req: Request<axum::body::Body>) -> axum::response::Response
 
     // TODO: this has to be part of the library somehow
     resp.headers_mut()
-        .insert("Alt-Svc", "h3=\":443\"; ma=3600, h2=\":443\"; ma=3600".parse().unwrap());
+        .insert("Alt-Svc", "h3=\":4443\"; ma=3600, h2=\":4443\"; ma=3600".parse().unwrap());
 
     resp
 }
@@ -49,7 +47,7 @@ async fn main() {
     scuffle_http::HttpServer::builder()
         .rustls_config(get_tls_config().expect("failed to load tls config"))
         .tower_make_service_factory(make_service)
-        .bind("[::]:443".parse().unwrap())
+        .bind("[::]:4443".parse().unwrap())
         .enable_http3(true)
         .build()
         .run()
@@ -57,9 +55,17 @@ async fn main() {
         .expect("server failed");
 }
 
-pub fn get_tls_config() -> io::Result<tokio_rustls::rustls::ServerConfig> {
-    let certs = load_certs("local/fullchain.pem")?;
-    let key = load_private_key("local/privkey.pem")?;
+fn assets_path(item: &str) -> std::path::PathBuf {
+    if let Some(env) = std::env::var_os("ASSETS_DIR") {
+        std::path::PathBuf::from(env).join(item)
+    } else {
+        std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
+    }
+}
+
+pub fn get_tls_config() -> Result<tokio_rustls::rustls::ServerConfig, pki_types::pem::Error> {
+    let certs = CertificateDer::pem_file_iter(assets_path("cert.pem"))?.collect::<Result<Vec<_>, _>>()?;
+    let key = PrivateKeyDer::from_pem_file(assets_path("key.pem"))?;
 
     let server_config = tokio_rustls::rustls::ServerConfig::builder()
         .with_no_client_auth()
@@ -67,24 +73,4 @@ pub fn get_tls_config() -> io::Result<tokio_rustls::rustls::ServerConfig> {
         .unwrap();
 
     Ok(server_config)
-}
-
-// Load public certificate from file.
-fn load_certs(filename: &str) -> io::Result<Vec<CertificateDer<'static>>> {
-    // Open certificate file.
-    let certfile = fs::File::open(filename).map_err(|e| io::Error::other(format!("failed to open {filename}: {e}")))?;
-    let mut reader = io::BufReader::new(certfile);
-
-    // Load and return certificate.
-    rustls_pemfile::certs(&mut reader).collect()
-}
-
-// Load private key from file.
-fn load_private_key(filename: &str) -> io::Result<PrivateKeyDer<'static>> {
-    // Open keyfile.
-    let keyfile = fs::File::open(filename).map_err(|e| io::Error::other(format!("failed to open {filename}: {e}")))?;
-    let mut reader = io::BufReader::new(keyfile);
-
-    // Load and return a single private key.
-    rustls_pemfile::private_key(&mut reader)?.ok_or_else(|| io::Error::other(format!("no private key found in {filename}")))
 }

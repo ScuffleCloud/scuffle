@@ -2,7 +2,7 @@
 //!
 //! This example demonstrates how to create a simple HTTP server that echoes the request body back to the client.
 //!
-//! It loads a certificate and private key from the `local` directory and serves the server over HTTPS with HTTP/1, HTTP/2 and HTTP/3.
+//! It loads a certificate and private key from the `assets` directory and serves the server over HTTPS with HTTP/1, HTTP/2 and HTTP/3.
 //!
 //! Try with:
 //!
@@ -10,9 +10,7 @@
 //! curl --http3-only -X POST -d 'test' https://localhost:8000/
 //! ```
 
-use std::{fs, io};
-
-use tokio_rustls::rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use tokio_rustls::rustls::pki_types::{self, CertificateDer, PrivateKeyDer, pem::PemObject};
 
 #[tokio::main]
 async fn main() {
@@ -36,9 +34,17 @@ async fn main() {
         .expect("server failed");
 }
 
-pub fn get_tls_config() -> io::Result<tokio_rustls::rustls::ServerConfig> {
-    let certs = load_certs("local/fullchain.pem")?;
-    let key = load_private_key("local/privkey.pem")?;
+fn assets_path(item: &str) -> std::path::PathBuf {
+    if let Some(env) = std::env::var_os("ASSETS_DIR") {
+        std::path::PathBuf::from(env).join(item)
+    } else {
+        std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))
+    }
+}
+
+pub fn get_tls_config() -> Result<tokio_rustls::rustls::ServerConfig, pki_types::pem::Error> {
+    let certs = CertificateDer::pem_file_iter(assets_path("cert.pem"))?.collect::<Result<Vec<_>, _>>()?;
+    let key = PrivateKeyDer::from_pem_file(assets_path("key.pem"))?;
 
     let server_config = tokio_rustls::rustls::ServerConfig::builder()
         .with_no_client_auth()
@@ -46,24 +52,4 @@ pub fn get_tls_config() -> io::Result<tokio_rustls::rustls::ServerConfig> {
         .unwrap();
 
     Ok(server_config)
-}
-
-// Load public certificate from file.
-fn load_certs(filename: &str) -> io::Result<Vec<CertificateDer<'static>>> {
-    // Open certificate file.
-    let certfile = fs::File::open(filename).map_err(|e| io::Error::other(format!("failed to open {filename}: {e}")))?;
-    let mut reader = io::BufReader::new(certfile);
-
-    // Load and return certificate.
-    rustls_pemfile::certs(&mut reader).collect()
-}
-
-// Load private key from file.
-fn load_private_key(filename: &str) -> io::Result<PrivateKeyDer<'static>> {
-    // Open keyfile.
-    let keyfile = fs::File::open(filename).map_err(|e| io::Error::other(format!("failed to open {filename}: {e}")))?;
-    let mut reader = io::BufReader::new(keyfile);
-
-    // Load and return a single private key.
-    rustls_pemfile::private_key(&mut reader)?.ok_or_else(|| io::Error::other(format!("no private key found in {filename}")))
 }

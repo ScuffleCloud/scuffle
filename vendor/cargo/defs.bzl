@@ -2122,7 +2122,6 @@ _NORMAL_DEV_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "axum": Label("@cargo_vendor//:axum-0.8.4"),
                 "reqwest": Label("@cargo_vendor//:reqwest-0.12.23"),
-                "rustls-pemfile": Label("@cargo_vendor//:rustls-pemfile-2.2.0"),
                 "tokio": Label("@cargo_vendor//:tokio-1.47.1"),
                 "tokio-test": Label("@cargo_vendor//:tokio-test-0.4.4"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
@@ -11998,7 +11997,6 @@ def crate_repositories():
         struct(repo = "cargo_vendor__criterion-0.7.0", is_dev_dep = True),
         struct(repo = "cargo_vendor__insta-1.43.2", is_dev_dep = True),
         struct(repo = "cargo_vendor__opentelemetry-stdout-0.31.0", is_dev_dep = True),
-        struct(repo = "cargo_vendor__rustls-pemfile-2.2.0", is_dev_dep = True),
         struct(repo = "cargo_vendor__tempfile-3.22.0", is_dev_dep = True),
         struct(repo = "cargo_vendor__tokio-stream-0.1.17", is_dev_dep = True),
         struct(repo = "cargo_vendor__tokio-test-0.4.4", is_dev_dep = True),

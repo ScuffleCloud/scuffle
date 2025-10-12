@@ -5781,7 +5781,6 @@ dependencies = [
  "pin-project-lite",
  "quinn",
  "reqwest",
- "rustls-pemfile",
  "scuffle-changelog",
  "scuffle-context",
  "scuffle-future-ext",

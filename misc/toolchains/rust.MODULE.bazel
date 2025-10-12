@@ -286,7 +286,6 @@ use_repo(
     "cargo_vendor__rustdoc-types-0.56.0",
     "cargo_vendor__rustfix-0.9.1",
     "cargo_vendor__rustls-0.23.32",
-    "cargo_vendor__rustls-pemfile-2.2.0",
     "cargo_vendor__rusty_ffmpeg-0.16.7-ffmpeg.8",
     "cargo_vendor__sailfish-0.10.0",
     "cargo_vendor__sailfish-macros-0.10.0",

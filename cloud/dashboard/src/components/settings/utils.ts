@@ -1,5 +1,5 @@
 export const WEB_AUTHN_INVALID_STATE_ERROR = "An authenticator already exists containing one of the credentials.";
-export const WEB_AUTHN_NOT_ALLOWED_ERROR = "WebAuthn credential creation was cancelled";
+export const WEB_AUTHN_NOT_ALLOWED_ERROR = "WebAuthn operation was cancelled";
 
 /**
  * Reads WebAuthn errors and returns a user-friendly message

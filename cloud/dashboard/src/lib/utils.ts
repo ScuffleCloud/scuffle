@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { rpcErrorToString } from "$lib/grpcClient";
 import type { RpcError } from "@protobuf-ts/runtime-rpc";
 

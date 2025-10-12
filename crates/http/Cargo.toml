@@ -29,8 +29,8 @@ path = "examples/axum.rs"
 required-features = ["default", "tls-rustls", "http3", "tower", "tracing"]
 
 [[example]]
-name = "scuffle-http-webtransport-tls"
-path = "examples/webtransport_tls.rs"
+name = "scuffle-http-webtransport"
+path = "examples/webtransport.rs"
 required-features = ["default", "tls-rustls", "http3", "webtransport", "tracing"]
 
 [features]

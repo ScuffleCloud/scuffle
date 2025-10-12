@@ -36,7 +36,7 @@ fn rustls_config() -> tokio_rustls::rustls::ServerConfig {
         .expect("failed to build config")
 }
 
-const WT_CLIENT_HTML: &str = include_str!("web_transport_client.html");
+const WT_CLIENT_HTML: &str = include_str!("webtransport_client.html");
 
 #[tokio::main]
 async fn main() {

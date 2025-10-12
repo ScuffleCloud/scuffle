@@ -24,7 +24,7 @@ use h3_webtransport::stream::{BidiStream, RecvStream as WtRecvStream, SendStream
 /// ```rust,ignore
 /// # use scuffle_http::{IncomingRequest, Response};
 /// # use scuffle_http::backend::h3::webtransport::WebTransportSession;
-/// async fn handle_webtransport(req: IncomingRequest) -> Result<Response<String>, std::convert::Infallible> {
+/// async fn handle_webtransport(req: IncomingRequest) -> Result<Response<()>, std::convert::Infallible> {
 ///     if let Some(session) = req.extensions().get::<WebTransportSession>() {
 ///         // Handle WebTransport session
 ///         tokio::spawn({
@@ -38,13 +38,13 @@ use h3_webtransport::stream::{BidiStream, RecvStream as WtRecvStream, SendStream
 ///
 ///         return Ok(Response::builder()
 ///             .status(200)
-///             .body(String::new())
+///             .body(())
 ///             .unwrap());
 ///     }
 ///
 ///     Ok(Response::builder()
 ///         .status(404)
-///         .body(String::new())
+///         .body(())
 ///         .unwrap())
 /// }
 /// ```

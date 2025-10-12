@@ -4,7 +4,6 @@
     import { authState } from "$lib/auth.svelte";
     import { usersServiceClient } from "$lib/grpcClient";
     import IconShield from "$lib/images/icon-shield.svelte";
-    import { useTotpAuth } from "$lib/two-factor/toptAuth.svelte";
     import type { MfaCredential } from "$lib/types";
     import { createQuery } from "@tanstack/svelte-query";
     import {
@@ -50,8 +49,6 @@
         { id: "2", name: "Passkey", type: "WEBAUTH" },
         { id: "3", name: "Passkey", type: "WEBAUTH" },
     ]);
-
-    const totpAuth = useTotpAuth();
 
     // Account Settings Cards
     // const accountCards = $derived<Card[]>([
@@ -142,11 +139,6 @@
     //         ],
     //     },
     // ]);
-
-    // For webauthn
-    let webauthnCredentialName = $state("");
-
-    let totpCredentialName = $state("");
 
     const hasAnyError = $derived(
         totpListQuery.isError || webauthnListQuery.isError,

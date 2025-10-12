@@ -1,3 +1,4 @@
+import { getWebAuthnErrorMessage } from "$components/settings/utils";
 import { sessionsServiceClient, usersServiceClient } from "$lib/grpcClient";
 import { isWebauthnSupported, parseCredentialRequestOptions, serializeCredentialAssertionResponse } from "$lib/utils";
 
@@ -17,7 +18,13 @@ export async function createMfaWebauthnChallenge(userId: string): Promise<void> 
 
     const publicKey = parseCredentialRequestOptions(challengeResponse.optionsJson);
 
-    const credential = await navigator.credentials.get({ publicKey }) as PublicKeyCredential | null;
+    let credential: PublicKeyCredential | null = null;
+
+    try {
+        credential = await navigator.credentials.get({ publicKey }) as PublicKeyCredential | null;
+    } catch (err) {
+        throw new Error(getWebAuthnErrorMessage(err));
+    }
 
     if (!credential) {
         throw new Error("No credential received from authenticator");

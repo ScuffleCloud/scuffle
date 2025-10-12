@@ -3,6 +3,7 @@
     import LoginOrDivider from "$components/login-or-divider.svelte";
     import { authState } from "$lib/auth.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
+    import { onMount } from "svelte";
     import { useCreateWebauthnChallenge } from "./mfaChallengeMutations";
     import RecoveryCodeCollapsible from "./recovery-code-collapsible.svelte";
 
@@ -19,22 +20,18 @@
         throw new Error("User session token is not authenticated");
     }
 
-    const userId = auth.userSessionToken.data?.userId;
-
     const webauthnMutation = useCreateWebauthnChallenge(
-        userId,
+        auth.userSessionToken.data?.userId,
     );
-
-    async function handleWebauthnChallenge() {
-        console.log("handleWebauthnChallenge");
-        console.log(authState().user?.id);
-        webauthnMutation.mutate();
-    }
 
     async function handleRetry() {
         webauthnMutation.reset();
         webauthnMutation.mutate();
     }
+
+    onMount(() => {
+        webauthnMutation.mutate();
+    });
 </script>
 
 <div class="header">
@@ -45,7 +42,7 @@
 </p>
 <button
     type="button"
-    onclick={handleWebauthnChallenge}
+    onclick={handleRetry}
     class="continue-btn"
 >
     Resend request

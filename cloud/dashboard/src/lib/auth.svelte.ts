@@ -342,7 +342,8 @@ export function authState() {
                 this.handleNewUserSessionToken(response);
             }
         },
-        async reloadUserForMfaCompletion(): Promise<void> {
+
+        async reloadUserForMfa(): Promise<void> {
             user = { state: "loading" };
 
             if (userSessionToken.state === "authenticated" && userSessionToken.data.mfaPending) {

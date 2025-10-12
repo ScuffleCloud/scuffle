@@ -202,7 +202,7 @@
             title={STEP_TO_TITLE[currentStep]}
             onClose={handleReset}
             hideCloseButton={currentStep === "waiting"}
-            closeOnOutsideClick={currentStep === "waiting" || currentStep === "success"}
+            closeOnOutsideClick={currentStep === "select"}
             bind:this={modal}
         >
             {#if currentStep === "select"}

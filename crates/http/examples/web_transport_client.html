@@ -2,11 +2,11 @@
 <html>
 <body>
     <h2>WebTransport demo</h2>
-    <div id="log"></div>
+    <pre id="log"></pre>
     <script>
         const log = (msg) => {
             console.log(msg);
-            document.getElementById('log').insertAdjacentHTML('beforeend', '<p>' + msg + '</p>');
+            document.getElementById('log').insertAdjacentText('beforeend', msg + '\n');
         };
 
         (async () => {
@@ -15,7 +15,9 @@
                 return;
             }
             try {
-                const wt = new WebTransport('https://' + location.host + '/wt');
+                const url = 'https://' + location.host + '/wt';
+                log('Connecting to ' + url);
+                const wt = new WebTransport(url);
                 await wt.ready;
                 log('WebTransport connected');
 

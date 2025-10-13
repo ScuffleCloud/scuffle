@@ -9,7 +9,7 @@ fn main() {
         for file in glob::glob("pb/**/*.proto").expect("glob failed") {
             let file = file.expect("bad file");
             // TODO: find a better way to exclude these
-            if file.as_os_str().to_string_lossy().contains("google/rpc") {
+            if file.as_os_str().to_string_lossy().contains("google") {
                 continue;
             }
             files.push(file);

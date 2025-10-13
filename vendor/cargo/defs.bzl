@@ -629,6 +629,7 @@ _NORMAL_DEPENDENCIES = {
                 "diesel": Label("@cargo_vendor//:diesel-2.3.2"),
                 "diesel-async": Label("@cargo_vendor//:diesel-async-0.7.3"),
                 "petname": Label("@cargo_vendor//:petname-2.0.2"),
+                "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
                 "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "swagger-ui-dist": Label("@cargo_vendor//:swagger-ui-dist-5.29.0"),
                 "tonic": Label("@cargo_vendor//:tonic-0.14.2"),

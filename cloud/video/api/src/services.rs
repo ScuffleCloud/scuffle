@@ -1,9 +1,12 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
+use anyhow::Context;
 use axum::http::header::CONTENT_TYPE;
 use axum::http::{HeaderName, Method, StatusCode};
 use axum::{Extension, Json};
+use rustls::pki_types::pem::PemObject;
+use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 use tinc::TincService;
 use tinc::openapi::Server;
 use tower_http::cors::{AllowHeaders, CorsLayer, ExposeHeaders};
@@ -54,6 +57,30 @@ fn grpc_web_cors_layer() -> CorsLayer {
         .expose_headers(ExposeHeaders::list(expose_headers))
         .allow_origin(tower_http::cors::Any)
         .allow_headers(tower_http::cors::Any)
+}
+
+fn rustls_config<G: video_api_traits::MtlsInterface>(global: &Arc<G>) -> anyhow::Result<rustls::ServerConfig> {
+    // Internal authentication via mTLS
+    let root_cert = CertificateDer::from_pem_slice(global.mtls_root_cert_pem()).context("failed to parse mTLS root cert")?;
+    let cert = CertificateDer::from_pem_slice(global.mtls_cert_pem()).context("failed to parse mTLS cert")?;
+    let private_key =
+        PrivateKeyDer::from_pem_slice(global.mtls_private_key_pem()).context("failed to parse mTLS private key")?;
+
+    let mut root_cert_store = rustls::RootCertStore::empty();
+    root_cert_store
+        .add(root_cert.clone())
+        .context("failed to add mTLS root cert to root cert store")?;
+    let cert_chain = vec![cert, root_cert];
+
+    let rustls_client_verifier = rustls::server::WebPkiClientVerifier::builder(Arc::new(root_cert_store))
+        .allow_unauthenticated() // allow external clients as well
+        .build()
+        .context("failed to create client cert verifier")?;
+
+    rustls::ServerConfig::builder()
+        .with_client_cert_verifier(rustls_client_verifier)
+        .with_single_cert(cert_chain, private_key)
+        .context("failed to create rustls ServerConfig")
 }
 
 impl<G: video_api_traits::Global> scuffle_bootstrap::Service<G> for VideoApiSvc<G> {
@@ -113,6 +140,7 @@ impl<G: video_api_traits::Global> scuffle_bootstrap::Service<G> for VideoApiSvc<
         scuffle_http::HttpServer::builder()
             .tower_make_service_with_addr(router.into_make_service_with_connect_info::<SocketAddr>())
             .bind(global.service_bind())
+            .rustls_config(rustls_config(&global)?)
             .ctx(ctx)
             .build()
             .run()

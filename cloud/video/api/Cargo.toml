@@ -25,6 +25,7 @@ diesel-async = { features = ["async-connection-wrapper", "bb8", "postgres"], ver
 ext-traits = { path = "../../ext-traits", package = "scufflecloud-ext-traits" }
 pb = { path = "../../proto", package = "scufflecloud-proto" }
 petname = { version = "2", default-features = false, features = ["default-words", "default-rng"] }
+rustls = "0.23"
 scuffle-batching = { path = "../../../crates/batching" }
 scuffle-bootstrap = { path = "../../../crates/bootstrap" }
 scuffle-bootstrap-telemetry = { features = ["opentelemetry-logs", "opentelemetry-traces"], path = "../../../crates/bootstrap-telemetry" }

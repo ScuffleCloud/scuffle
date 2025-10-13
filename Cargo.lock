@@ -6213,6 +6213,7 @@ dependencies = [
  "diesel",
  "diesel-async",
  "petname",
+ "rustls",
  "scuffle-batching",
  "scuffle-bootstrap",
  "scuffle-bootstrap-telemetry",

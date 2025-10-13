@@ -1,39 +1,24 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
     import Navbar from "$components/left-nav/navbar.svelte";
     import RightNav from "$components/right-nav/right-nav.svelte";
     import TopNav from "$components/top-nav/top-nav.svelte";
-    import {
-        QueryClient,
-        QueryClientProvider,
-    } from "@tanstack/svelte-query";
 
     const { children } = $props();
-
-    const queryClient = new QueryClient({
-        defaultOptions: {
-            queries: {
-                enabled: browser,
-            },
-        },
-    });
 </script>
 
 <!-- Authenticated -->
-<QueryClientProvider client={queryClient}>
-    <div class="app">
-        <Navbar />
-        <main>
-            <TopNav />
-            <div class="content">
-                <div class="main-content">
-                    {@render children()}
-                </div>
-                <RightNav />
+<div class="app">
+    <Navbar />
+    <main>
+        <TopNav />
+        <div class="content">
+            <div class="main-content">
+                {@render children()}
             </div>
-        </main>
-    </div>
-</QueryClientProvider>
+            <RightNav />
+        </div>
+    </main>
+</div>
 
 <style>
     .app {

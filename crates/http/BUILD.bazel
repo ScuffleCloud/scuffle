@@ -36,3 +36,8 @@ scuffle_example(
     name = "examples_echo_tls",
     srcs = ["examples/echo_tls.rs"],
 )
+
+scuffle_example(
+    name = "examples_webtransport",
+    srcs = ["examples/webtransport.rs"],
+)

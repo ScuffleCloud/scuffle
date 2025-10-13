@@ -66,7 +66,7 @@ async fn main() {
                     let session = session.clone();
                     async move {
                         use http_srv::backend::h3::webtransport::AcceptedBi;
-                        while let Some(Ok(accepted)) = session.accept_bi().await {
+                        while let Ok(Some(accepted)) = session.accept_bi().await {
                             match accepted {
                                 AcceptedBi::BidiStream(mut stream) => {
                                     tokio::spawn(async move {
@@ -100,7 +100,7 @@ async fn main() {
                 tokio::spawn({
                     let session = session.clone();
                     async move {
-                        while let Some(Ok((_id, mut stream))) = session.accept_uni().await {
+                        while let Ok(Some((_id, mut stream))) = session.accept_uni().await {
                             tokio::spawn(async move {
                                 match stream.read_to_end(64 * 1024).await {
                                     Ok(data) => {

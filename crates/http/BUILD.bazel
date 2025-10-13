@@ -40,4 +40,5 @@ scuffle_example(
 scuffle_example(
     name = "examples_webtransport",
     srcs = ["examples/webtransport.rs"],
+    data = ["examples/webtransport_client.html"],
 )

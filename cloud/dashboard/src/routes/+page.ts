@@ -1,7 +1,7 @@
+import { browser } from "$app/environment";
 import { authState } from "$lib/auth.svelte";
 import { error, redirect } from "@sveltejs/kit";
 import type { PageLoadEvent } from "./$types";
-import { browser } from "$app/environment";
 
 export async function load({ parent }: PageLoadEvent) {
     if (!browser) return;
@@ -10,7 +10,7 @@ export async function load({ parent }: PageLoadEvent) {
 
     const auth = authState();
     if (auth.userSessionToken.state === "authenticated") {
-        if (!!auth.userSessionToken.data.mfaPending?.length) {
+        if (auth.userSessionToken.data.mfaPending?.length) {
             redirect(303, "/mfa");
         } else {
             redirect(303, "/projects");

@@ -1,7 +1,7 @@
+import { browser } from "$app/environment";
 import { authState } from "$lib/auth.svelte";
 import { redirect } from "@sveltejs/kit";
 import type { PageLoadEvent } from "./$types";
-import { browser } from "$app/environment";
 
 export async function load({ parent }: PageLoadEvent) {
     if (!browser) return;

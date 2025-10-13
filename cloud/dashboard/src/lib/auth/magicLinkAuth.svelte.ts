@@ -56,10 +56,10 @@ async function completeMagicLinkLogin(code: string): Promise<void> {
             await authState().handleNewUserSessionToken(newUserSessionToken);
 
             if (newUserSessionToken?.sessionMfaPending) {
-                return;
+                goto("/mfa");
+            } else {
+                goto("/");
             }
-
-            goto("/");
         } else {
             throw new Error("No session token received");
         }

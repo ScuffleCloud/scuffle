@@ -20,7 +20,7 @@
     import {
         useCreateWebauthnCredential,
         useDeleteWebauthnCredential,
-        useUpdateWebauthnName,
+                useUpdateWebauthnName,
     } from "./credentialMutations.svelte";
     interface Props {
         methods: MfaCredential[];

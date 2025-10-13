@@ -1,6 +1,5 @@
 import { goto } from "$app/navigation";
 import { authState } from "$lib/auth.svelte";
-import { LANDING_ROUTE } from "$lib/consts";
 import { rpcErrorToString, sessionsServiceClient } from "$lib/grpcClient";
 import { base64urlToArrayBuffer } from "$lib/utils";
 import { type RpcError } from "@protobuf-ts/runtime-rpc";
@@ -60,7 +59,7 @@ async function completeMagicLinkLogin(code: string): Promise<void> {
                 return;
             }
 
-            goto(LANDING_ROUTE);
+            goto("/");
         } else {
             throw new Error("No session token received");
         }

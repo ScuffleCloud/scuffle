@@ -5,6 +5,7 @@
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
     import NavSwitcher from "./nav-switcher.svelte";
+    import { goto } from "$app/navigation";
 
     let showSearchModal = $state(false);
     let searchInput = $state<HTMLInputElement | null>(null);
@@ -127,6 +128,7 @@
             class="logout-button"
             onclick={async () => {
                 await authState().logout();
+                goto("/");
             }}
         >
             Logout

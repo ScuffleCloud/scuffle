@@ -1,5 +1,3 @@
 <!--
-  Placeholder to satisfy SvelteKit's route requirement.
-  Required for proper navigation.
-  Actual routing is handled by layout/component hierarchy.
+  The user won't see this page ever because +page.ts redirects away in all cases.
 -->

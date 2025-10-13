@@ -1,7 +1,7 @@
+import { browser } from "$app/environment";
 import { authState } from "$lib/auth.svelte";
 import { error, redirect } from "@sveltejs/kit";
 import type { LayoutLoadEvent } from "./$types";
-import { browser } from "$app/environment";
 
 // https://svelte.dev/tutorial/kit/route-groups
 

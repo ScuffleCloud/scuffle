@@ -10,7 +10,10 @@ npm_link_all_packages()
 # Generate the typescript protobuf code.
 protobuf_ts_compile(
     name = "proto",
-    protos = ["//cloud/proto:scuffle_pb", "//cloud/proto:google_pb"],
+    protos = [
+        "//cloud/proto:google_pb",
+        "//cloud/proto:scuffle_pb",
+    ],
 )
 
 # Compile that using tsc to get ESM + Types

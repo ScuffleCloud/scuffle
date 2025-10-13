@@ -1,4 +1,4 @@
-[[tinc]]
+[[scuffle-http]]
 category = "feat"
 description = "TLS client certificate retrieval through http extension"
 authors = ["@lennartkloock"]

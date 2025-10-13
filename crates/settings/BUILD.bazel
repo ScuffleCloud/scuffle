@@ -1,5 +1,5 @@
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
-load("//misc/utils/rust:package.bzl", "scuffle_package", "scuffle_test")
+load("//misc/utils/rust:package.bzl", "scuffle_example", "scuffle_package", "scuffle_test")
 
 cargo_toml()
 
@@ -17,4 +17,9 @@ scuffle_package(
         },
     ),
     deps = ["//crates/bootstrap"],
+)
+
+scuffle_example(
+    name = "examples_cli",
+    srcs = ["examples/cli.rs"],
 )

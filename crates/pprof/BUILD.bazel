@@ -1,5 +1,5 @@
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
-load("//misc/utils/rust:package.bzl", "scuffle_package")
+load("//misc/utils/rust:package.bzl", "scuffle_example", "scuffle_package")
 
 cargo_toml()
 
@@ -10,4 +10,9 @@ scuffle_package(
     ],
     crate_name = "scuffle-pprof",
     proc_macro_deps = ["//crates/changelog"],
+)
+
+scuffle_example(
+    name = "examples_cpu",
+    srcs = ["examples/cpu.rs"],
 )

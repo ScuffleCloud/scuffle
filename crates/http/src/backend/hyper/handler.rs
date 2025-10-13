@@ -10,6 +10,7 @@ use crate::service::{HttpService, HttpServiceFactory};
 pub(crate) async fn handle_connection<F, S, I>(
     ctx: scuffle_context::Context,
     service: S,
+    extra_extensions: http::Extensions,
     io: I,
     http1: bool,
     http2: bool,
@@ -28,8 +29,12 @@ where
 
     let hyper_proxy_service = hyper::service::service_fn(move |req: http::Request<hyper::body::Incoming>| {
         let mut service = service.clone();
+        let extra_extensions = extra_extensions.clone();
+
         async move {
-            let (parts, body) = req.into_parts();
+            let (mut parts, body) = req.into_parts();
+            parts.extensions.extend(extra_extensions);
+
             let body = crate::body::IncomingBody::from(body);
             let req = http::Request::from_parts(parts, body);
             service.call(req).await

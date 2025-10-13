@@ -66,6 +66,7 @@ compile_error!("feature \"tls-rustls\" must be enabled when \"http3\" is enabled
 pub mod backend;
 pub mod body;
 pub mod error;
+pub mod extensions;
 mod server;
 pub mod service;
 

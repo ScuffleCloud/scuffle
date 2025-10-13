@@ -10,7 +10,8 @@
 //! curl --http3-only -X POST -d 'test' https://localhost:8000/
 //! ```
 
-use tokio_rustls::rustls::pki_types::{self, CertificateDer, PrivateKeyDer, pem::PemObject};
+use tokio_rustls::rustls::pki_types::pem::PemObject;
+use tokio_rustls::rustls::pki_types::{self, CertificateDer, PrivateKeyDer};
 
 #[tokio::main]
 async fn main() {

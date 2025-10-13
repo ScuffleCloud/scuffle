@@ -15,7 +15,7 @@ export const load = (async ({ parent, url }) => {
     // If events exist and we're at root, redirect to the first event
     if (events && events.length > 0 && isRootStreamPage) {
         const topEvent = events[0];
-        throw redirect(307, `events/${topEvent.id}`);
+        redirect(307, `events/${topEvent.id}`);
     }
     return {};
 }) satisfies PageLoad;

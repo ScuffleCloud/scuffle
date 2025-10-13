@@ -1,6 +1,5 @@
 import { goto } from "$app/navigation";
 import { authState } from "$lib/auth.svelte";
-import { LANDING_ROUTE } from "$lib/consts";
 import { rpcErrorToString, sessionsServiceClient } from "$lib/grpcClient";
 import { type RpcError } from "@protobuf-ts/runtime-rpc";
 
@@ -41,7 +40,7 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
 
             if (response.newUserSessionToken?.sessionMfaPending) return;
 
-            goto(LANDING_ROUTE);
+            goto("/");
         } else {
             throw new Error("No session token received");
         }

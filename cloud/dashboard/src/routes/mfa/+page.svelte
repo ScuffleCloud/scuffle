@@ -1,12 +1,12 @@
 <script lang="ts">
+    import TwoFactorPage from "$components/login-two-factor/two-factor-page.svelte";
     import LoginFooter from "$components/login/login-footer.svelte";
     import LoginHeader from "$components/login/login-header.svelte";
-    import LoginPage from "$components/login/login-page.svelte";
 </script>
 
 <div class="login-page-container">
     <LoginHeader />
-    <LoginPage />
+    <TwoFactorPage />
     <LoginFooter />
 </div>
 

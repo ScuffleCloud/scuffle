@@ -1,11 +1,11 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
     import { authState } from "$lib/auth.svelte";
     import IconConfigureTab from "$lib/images/icon-configure-tab.svelte";
     import Search from "$lib/images/search.svelte";
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
     import NavSwitcher from "./nav-switcher.svelte";
-    import { goto } from "$app/navigation";
 
     let showSearchModal = $state(false);
     let searchInput = $state<HTMLInputElement | null>(null);

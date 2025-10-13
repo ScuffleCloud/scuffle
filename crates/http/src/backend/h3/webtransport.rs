@@ -30,7 +30,7 @@ use h3_webtransport::stream::{BidiStream, RecvStream as WtRecvStream, SendStream
 ///         tokio::spawn({
 ///             let session = session.clone();
 ///             async move {
-///                 while let Some(Ok(accepted)) = session.accept_bi().await {
+///                 while let Ok(Some(accepted)) = session.accept_bi().await {
 ///                     // Handle bidirectional streams
 ///                 }
 ///             }
@@ -68,7 +68,7 @@ impl WebTransportSession {
     /// ```rust,ignore
     /// # use scuffle_http::backend::h3::webtransport::{WebTransportSession, AcceptedBi};
     /// async fn handle_session(session: WebTransportSession) {
-    ///     while let Some(Ok(accepted)) = session.accept_bi().await {
+    ///     while let Ok(Some(accepted)) = session.accept_bi().await {
     ///         match accepted {
     ///             AcceptedBi::BidiStream(stream) => {
     ///                 // Handle raw bidirectional stream
@@ -80,16 +80,16 @@ impl WebTransportSession {
     ///     }
     /// }
     /// ```
-    pub async fn accept_bi(&self) -> Option<Result<AcceptedBi, h3::error::StreamError>> {
+    pub async fn accept_bi(&self) -> Result<Option<AcceptedBi>, h3::error::StreamError> {
         match self.session.accept_bi().await {
             Ok(Some(H3AcceptedBi::BidiStream(id, stream))) => {
-                Some(Ok(AcceptedBi::BidiStream(WebTransportBidiStream { stream, _id: id })))
+                Ok(Some(AcceptedBi::BidiStream(WebTransportBidiStream { stream, _id: id })))
             }
             Ok(Some(H3AcceptedBi::Request(req, stream))) => {
-                Some(Ok(AcceptedBi::Request(req, WebTransportRequestStream { stream })))
+                Ok(Some(AcceptedBi::Request(req, WebTransportRequestStream { stream })))
             }
-            Ok(None) => None,
-            Err(e) => Some(Err(e)),
+            Ok(None) => Ok(None),
+            Err(e) => Err(e),
         }
     }
 
@@ -98,12 +98,11 @@ impl WebTransportSession {
     /// Returns `None` when the session is closed or no more streams are available.
     pub async fn accept_uni(
         &self,
-    ) -> Option<Result<(WebTransportStreamId, WebTransportRecvStream), h3::error::ConnectionError>> {
-        match self.session.accept_uni().await {
-            Ok(Some((id, stream))) => Some(Ok((WebTransportStreamId(id), WebTransportRecvStream { stream }))),
-            Ok(None) => None,
-            Err(e) => Some(Err(e)),
-        }
+    ) -> Result<Option<(WebTransportStreamId, WebTransportRecvStream)>, h3::error::ConnectionError> {
+        self.session
+            .accept_uni()
+            .await
+            .map(|o| o.map(|(id, stream)| (WebTransportStreamId(id), WebTransportRecvStream { stream })))
     }
 
     /// Open a new bidirectional stream.
@@ -222,6 +221,13 @@ pub struct WebTransportBidiStream {
 }
 
 impl WebTransportBidiStream {
+    /// Get the inner [`h3_webtransport::stream::BidiStream`].
+    ///
+    /// Can be used to access lower-level functionality.
+    pub fn into_inner(self) -> BidiStream<h3_quinn::BidiStream<Bytes>, Bytes> {
+        self.stream
+    }
+
     /// Split this stream into separate send and receive halves.
     ///
     /// # Example
@@ -257,6 +263,11 @@ impl WebTransportBidiStream {
     }
 
     /// Read all remaining data from the receive side until the stream is finished.
+    ///
+    /// This collects all chunks into a single [`Bytes`] object.
+    ///
+    /// Returns an [`io::Error`] if the total size exceeds `max_size` or any [`read`](WebTransportBidiStream::read)
+    /// call errors.
     ///
     /// # Example
     ///
@@ -337,6 +348,13 @@ pub struct WebTransportRecvStream {
 }
 
 impl WebTransportRecvStream {
+    /// Get the inner [`h3_webtransport::stream::RecvStream`].
+    ///
+    /// Can be used to access lower-level functionality.
+    pub fn into_inner(self) -> WtRecvStream<h3_quinn::RecvStream, Bytes> {
+        self.stream
+    }
+
     /// Read data from the stream.
     ///
     /// Returns `Ok(None)` when the stream is finished.
@@ -358,7 +376,10 @@ impl WebTransportRecvStream {
 
     /// Read all remaining data from the stream until it's finished.
     ///
-    /// This collects all chunks into a single `Bytes` object.
+    /// This collects all chunks into a single [`Bytes`] object.
+    ///
+    /// Returns an [`io::Error`] if the total size exceeds `max_size` or any [`read`](WebTransportRecvStream::read)
+    /// call errors.
     ///
     /// # Example
     ///
@@ -425,6 +446,13 @@ pub struct WebTransportSendStream {
 }
 
 impl WebTransportSendStream {
+    /// Get the inner [`h3_webtransport::stream::SendStream`].
+    ///
+    /// Can be used to access lower-level functionality.
+    pub fn into_inner(self) -> WtSendStream<h3_quinn::SendStream<Bytes>, Bytes> {
+        self.stream
+    }
+
     /// Write data to the stream.
     ///
     /// # Example
@@ -488,6 +516,7 @@ impl WebTransportSendStream {
         self.stream.reset(reset_code)
     }
 }
+
 impl fmt::Debug for WebTransportSendStream {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("WebTransportSendStream").finish_non_exhaustive()
@@ -500,6 +529,13 @@ pub struct WebTransportRequestStream {
 }
 
 impl WebTransportRequestStream {
+    /// Get the inner [`h3::server::RequestStream`].
+    ///
+    /// Can be used to access lower-level functionality.
+    pub fn into_inner(self) -> h3::server::RequestStream<h3_quinn::BidiStream<Bytes>, Bytes> {
+        self.stream
+    }
+
     /// Split this stream into separate send and receive halves.
     pub fn split(
         self,

@@ -1,4 +1,4 @@
-//! HTTP extensions that this library provides.
+//! HTTP extensions that this crate provides.
 
 use std::ops::Deref;
 

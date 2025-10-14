@@ -1,14 +1,14 @@
 <script lang="ts">
-    import LoginCard from "$components/login-card.svelte";
     import { authState } from "$lib/auth.svelte";
+    import LoginCard from "$lib/components/login-card.svelte";
     import IconArrowDialogLink from "$lib/images/icon-arrow-dialog-link.svelte";
-    import {
-        DEFAULT_TWO_FACTOR_MODE,
-        type TwoFactorMode,
-    } from "$lib/types";
     import { MfaOption } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
     import RecoveryCodeForm from "./recovery-code-form.svelte";
     import TotpForm from "./totp-form.svelte";
+    import {
+        DEFAULT_TWO_FACTOR_MODE,
+        type TwoFactorMode,
+    } from "./types";
     import WebAuthnnForm from "./web-authnn-form.svelte";
 
     const auth = authState();

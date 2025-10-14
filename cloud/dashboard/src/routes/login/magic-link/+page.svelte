@@ -1,7 +1,7 @@
 <!-- The url that the magic link will return if accessed by a returning user -->
 <script>
-    import { useMagicLinkAuth } from "$lib/auth/magicLinkAuth.svelte";
     import { onMount } from "svelte";
+    import { useMagicLinkAuth } from "../../../features/login/magicLinkAuth.svelte";
 
     const { handleMagicLinkCallback } = useMagicLinkAuth();
 

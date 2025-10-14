@@ -1,6 +1,6 @@
 <script lang="ts">
-    import SettingsBlock from "$components/settings-block.svelte";
-    import type { Card } from "$components/settings-block.svelte";
+    import SettingsBlock from "$lib/components/settings-block.svelte";
+    import type { Card } from "$lib/components/settings-block.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
 
     const VodCard = $derived<Card[]>([

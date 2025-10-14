@@ -1,8 +1,8 @@
 <script lang="ts">
     import { page } from "$app/state";
-    import StreamDetailsHeader from "$components/streams/stream-detail-header.svelte";
-    import type { VideoStream } from "$components/streams/types";
-    import Tabs from "$components/tabs.svelte";
+    import StreamDetailsHeader from "$lib/components/streams/stream-detail-header.svelte";
+    import type { VideoStream } from "$lib/components/streams/types";
+    import Tabs from "$lib/components/tabs.svelte";
     import IconAssets_2 from "$lib/images/icon-assets-2.svelte";
     import IconEvents from "$lib/images/icon-events.svelte";
     import IconPuzzle from "$lib/images/icon-puzzle.svelte";

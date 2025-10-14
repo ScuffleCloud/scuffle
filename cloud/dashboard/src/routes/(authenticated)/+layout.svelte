@@ -1,7 +1,7 @@
 <script lang="ts">
-    import Navbar from "$components/left-nav/navbar.svelte";
-    import RightNav from "$components/right-nav/right-nav.svelte";
-    import TopNav from "$components/top-nav/top-nav.svelte";
+    import Navbar from "$lib/components/left-nav/navbar.svelte";
+    import RightNav from "$lib/components/right-nav/right-nav.svelte";
+    import TopNav from "$lib/components/top-nav/top-nav.svelte";
 
     const { children } = $props();
 </script>

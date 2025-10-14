@@ -1,5 +1,5 @@
 <script>
-    import Map from "$components/overview/world-map.svelte";
+    import Map from "$lib/components/overview/world-map.svelte";
 </script>
 
 <svelte:head>

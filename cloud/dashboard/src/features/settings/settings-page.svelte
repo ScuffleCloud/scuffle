@@ -1,10 +1,9 @@
 <script lang="ts">
-    import SettingsBlock from "$components/settings-block.svelte";
-    import SettingsCard from "$components/settings-card.svelte";
     import { authState } from "$lib/auth.svelte";
+    import SettingsBlock from "$lib/components/settings-block.svelte";
+    import SettingsCard from "$lib/components/settings-card.svelte";
     import { usersServiceClient } from "$lib/grpcClient";
     import IconShield from "$lib/images/icon-shield.svelte";
-    import type { MfaCredential } from "$lib/types";
     import { createQuery } from "@tanstack/svelte-query";
     import {
         DEFAULT_TOTP_AUTH_NAME,
@@ -12,6 +11,7 @@
     } from "./consts";
     import RecoveryCodesButton from "./recovery-codes-button.svelte";
     import TwoFactorSettingsCard from "./two-factor-settings-card.svelte";
+    import { type MfaCredential } from "./types";
 
     const user = authState().user;
 

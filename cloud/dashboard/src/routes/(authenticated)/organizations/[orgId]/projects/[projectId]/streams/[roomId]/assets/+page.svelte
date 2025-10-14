@@ -1,5 +1,5 @@
 <script>
-    import AssetsTab from "$components/streams/assets/assets-tab.svelte";
+    import AssetsTab from "$lib/components/streams/assets/assets-tab.svelte";
 </script>
 
 <AssetsTab />

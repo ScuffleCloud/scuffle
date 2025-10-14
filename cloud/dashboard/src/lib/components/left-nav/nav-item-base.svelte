@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { NavItem } from "$components/types";
+    import type { NavItem } from "$lib/components/types";
     import IconArrowDown from "$lib/images/icon-arrow-down.svelte";
     import IconArrowUp from "$lib/images/icon-arrow-up.svelte";
 

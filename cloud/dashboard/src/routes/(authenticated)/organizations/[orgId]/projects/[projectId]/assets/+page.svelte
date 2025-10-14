@@ -1,5 +1,5 @@
 <script lang="ts">
-    import AllAssets from "$components/assets/all-assets.svelte";
+    import AllAssets from "$lib/components/assets/all-assets.svelte";
 </script>
 
 <svelte:head>

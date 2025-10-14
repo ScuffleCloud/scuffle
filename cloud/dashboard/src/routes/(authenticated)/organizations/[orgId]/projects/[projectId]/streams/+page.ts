@@ -1,6 +1,6 @@
 export const ssr = false;
 
-import type { VideoStream } from "$components/streams/types";
+import type { VideoStream } from "$lib/components/streams/types";
 import type { ListResponse } from "$lib/types";
 import { mockStreamsListResponse } from "../../../../../../../mocks/streams";
 

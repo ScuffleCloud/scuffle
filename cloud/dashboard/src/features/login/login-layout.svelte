@@ -1,7 +1,7 @@
 <script lang="ts">
-    import LoginFooter from "./login/login-footer.svelte";
-    import LoginHeader from "./login/login-header.svelte";
-    import LoginPage from "./login/login-page.svelte";
+    import LoginFooter from "./login-footer.svelte";
+    import LoginHeader from "./login-header.svelte";
+    import LoginPage from "./login-page.svelte";
 </script>
 
 <div class="login-page-container">

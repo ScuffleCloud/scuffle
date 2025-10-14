@@ -1,5 +1,5 @@
-import { circleData, diamondData, getSampleLineData, rectangleData } from "$components/streams/events/sample-data";
-import type { ChartData, VideoStream } from "$components/streams/types";
+import { circleData, diamondData, getSampleLineData, rectangleData } from "$lib/components/streams/events/sample-data";
+import type { ChartData, VideoStream } from "$lib/components/streams/types";
 import type { ListResponse } from "$lib/types";
 
 export const mockStreamsListResponse: ListResponse<VideoStream> = {

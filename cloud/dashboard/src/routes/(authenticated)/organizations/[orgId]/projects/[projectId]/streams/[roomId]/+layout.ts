@@ -1,6 +1,6 @@
 export const ssr = false;
 
-import type { VideoStream } from "$components/streams/types";
+import type { VideoStream } from "$lib/components/streams/types";
 import type { LayoutLoad } from "./$types";
 
 export const load = (async ({ params, fetch, depends }) => {

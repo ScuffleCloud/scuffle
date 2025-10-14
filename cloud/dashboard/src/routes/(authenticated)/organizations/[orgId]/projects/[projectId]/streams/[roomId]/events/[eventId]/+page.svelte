@@ -1,10 +1,10 @@
 <script lang="ts">
     import { page } from "$app/state";
-    import EventsTab from "$components/streams/events/events-tab.svelte";
+    import EventsTab from "$lib/components/streams/events/events-tab.svelte";
     import type {
         ChartData,
         VideoStream,
-    } from "$components/streams/types.js";
+    } from "$lib/components/streams/types.js";
     import type { Streamed } from "$lib/types.js";
 
     type Props = {

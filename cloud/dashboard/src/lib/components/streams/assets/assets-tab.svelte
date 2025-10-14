@@ -1,7 +1,7 @@
 <script lang="ts">
-    import SettingsBlock from "$components/settings-block.svelte";
-    import SettingsCard from "$components/settings-card.svelte";
-    import Switch from "$components/switch.svelte";
+    import SettingsBlock from "$lib/components/settings-block.svelte";
+    import SettingsCard from "$lib/components/settings-card.svelte";
+    import Switch from "$lib/components/switch.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
 
     let vodRecordingEnabled = $state(true);

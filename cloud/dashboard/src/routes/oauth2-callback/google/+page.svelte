@@ -1,11 +1,17 @@
 <script>
-    import { useGoogleAuth } from "$lib/auth/googleAuth.svelte";
     import { onMount } from "svelte";
+    import { useCompleteGoogleLogin } from "../../../features/login/authMutations";
 
-    const { handleOAuthCallback } = useGoogleAuth();
+    const completeGoogleLogin = useCompleteGoogleLogin();
 
     onMount(() => {
-        handleOAuthCallback();
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get("code");
+        const state = urlParams.get("state");
+
+        if (code && state) {
+            completeGoogleLogin.mutate({ code, state });
+        }
     });
 </script>
 

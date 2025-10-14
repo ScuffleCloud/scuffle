@@ -1,6 +1,6 @@
 <script lang="ts">
     import { page } from "$app/state";
-    import type { NavItem } from "$components/types";
+    import type { NavItem } from "$lib/components/types";
     import { Collapsible } from "melt/builders";
     import NavItemBase from "./nav-item-base.svelte";
 

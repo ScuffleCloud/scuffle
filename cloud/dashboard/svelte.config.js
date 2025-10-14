@@ -18,7 +18,6 @@ const config = {
             trailingSlash: "ignore",
         }),
         alias: {
-            $components: "src/components",
             $styles: "src/styles",
             $lib: "src/lib",
         },

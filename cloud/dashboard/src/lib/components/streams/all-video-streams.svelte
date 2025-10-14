@@ -2,7 +2,7 @@
     import Header from "./header.svelte";
     import StreamsTable from "./streams-table.svelte";
 
-    import SearchInput from "$components/search-input.svelte";
+    import SearchInput from "$lib/components/search-input.svelte";
     import type { ListResponse, Streamed } from "$lib/types";
     import type { VideoStream } from "./types";
 

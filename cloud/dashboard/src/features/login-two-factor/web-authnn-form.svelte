@@ -1,7 +1,7 @@
 <script lang="ts">
-    import InlineNotification from "$components/inline-notification.svelte";
-    import LoginOrDivider from "$components/login-or-divider.svelte";
     import { authState } from "$lib/auth.svelte";
+    import InlineNotification from "$lib/components/inline-notification.svelte";
+    import LoginOrDivider from "$lib/components/login-or-divider.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
     import { onMount } from "svelte";
     import { useCreateWebauthnChallenge } from "./mfaChallengeMutations";

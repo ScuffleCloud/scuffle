@@ -1,8 +1,8 @@
-import { createWebauthnCredential } from "$components/settings/createWebAuthn.svelte";
 import { usersServiceClient } from "$lib/grpcClient";
-import type { MfaCredential } from "$lib/types";
 import { withRpcErrorHandling } from "$lib/utils";
 import { createMutation, QueryClient, useQueryClient } from "@tanstack/svelte-query";
+import { createWebauthnCredential } from "./createWebAuthn.svelte";
+import type { MfaCredential } from "./types";
 
 type UpdateWebauthnNameType = {
     id: string;

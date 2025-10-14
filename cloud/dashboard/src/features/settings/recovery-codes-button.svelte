@@ -1,7 +1,7 @@
 <!-- TODO: Refactor this component, add verification of user identity (password/2fa code) -->
 <script lang="ts">
-    import Modal from "$components/modal.svelte";
     import { authState } from "$lib/auth.svelte";
+    import Modal from "$lib/components/modal.svelte";
     import { usersServiceClient } from "$lib/grpcClient";
     import { createMutation } from "@tanstack/svelte-query";
 

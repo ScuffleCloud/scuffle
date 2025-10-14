@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Tabs from "$components/tabs.svelte";
+    import Tabs from "$lib/components/tabs.svelte";
     import IconGlobe from "$lib/images/icon-globe.svelte";
     import IconPuzzle from "$lib/images/icon-puzzle.svelte";
     import IconWallet from "$lib/images/icon-wallet.svelte";

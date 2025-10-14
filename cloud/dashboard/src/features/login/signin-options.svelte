@@ -1,8 +1,8 @@
 <script lang="ts">
-    import LoginOrDivider from "$components/login-or-divider.svelte";
+    import LoginOrDivider from "$lib/components/login-or-divider.svelte";
     import IconGoogle from "$lib/images/icon-google.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
-    import type { LoginMode } from "$lib/types";
+    import type { LoginMode } from "./types";
 
     interface Props {
         onSubmit: () => Promise<void>;

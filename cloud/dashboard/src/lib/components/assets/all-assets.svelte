@@ -1,5 +1,5 @@
 <script lang="ts">
-    import SearchInput from "$components/search-input.svelte";
+    import SearchInput from "$lib/components/search-input.svelte";
     import IconLayout_3 from "$lib/images/icon-layout-3.svelte";
     import IconLayout from "$lib/images/icon-layout.svelte";
     import AssetCard from "./asset-card.svelte";

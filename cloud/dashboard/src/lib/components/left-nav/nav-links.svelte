@@ -1,7 +1,7 @@
 <script lang="ts">
     import { afterNavigate } from "$app/navigation";
-    import { NAV_ITEMS } from "$components/left-nav/consts.svelte";
-    import type { NavItem } from "$components/types";
+    import { NAV_ITEMS } from "$lib/components/left-nav/consts.svelte";
+    import type { NavItem } from "$lib/components/types";
     import NavItemBase from "./nav-item-base.svelte";
     import NavItemDropdown from "./nav-item-dropdown.svelte";
 

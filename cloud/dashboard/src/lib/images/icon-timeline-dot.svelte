@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { TimelineDotVariant } from "$components/assets/types";
+    import type { TimelineDotVariant } from "$lib/components/assets/types";
 
     type Props = {
         variant: TimelineDotVariant;

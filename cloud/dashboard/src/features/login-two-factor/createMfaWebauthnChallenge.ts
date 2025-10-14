@@ -1,6 +1,6 @@
-import { getWebAuthnErrorMessage } from "$components/settings/utils";
 import { sessionsServiceClient, usersServiceClient } from "$lib/grpcClient";
 import { isWebauthnSupported, parseCredentialRequestOptions, serializeCredentialAssertionResponse } from "$lib/utils";
+import { getWebAuthnErrorMessage } from "../settings/utils";
 
 export async function createMfaWebauthnChallenge(userId: string): Promise<void> {
     if (!isWebauthnSupported()) {

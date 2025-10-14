@@ -1,20 +1,20 @@
 <script lang="ts">
     import { pushState } from "$app/navigation";
     import { page } from "$app/state";
-    import TurnstileOverlay from "$components/turnstile-overlay.svelte";
-    import { useGoogleAuth } from "$lib/auth/googleAuth.svelte";
-    import { useMagicLinkAuth } from "$lib/auth/magicLinkAuth.svelte";
+    import LoginCard from "$lib/components/login-card.svelte";
+    import TurnstileOverlay from "$lib/components/turnstile-overlay.svelte";
     import IconArrowDialogLink from "$lib/images/icon-arrow-dialog-link.svelte";
     import { createSmartBack } from "$lib/navigation.svelte";
-    import { DEFAULT_LOGIN_MODE, type LoginMode } from "$lib/types";
-    import LoginCard from "../login-card.svelte";
+    import { useInitiateGoogleLogin } from "./authMutations";
     import ForgotPasswordForm from "./forgot-password-form.svelte";
     import MagicLinkForm from "./magic-link-form.svelte";
     import MagicLinkSent from "./magic-link-sent.svelte";
+    import { useMagicLinkAuth } from "./magicLinkAuth.svelte";
     import PasskeyForm from "./passkey-form.svelte";
     import PasswordForm from "./password-form.svelte";
     import PasswordResetSent from "./password-reset-sent.svelte";
     import SigninOptions from "./signin-options.svelte";
+    import { DEFAULT_LOGIN_MODE, type LoginMode } from "./types";
 
     let turnstileOverlayComponent: TurnstileOverlay | null = null;
 
@@ -134,11 +134,12 @@
         }
     }
 
-    const googleAuth = useGoogleAuth();
+    const initiateGoogleLogin = useInitiateGoogleLogin();
     const magicLinkAuth = useMagicLinkAuth();
 
+    // If any of these get set to true we need to wait for mutation error in order to reset it
     $effect(() => {
-        if (googleAuth.loading()) {
+        if (initiateGoogleLogin.isPending) {
             isLoading = true;
         } else {
             isLoading = false;
@@ -154,7 +155,7 @@
     {#if loginMode === "login"}
         <MagicLinkForm onSubmit={handleMagicLinkSubmit} {isLoading} />
         <SigninOptions
-            onSubmit={googleAuth.initiateLogin}
+            onSubmit={async () => initiateGoogleLogin.mutate()}
             onModeChange={changeLoginMode}
             {isLoading}
         />

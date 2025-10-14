@@ -1,16 +1,15 @@
 <script lang="ts">
-    import InlineNotification from "$components/inline-notification.svelte";
-    import SettingsCard from "$components/settings-card.svelte";
     import { authState } from "$lib/auth.svelte";
     import IconCheckSmall from "$lib/images/icon-check-small.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
     import IconOverviewKey from "$lib/images/icon-overview-key.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
-    import type { MfaCredential } from "$lib/types";
     import { useQueryClient } from "@tanstack/svelte-query";
 
-    import Badge from "$components/badge.svelte";
-    import Modal from "../modal.svelte";
+    import Badge from "$lib/components/badge.svelte";
+    import InlineNotification from "$lib/components/inline-notification.svelte";
+    import Modal from "$lib/components/modal.svelte";
+    import SettingsCard from "$lib/components/settings-card.svelte";
     import AuthMethodActionsMenu from "./auth-method-actions-menu.svelte";
     import {
         type AuthStepType,
@@ -22,6 +21,7 @@
         useDeleteWebauthnCredential,
         useUpdateWebauthnName,
     } from "./credentialMutations.svelte";
+    import { type MfaCredential } from "./types";
     interface Props {
         methods: MfaCredential[];
         isLoading?: boolean;

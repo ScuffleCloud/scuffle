@@ -1,5 +1,5 @@
 <script lang="ts">
-    import LoginOrDivider from "$components/login-or-divider.svelte";
+    import LoginOrDivider from "$lib/components/login-or-divider.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
     import { PinInput } from "melt/builders";
     import RecoveryCodeCollapsible from "./recovery-code-collapsible.svelte";

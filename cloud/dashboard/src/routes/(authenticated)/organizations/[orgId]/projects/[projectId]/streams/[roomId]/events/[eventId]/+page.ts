@@ -1,5 +1,5 @@
 export const ssr = false;
-import type { ChartData } from "$components/streams/types";
+import type { ChartData } from "$lib/components/streams/types";
 import type { PageLoad } from "./$types";
 
 export const load = (async ({ params, fetch, depends }) => {

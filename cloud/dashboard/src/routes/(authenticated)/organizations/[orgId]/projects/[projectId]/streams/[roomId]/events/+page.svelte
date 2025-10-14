@@ -1,6 +1,6 @@
 <script lang="ts">
-    import EventsTab from "$components/streams/events/events-tab.svelte";
-    import type { VideoStream } from "$components/streams/types.js";
+    import EventsTab from "$lib/components/streams/events/events-tab.svelte";
+    import type { VideoStream } from "$lib/components/streams/types.js";
     import type { Streamed } from "$lib/types.js";
 
     // From parent layout

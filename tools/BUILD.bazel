@@ -1,0 +1,51 @@
+load("@bazel_env.bzl", "bazel_env")
+
+common_tools = {
+    "cargo": "//tools/cargo",
+    "cargo-deny": "//tools/cargo/deny",
+    "cargo-insta": "//tools/cargo/insta",
+    "buf": "//tools/buf",
+    "buildifier": "//tools/buildifier",
+    "dprint": "//tools/dprint",
+    "protoc": "//tools/protoc",
+    "node": "//tools/node",
+    "pnpm": "//tools/pnpm",
+    "just": "//tools/just",
+    "miniserve": "//tools/miniserve",
+    "valgrind": "//tools/valgrind",
+    "ibazel": "//tools/ibazel",
+    "bazel-diff": "//tools/bazel-diff",
+    "rust-analyzer": "//tools/rust-analyzer",
+    "rust-analyzer-discover": "//tools/rust-analyzer:discover",
+    "rust-analyzer-check": "//tools/rust-analyzer:check",
+    "shfmt": "//tools/shfmt",
+    "diesel": "//tools/diesel",
+}
+
+bazel_env(
+    name = "bazel_env_linux",
+    tags = ["manual"],
+    target_compatible_with = ["@platforms//os:linux"],
+    tools = common_tools | {
+        "ffmpeg": "//tools/ffmpeg",
+        "ffprobe": "//tools/ffmpeg:ffprobe",
+    },
+)
+
+bazel_env(
+    name = "bazel_env_macos",
+    tags = ["manual"],
+    target_compatible_with = ["@platforms//os:macos"],
+    tools = common_tools,
+)
+
+alias(
+    name = "bazel_env",
+    actual = select({
+        "@platforms//os:linux": ":bazel_env_linux",
+        "@platforms//os:macos": ":bazel_env_macos",
+        "//conditions:default": "@platforms//:incompatible",
+    }),
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)

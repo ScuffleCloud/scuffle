@@ -37,6 +37,50 @@ run bin *args:
         exit 1
     fi
 
+generate-test-certs:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    # Generate root CA
+    openssl genpkey -out assets/root_key.pem -algorithm RSA -pkeyopt rsa_keygen_bits:2048
+    openssl req -x509 -new -key assets/root_key.pem \
+        -subj "/CN=scufflecloud-test-root" \
+        -days 36500 -out assets/root_cert.pem
+
+    # Generate server key and cert
+    openssl genpkey -out assets/server_key.pem -algorithm RSA -pkeyopt rsa_keygen_bits:2048
+    openssl req -new -key assets/server_key.pem \
+        -subj "/CN=scufflecloud-test-server" \
+        -addext "subjectAltName=DNS:localhost" \
+        -out assets/server_csr.pem
+
+    # Sign server cert with root CA
+    openssl x509 -req \
+        -in assets/server_csr.pem \
+        -CA assets/root_cert.pem \
+        -CAkey assets/root_key.pem \
+        -set_serial 0x1 -days 36500 \
+        -out assets/server_cert.pem \
+        -copy_extensions copy
+    rm assets/server_csr.pem
+
+    # Generate client key and cert
+    openssl genpkey -out assets/client_key.pem -algorithm RSA -pkeyopt rsa_keygen_bits:2048
+    openssl req -new -key assets/client_key.pem \
+        -subj "/CN=scufflecloud-test-client" \
+        -addext "subjectAltName=DNS:localhost" \
+        -out assets/client_csr.pem
+
+    # Sign client cert with root CA
+    openssl x509 -req \
+        -in assets/client_csr.pem \
+        -CA assets/root_cert.pem \
+        -CAkey assets/root_key.pem \
+        -set_serial 0x2 -days 36500 \
+        -out assets/client_cert.pem \
+        -copy_extensions copy
+    rm assets/client_csr.pem
+
 generate-mtls-certs:
     #!/usr/bin/env bash
     set -euo pipefail

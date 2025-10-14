@@ -1015,7 +1015,7 @@ version = "4.5.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbfd7eae0b0f1a6e63d4b13c9c478de77c2eb546fba158ad50b4203dc24b9f9c"
 dependencies = [
- "heck",
+ "heck 0.5.0",
  "proc-macro2",
  "quote",
  "syn 2.0.106",
@@ -1571,6 +1571,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "diesel-derive-enum"
+version = "3.0.0-beta.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "50a8c082045d01debc8589f8a0db9f2855a37c99c9b031325c856b5b98e1625f"
+dependencies = [
+ "heck 0.4.1",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.106",
+]
+
+[[package]]
 name = "diesel_derives"
 version = "2.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1712,7 +1724,7 @@ checksum = "dd122633e4bef06db27737f21d3738fb89c8f6d5360d6d9d7635dda142a7757e"
 dependencies = [
  "darling 0.21.3",
  "either",
- "heck",
+ "heck 0.5.0",
  "proc-macro2",
  "quote",
  "syn 2.0.106",
@@ -2451,6 +2463,12 @@ dependencies = [
 
 [[package]]
 name = "heck"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
+
+[[package]]
+name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
@@ -2841,7 +2859,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4b0f83760fb341a774ed326568e19f5a863af4a952def8c39f9ab92fd95b88e5"
 dependencies = [
  "equivalent",
- "hashbrown 0.15.5",
+ "hashbrown 0.16.0",
  "serde",
  "serde_core",
 ]
@@ -4500,7 +4518,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "22505a5c94da8e3b7c2996394d1c933236c4d743e81a410bcca4e6989fc066a4"
 dependencies = [
  "bytes",
- "heck",
+ "heck 0.5.0",
  "itertools 0.12.1",
  "log",
  "multimap",
@@ -4520,7 +4538,7 @@ version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ac6c3320f9abac597dcbc668774ef006702672474aad53c6d596b62e487b40b1"
 dependencies = [
- "heck",
+ "heck 0.5.0",
  "itertools 0.14.0",
  "log",
  "multimap",
@@ -5628,7 +5646,7 @@ name = "scuffle-cedar-policy-codegen"
 version = "0.1.1"
 dependencies = [
  "cedar-policy-core",
- "heck",
+ "heck 0.5.0",
  "prettyplease",
  "proc-macro2",
  "quote",
@@ -5968,7 +5986,6 @@ dependencies = [
  "scuffle-http",
  "scuffle-settings",
  "scuffle-signal",
- "scufflecloud-core-cedar",
  "scufflecloud-core-db-types",
  "scufflecloud-core-emails",
  "scufflecloud-core-traits",
@@ -6000,35 +6017,24 @@ dependencies = [
 ]
 
 [[package]]
-name = "scufflecloud-core-cedar"
+name = "scufflecloud-core-auth"
 version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "cedar-policy",
- "const_panic",
- "konst",
- "scufflecloud-core-db-types",
- "scufflecloud-core-traits",
- "scufflecloud-ext-traits",
- "scufflecloud-proto",
- "serde",
- "serde_derive",
- "serde_json",
- "tonic",
-]
 
 [[package]]
 name = "scufflecloud-core-db-types"
 version = "0.1.0"
 dependencies = [
+ "bon",
  "chrono",
  "diesel",
+ "diesel-derive-enum",
  "ipnetwork",
  "scufflecloud-id",
  "scufflecloud-proto",
  "serde",
  "serde_derive",
  "serde_json",
+ "sha2",
  "thiserror 2.0.16",
  "ulid",
  "uuid",
@@ -6116,7 +6122,9 @@ dependencies = [
 name = "scufflecloud-ext-traits"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "http",
+ "prost-types 0.14.1",
  "tonic",
  "tonic-types",
  "tracing",
@@ -7174,7 +7182,7 @@ dependencies = [
  "convert_case 0.8.0",
  "document-features",
  "fmtools",
- "heck",
+ "heck 0.5.0",
  "indexmap 2.11.4",
  "insta",
  "num-traits",

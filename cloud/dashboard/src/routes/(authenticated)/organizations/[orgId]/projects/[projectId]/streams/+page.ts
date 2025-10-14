@@ -2,7 +2,8 @@ export const ssr = false;
 
 import type { VideoStream } from "$components/streams/types";
 import type { ListResponse } from "$lib/types";
-import { mockStreamsListResponse } from "../../../../../../msw/mocks/streams";
+import { mockStreamsListResponse } from "../../../../../../../mocks/streams";
+
 import type { PageLoad } from "./$types";
 
 export const load = (async ({ depends }) => {

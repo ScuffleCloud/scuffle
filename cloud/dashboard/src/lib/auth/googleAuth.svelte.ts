@@ -38,9 +38,11 @@ async function completeGoogleLogin(code: string, state: string): Promise<void> {
         if (response.newUserSessionToken) {
             await authState().handleNewUserSessionToken(response.newUserSessionToken);
 
-            if (response.newUserSessionToken?.sessionMfaPending) return;
-
-            goto("/");
+            if (response.newUserSessionToken?.sessionMfaPending) {
+                goto("/mfa");
+            } else {
+                goto("/");
+            }
         } else {
             throw new Error("No session token received");
         }

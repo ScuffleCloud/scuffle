@@ -5,11 +5,13 @@
     import TurnstileOverlay from "$lib/components/turnstile-overlay.svelte";
     import IconArrowDialogLink from "$lib/images/icon-arrow-dialog-link.svelte";
     import { createSmartBack } from "$lib/navigation.svelte";
-    import { useInitiateGoogleLogin } from "./authMutations";
+    import {
+        useInitiateGoogleLogin,
+        useSendMagicLink,
+    } from "./authMutations";
     import ForgotPasswordForm from "./forgot-password-form.svelte";
     import MagicLinkForm from "./magic-link-form.svelte";
     import MagicLinkSent from "./magic-link-sent.svelte";
-    import { useMagicLinkAuth } from "./magicLinkAuth.svelte";
     import PasskeyForm from "./passkey-form.svelte";
     import PasswordForm from "./password-form.svelte";
     import PasswordResetSent from "./password-reset-sent.svelte";
@@ -74,7 +76,7 @@
         if (!token) return;
 
         try {
-            await magicLinkAuth.sendMagicLink(email, token);
+            sendMagicLink.mutate({ email, captchaToken: token });
 
             isLoading = false;
             // Magic link has successfully been sent
@@ -135,7 +137,7 @@
     }
 
     const initiateGoogleLogin = useInitiateGoogleLogin();
-    const magicLinkAuth = useMagicLinkAuth();
+    const sendMagicLink = useSendMagicLink();
 
     // If any of these get set to true we need to wait for mutation error in order to reset it
     $effect(() => {

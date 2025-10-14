@@ -13,12 +13,13 @@
         "@melt-ui/pp": "^0.3.2",
         "@melt-ui/svelte": "^0.86.4",
         "@protobuf-ts/grpcweb-transport": "^2.11.1",
+        "@protobuf-ts/runtime": "^2.11.1",
         "@protobuf-ts/runtime-rpc": "^2.11.1",
         "@scufflecloud/proto": "workspace:*",
         "@sveltejs/adapter-static": "^3.0.8",
         "@sveltejs/kit": "^2.16.0",
         "@sveltejs/vite-plugin-svelte": "^5.0.3",
-        "@tanstack/svelte-query": "^5.62.2",
+        "@tanstack/svelte-query": "^6.0.0",
         "@types/d3-geo": "^3.1.0",
         "@types/lodash": "^4.17.16",
         "d3-geo": "^3.1.1",
@@ -30,8 +31,7 @@
         "globals": "^16.0.0",
         "lodash": "^4.17.21",
         "melt": "^0.17.8",
-        "msw": "^2.7.3",
-        "svelte": "^5.16.0",
+        "svelte": "^5.39.8",
         "svelte-echarts": "^1.0.0",
         "svelte-eslint-parser": "^0.43.0",
         "svelte-turnstile": "^0.11.0",
@@ -41,10 +41,5 @@
     },
     "dependenciesComments": {
         "svelte-eslint-parser": "New version has errors with `pnpm lint`. Can resolve later."
-    },
-    "msw": {
-        "workerDirectory": [
-            "static"
-        ]
     }
 }

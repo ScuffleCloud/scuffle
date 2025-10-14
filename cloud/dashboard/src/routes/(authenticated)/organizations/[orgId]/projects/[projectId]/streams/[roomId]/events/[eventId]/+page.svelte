@@ -1,0 +1,41 @@
+<script lang="ts">
+    import { page } from "$app/state";
+    import EventsTab from "$lib/components/streams/events/events-tab.svelte";
+    import type {
+        ChartData,
+        VideoStream,
+    } from "$lib/components/streams/types.js";
+    import type { Streamed } from "$lib/types.js";
+
+    type Props = {
+        data: {
+            // From parent
+            stream: Streamed<VideoStream>;
+            // From page load
+            eventDetails: Streamed<ChartData>;
+        };
+    };
+
+    const { data }: Props = $props();
+
+    const currentEventId = $derived(page.params.eventId);
+
+    const events = $derived.by(async () => {
+        const stream = await data.stream;
+        return stream.relatedStreams;
+    });
+
+    const { eventDetails } = data;
+</script>
+
+{#await Promise.all([events, eventDetails])}
+    <div>Loading...</div>
+{:then [resolvedEvents, resolvedEventDetails]}
+    <EventsTab
+        events={resolvedEvents || []}
+        eventDetails={resolvedEventDetails}
+        {currentEventId}
+    />
+{:catch error}
+    <div>Error loading data: {error.message}</div>
+{/await}

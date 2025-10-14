@@ -7,7 +7,12 @@ fn main() {
     } else {
         let mut files = Vec::new();
         for file in glob::glob("pb/**/*.proto").expect("glob failed") {
-            files.push(file.expect("bad file"));
+            let file = file.expect("bad file");
+            // TODO: find a better way to exclude these
+            if file.as_os_str().to_string_lossy().contains("google") {
+                continue;
+            }
+            files.push(file);
         }
 
         config.compile_protos(&files, &["pb"])

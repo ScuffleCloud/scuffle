@@ -1,10 +1,14 @@
+<script lang="ts">
+    import { page } from "$app/state";
+</script>
+
 <svelte:head>
     <title>Scuffle - Error</title>
 </svelte:head>
 
 <div class="container">
-    <h3>Not Found</h3>
-    <p>The page you were looking for could not be found.</p>
+    <h3>{page.status}</h3>
+    <p>{page.error?.message}</p>
     <a href="/">Go Back</a>
 </div>
 

@@ -18,10 +18,8 @@ const config = {
             trailingSlash: "ignore",
         }),
         alias: {
-            $components: "src/components",
             $styles: "src/styles",
             $lib: "src/lib",
-            $msw: "src/msw",
         },
     },
     // Enforcing runes for external libraries https://github.com/sveltejs/svelte/issues/9632
@@ -33,6 +31,9 @@ const config = {
                 };
             }
         },
+    },
+    compilerOptions: {
+        runes: true,
     },
 };
 export default config;

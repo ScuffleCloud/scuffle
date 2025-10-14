@@ -1,4 +1,5 @@
 import { browser } from "$app/environment";
+import { type RpcError } from "@protobuf-ts/runtime-rpc";
 import type { Timestamp } from "@scufflecloud/proto/google/protobuf/timestamp.js";
 import {
     type Device,
@@ -7,14 +8,8 @@ import {
     type NewUserSessionToken,
 } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
 import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
-import { sessionsServiceClient, usersServiceClient } from "./grpcClient";
-import { arrayBufferToBase64 } from "./utils";
-
-// Replace with Uint8Array.fromBase64 in the future
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array/fromBase64
-function base64ToArrayBuffer(base64: string): ArrayBuffer {
-    return Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer;
-}
+import { rpcErrorToString, sessionsServiceClient, usersServiceClient } from "./grpcClient";
+import { arrayBufferToBase64, base64ToArrayBuffer } from "./utils";
 
 function timestampToDate(timestmap: Timestamp): Date | null {
     const seconds = parseInt(timestmap.seconds);
@@ -191,25 +186,35 @@ export function authState() {
         /**
          * Call this function to initialize the auth state. This must be called prior to any other function.
          */
-        initialize() {
+        async initialize() {
             if (!browser) return;
+
+            const time = Date.now();
+            console.log("Initializing auth state");
 
             if (!deviceKeypair) {
                 deviceKeypair = { state: "loading" };
-                loadDeviceKeypair().then((keypair) => {
+                try {
+                    const keypair = await loadDeviceKeypair();
                     deviceKeypair = { state: "loaded", data: keypair };
-                }).catch((err) => {
+                    console.log("Loaded device key");
+                } catch (err) {
                     console.error("Failed to load device key", err);
                     deviceKeypair = { state: "loaded", data: null };
-                });
+                }
             }
 
             if (!user) {
                 user = { state: "loading" };
-                loadUser(userSessionToken).then((loadedUser) => {
-                    user = loadedUser;
-                });
+                try {
+                    user = await loadUser(userSessionToken);
+                } catch (err) {
+                    console.error("Failed to load user", err);
+                    user = { state: "error", error: "Failed to load user" };
+                }
             }
+
+            console.log("Finished initializing auth state, took", Date.now() - time, "ms");
         },
         /**
          * Generates a new device, persists it and returns it.
@@ -294,15 +299,15 @@ export function authState() {
         async logout() {
             if (!browser) return;
 
-            const call = sessionsServiceClient.invalidateUserSession({});
-            const status = await call.status;
-            if (status.code === "OK") {
+            try {
+                const call = sessionsServiceClient.invalidateUserSession({});
+                await call.status;
+
                 userSessionToken = { state: "unauthenticated" };
                 window.localStorage.removeItem("userSessionToken");
                 user = { state: "unauthenticated" };
-            } else {
-                console.error("Failed to logout", status);
-                throw new Error("Failed to logout: " + status.detail);
+            } catch (err) {
+                throw new Error(rpcErrorToString(err as RpcError));
             }
         },
         /**
@@ -337,6 +342,30 @@ export function authState() {
                 this.handleNewUserSessionToken(response);
             }
         },
+
+        async reloadUserForMfa(): Promise<void> {
+            user = { state: "loading" };
+
+            if (userSessionToken.state === "authenticated" && userSessionToken.data.mfaPending) {
+                const updatedToken: AuthState<UserSessionToken> = {
+                    state: "authenticated",
+                    data: {
+                        ...userSessionToken.data,
+                        mfaPending: null,
+                    },
+                };
+
+                userSessionToken = updatedToken;
+
+                const stored = {
+                    ...updatedToken,
+                    data: toStoredUserSessionToken(updatedToken.data),
+                };
+                window.localStorage.setItem("userSessionToken", JSON.stringify(stored));
+            }
+
+            user = await loadUser(userSessionToken);
+        },
         /**
          * Returns the device public key. If the keypair is not yet loaded or does not exist, null is returned.
          */
@@ -363,8 +392,25 @@ export function authState() {
          * Returns the current authenticated user or null if not authenticated.
          */
         get user() {
-            if (!user) throw new Error("User not initialized");
+            if (!user) return null;
             return user.state === "authenticated" ? user.data : null;
+        },
+
+        /**
+         * Checks if the user has 2FA enabled. Not including recovery codes
+         */
+        get hasPendingMfa(): boolean {
+            if (userSessionToken.state !== "authenticated") throw new Error("User not authenticated");
+
+            const mfaOptions = userSessionToken.data.mfaPending;
+
+            // No pending MFA
+            if (!mfaOptions) {
+                return false;
+            }
+
+            return mfaOptions.includes(MfaOption.TOTP)
+                || mfaOptions.includes(MfaOption.WEB_AUTHN);
         },
     };
 }
@@ -374,15 +420,19 @@ async function loadUser(state: AuthState<UserSessionToken>): Promise<AuthState<U
         return { ...state };
     }
 
-    const call = usersServiceClient.getUser({
-        id: state.data.userId,
-    });
-    const status = await call.status;
+    if (state.data.mfaPending) {
+        return { state: "error", error: "MFA required" };
+    }
 
-    if (status.code === "OK") {
+    try {
+        const call = usersServiceClient.getUser({
+            id: state.data.userId,
+        });
+        await call.status;
+
         const user = await call.response;
         return { state: "authenticated", data: user };
-    } else {
-        return { state: "error", error: status.detail };
+    } catch (err) {
+        return { state: "error", error: rpcErrorToString(err as RpcError) };
     }
 }

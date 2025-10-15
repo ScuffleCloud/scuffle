@@ -546,9 +546,8 @@ async fn response_trailers() {
     test_tls_server(builder, &[reqwest::Version::HTTP_2, reqwest::Version::HTTP_3]).await;
 }
 
-#[tokio::test]
-#[cfg(all(feature = "http1", feature = "http2", feature = "http3", feature = "tls-rustls"))]
-async fn test_client_certs() {
+#[cfg(feature = "tls-rustls")]
+async fn test_client_certs(version: reqwest::Version) {
     use std::sync::Arc;
 
     install_provider();
@@ -595,7 +594,7 @@ async fn test_client_certs() {
     let addr = get_available_addr().expect("failed to get available address");
     let (ctx, handler) = scuffle_context::Context::new();
 
-    let server = HttpServer::builder()
+    let builder = HttpServer::builder()
         .service_factory(service_clone_factory(fn_http_service(move |req| {
             let client_cert = client_cert.clone();
             async move {
@@ -610,12 +609,19 @@ async fn test_client_certs() {
             }
         })))
         .rustls_config(rustls_config)
-        .enable_http1(true)
-        .enable_http2(true)
-        .enable_http3(true)
-        .bind(addr)
         .ctx(ctx)
-        .build();
+        .bind(addr);
+
+    #[cfg(feature = "http1")]
+    let builder = builder.enable_http1(version == reqwest::Version::HTTP_11);
+
+    #[cfg(feature = "http2")]
+    let builder = builder.enable_http2(version == reqwest::Version::HTTP_2);
+
+    #[cfg(feature = "http3")]
+    let builder = builder.enable_http3(version == reqwest::Version::HTTP_3);
+
+    let server = builder.build();
 
     let handle = tokio::spawn(async move {
         server.run().await.expect("server run failed");
@@ -626,40 +632,56 @@ async fn test_client_certs() {
 
     let url = format!("https://localhost:{}/", addr.port());
 
-    for version in [reqwest::Version::HTTP_11, reqwest::Version::HTTP_2, reqwest::Version::HTTP_3] {
-        let mut builder = reqwest::Client::builder()
-            .add_root_certificate(reqwest_root_cert.clone())
-            .identity(reqwest_client_identity.clone())
-            .https_only(true);
+    let mut builder = reqwest::Client::builder()
+        .add_root_certificate(reqwest_root_cert.clone())
+        .identity(reqwest_client_identity.clone())
+        .https_only(true);
 
-        if version == reqwest::Version::HTTP_3 {
-            builder = builder.http3_prior_knowledge();
-        } else if version == reqwest::Version::HTTP_2 {
-            builder = builder.http2_prior_knowledge();
-        } else {
-            builder = builder.http1_only();
-        }
-
-        let client = builder.build().expect("failed to build client");
-
-        let request = client
-            .request(reqwest::Method::GET, &url)
-            .version(version)
-            .body(RESPONSE_TEXT.to_string())
-            .build()
-            .expect("failed to build request");
-
-        let resp = client
-            .execute(request)
-            .await
-            .unwrap_or_else(|e| panic!("failed to get response version {version:?}, {e}"))
-            .text()
-            .await
-            .expect("failed to get text");
-
-        assert_eq!(resp, RESPONSE_TEXT);
+    if version == reqwest::Version::HTTP_3 {
+        builder = builder.http3_prior_knowledge();
+    } else if version == reqwest::Version::HTTP_2 {
+        builder = builder.http2_prior_knowledge();
+    } else {
+        builder = builder.http1_only();
     }
+
+    let client = builder.build().expect("failed to build client");
+
+    let request = client
+        .request(reqwest::Method::GET, &url)
+        .version(version)
+        .body(RESPONSE_TEXT.to_string())
+        .build()
+        .expect("failed to build request");
+
+    let resp = client
+        .execute(request)
+        .await
+        .unwrap_or_else(|e| panic!("failed to get response version {version:?}, {e}"))
+        .text()
+        .await
+        .expect("failed to get text");
+
+    assert_eq!(resp, RESPONSE_TEXT);
 
     handler.shutdown().await;
     handle.await.expect("task failed");
+}
+
+#[tokio::test]
+#[cfg(all(feature = "http1", feature = "tls-rustls"))]
+async fn test_client_certs_http1() {
+    test_client_certs(reqwest::Version::HTTP_11).await;
+}
+
+#[tokio::test]
+#[cfg(all(feature = "http2", feature = "tls-rustls"))]
+async fn test_client_certs_http2() {
+    test_client_certs(reqwest::Version::HTTP_2).await;
+}
+
+#[tokio::test]
+#[cfg(all(feature = "http3", feature = "tls-rustls"))]
+async fn test_client_certs_http3() {
+    test_client_certs(reqwest::Version::HTTP_3).await;
 }

@@ -1,6 +1,7 @@
 //! Hyper backend.
 use std::fmt::Debug;
 use std::net::SocketAddr;
+use std::sync::Arc;
 
 use scuffle_context::ContextFutExt;
 #[cfg(feature = "tracing")]
@@ -148,6 +149,14 @@ where
                                 tracing::trace!("accepted tls connection");
                             }
 
+                            let mut extra_extensions = http::Extensions::new();
+                            extra_extensions.insert(crate::extensions::ClientAddr(addr));
+
+                            #[cfg(feature = "tls-rustls")]
+                            if let Some(certs) = stream.get_client_certs() {
+                                extra_extensions.insert(crate::extensions::ClientIdentity(Arc::new(certs.to_vec())));
+                            }
+
                             // make a new service
                             let http_service = match service_factory.new_service(addr).await {
                                 Ok(service) => service,
@@ -171,7 +180,15 @@ where
                             #[cfg(not(feature = "http2"))]
                             let http2 = false;
 
-                            let _res = handler::handle_connection::<F, _, _>(ctx, http_service, stream, http1, http2).await;
+                            let _res = handler::handle_connection::<F, _, _>(
+                                ctx,
+                                http_service,
+                                extra_extensions,
+                                stream,
+                                http1,
+                                http2,
+                            )
+                            .await;
 
                             #[cfg(feature = "tracing")]
                             if let Err(e) = _res {

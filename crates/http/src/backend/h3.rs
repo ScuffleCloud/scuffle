@@ -105,6 +105,9 @@ where
                                 return Ok(());
                             };
                             let addr = conn.remote_address();
+                            let client_certs = conn
+                                .peer_identity()
+                                .and_then(|any| any.downcast::<Vec<tokio_rustls::rustls::pki_types::CertificateDer>>().ok());
 
                             #[cfg(feature = "tracing")]
                             tracing::debug!(addr = %addr, "accepted quic connection");
@@ -119,6 +122,12 @@ where
                                     tracing::trace!("context done while establishing connection");
                                     return Ok(());
                                 };
+
+                                let mut extra_extensions = http::Extensions::new();
+                                extra_extensions.insert(crate::extensions::ClientAddr(addr));
+                                if let Some(certs) = client_certs {
+                                    extra_extensions.insert(crate::extensions::ClientIdentity(Arc::new(*certs)));
+                                }
 
                                 // make a new service for this connection
                                 let http_service = service_factory
@@ -148,7 +157,9 @@ where
                                                 .get(http::header::CONTENT_LENGTH)
                                                 .and_then(|len| len.to_str().ok().and_then(|x| x.parse().ok()));
                                             let body = QuicIncomingBody::new(recv, size_hint);
-                                            let req = req.map(|_| crate::body::IncomingBody::from(body));
+                                            let mut req = req.map(|_| crate::body::IncomingBody::from(body));
+
+                                            req.extensions_mut().extend(extra_extensions.clone());
 
                                             let ctx = ctx.clone();
                                             let mut http_service = http_service.clone();

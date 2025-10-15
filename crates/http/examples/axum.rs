@@ -1,7 +1,8 @@
 use axum::body::Body;
 use axum::http::Request;
 use axum::response::Response;
-use tokio_rustls::rustls::pki_types::{self, CertificateDer, PrivateKeyDer, pem::PemObject};
+use tokio_rustls::rustls::pki_types::pem::PemObject;
+use tokio_rustls::rustls::pki_types::{self, CertificateDer, PrivateKeyDer};
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -64,8 +65,8 @@ fn assets_path(item: &str) -> std::path::PathBuf {
 }
 
 pub fn get_tls_config() -> Result<tokio_rustls::rustls::ServerConfig, pki_types::pem::Error> {
-    let certs = CertificateDer::pem_file_iter(assets_path("cert.pem"))?.collect::<Result<Vec<_>, _>>()?;
-    let key = PrivateKeyDer::from_pem_file(assets_path("key.pem"))?;
+    let certs = CertificateDer::pem_file_iter(assets_path("server_cert.pem"))?.collect::<Result<Vec<_>, _>>()?;
+    let key = PrivateKeyDer::from_pem_file(assets_path("server_key.pem"))?;
 
     let server_config = tokio_rustls::rustls::ServerConfig::builder()
         .with_no_client_auth()

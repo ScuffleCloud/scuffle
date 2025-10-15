@@ -23,6 +23,17 @@ impl Stream {
             Stream::Tls(_) => Ok(self),
         }
     }
+
+    /// Get the client certificates from the TLS stream.
+    ///
+    /// Returns `None` if the stream is not a TLS stream or if no client certificates are present.
+    #[cfg(feature = "tls-rustls")]
+    pub(crate) fn get_client_certs(&self) -> Option<&[tokio_rustls::rustls::pki_types::CertificateDer<'static>]> {
+        match self {
+            Stream::Tcp(_) => None,
+            Stream::Tls(stream) => stream.get_ref().1.peer_certificates(),
+        }
+    }
 }
 
 impl AsyncRead for Stream {

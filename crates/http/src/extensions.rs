@@ -2,6 +2,9 @@
 
 use std::ops::Deref;
 
+#[cfg(feature = "webtransport")]
+pub use crate::backend::h3::webtransport::WebTransportSession;
+
 /// This extension is always present on the request and contains the remote address of the client.
 #[derive(Clone, Debug)]
 pub struct ClientAddr(pub std::net::SocketAddr);

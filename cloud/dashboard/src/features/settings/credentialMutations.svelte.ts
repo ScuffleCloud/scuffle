@@ -1,6 +1,7 @@
 import { usersServiceClient } from "$lib/grpcClient";
 import { withRpcErrorHandling } from "$lib/utils";
 import { createMutation, QueryClient, useQueryClient } from "@tanstack/svelte-query";
+import QRCode from "qrcode";
 import { TOTP_LIST_KEY, WEBAUTHN_LIST_KEY } from "./consts";
 import { createWebauthnCredential } from "./createWebAuthn.svelte";
 import type { MfaCredential, MfaCredentialType } from "./types";
@@ -16,6 +17,11 @@ type DeleteCredentialType = {
     type: MfaCredentialType;
 };
 
+export type CreateTotpCredentialMutationResponse = {
+    qrCodeUrl: string;
+    secretKey: string;
+};
+
 // --Webauthn mutations--
 export function useCreateWebauthnCredential(userId: string | undefined) {
     return createMutation(() => ({
@@ -29,7 +35,7 @@ export function useCreateWebauthnCredential(userId: string | undefined) {
 
 // --TOTP mutations--
 export function useCreateTotpCredential(userId: string | undefined) {
-    return createMutation(() => ({
+    return createMutation<CreateTotpCredentialMutationResponse, Error, void>(() => ({
         mutationFn: () =>
             withRpcErrorHandling(async () => {
                 if (!userId) throw new Error("User not authenticated");
@@ -42,9 +48,18 @@ export function useCreateTotpCredential(userId: string | undefined) {
                 }
 
                 const createResponse = await createCall.response;
+
+                const qrCodeUrl = await QRCode.toDataURL(createResponse.secretUrl, {
+                    width: 256,
+                    margin: 4,
+                });
+
+                const secretKey = createResponse.secretUrl.split("secret=")[1]?.split("&")[0]
+                    || createResponse.secretUrl;
+
                 return {
-                    qrCode: createResponse.secretQrcodePng,
-                    secretUrl: createResponse.secretUrl,
+                    qrCodeUrl,
+                    secretKey,
                 };
             }),
     }));
@@ -52,14 +67,13 @@ export function useCreateTotpCredential(userId: string | undefined) {
 
 export function useCompleteTotpCredential(userId: string | undefined) {
     return createMutation(() => ({
-        mutationFn: ({ code, name }: { code: string; name?: string }) =>
+        mutationFn: ({ code }: { code: string }) =>
             withRpcErrorHandling(async () => {
                 if (!userId) throw new Error("User not authenticated");
 
                 const completeCall = usersServiceClient.completeCreateTotpCredential({
                     id: userId,
                     code,
-                    name,
                 });
 
                 const completeStatus = await completeCall.status;
@@ -68,8 +82,7 @@ export function useCompleteTotpCredential(userId: string | undefined) {
                     throw new Error(completeStatus.detail || "Failed to complete TOTP credential creation");
                 }
 
-                const completeResponse = await completeCall.response;
-                return completeResponse;
+                return await completeCall.response;
             }),
     }));
 }
@@ -83,11 +96,9 @@ export function useUpdateCredentialName(userId: string | undefined) {
             withRpcErrorHandling(async () => {
                 if (!userId) throw new Error("User not authenticated");
 
-                const updateFunction = type === "webauthn"
-                    ? usersServiceClient.updateWebauthnCredential
-                    : usersServiceClient.updateTotpCredential;
-
-                const call = updateFunction({ userId, id, name });
+                const call = type === "webauthn"
+                    ? usersServiceClient.updateWebauthnCredential({ userId, id, name })
+                    : usersServiceClient.updateTotpCredential({ userId, id, name });
 
                 const status = await call.status;
                 if (status.code !== "OK") {
@@ -124,11 +135,9 @@ export function useDeleteCredential(userId: string | undefined) {
             withRpcErrorHandling(async () => {
                 if (!userId) throw new Error("User not authenticated");
 
-                const deleteFunction = type === "webauthn"
-                    ? usersServiceClient.deleteWebauthnCredential
-                    : usersServiceClient.deleteTotpCredential;
-
-                const call = deleteFunction({ userId, id });
+                const call = type === "webauthn"
+                    ? usersServiceClient.deleteWebauthnCredential({ userId, id })
+                    : usersServiceClient.deleteTotpCredential({ userId, id });
 
                 const status = await call.status;
                 if (status.code !== "OK") {

@@ -13,8 +13,10 @@
     import AuthMethodActionsMenu from "./auth-method-actions-menu.svelte";
     import {
         type AuthStepType,
+        DEFAULT_TOTP_AUTH_NAME,
         DEFAULT_WEBAUTHN_AUTH_NAME,
         STEP_TO_TITLE,
+        TOTP_LIST_KEY,
         WEBAUTHN_LIST_KEY,
     } from "./consts";
     import {
@@ -24,7 +26,11 @@
         useDeleteCredential,
         useUpdateCredentialName,
     } from "./credentialMutations.svelte";
-    import { type MfaCredential } from "./types";
+    import TotpSetup from "./totp-setup.svelte";
+    import {
+        type MfaCredential,
+        type MfaCredentialType,
+    } from "./types";
     interface Props {
         methods: MfaCredential[];
         isLoading?: boolean;
@@ -36,14 +42,15 @@
     const userId = authState().user?.id;
     const enabled = $derived(methods.length > 0);
 
-    // Flow states. Add one for TOPT later
+    // Flow states. Waiting stage can be either totp or webauthn
     let currentStep = $state<AuthStepType>(
         "select",
     );
 
-    // Webauthn setup flow
+    // Credential final step edit flow
     let credentialId = $state("");
-    let passkeyName = $state("");
+    let credentialType = $state<MfaCredentialType>("webauthn");
+    let credentialName = $state("");
 
     // Edit state
     let editingCredential = $state<MfaCredential | null>(null);
@@ -69,26 +76,35 @@
     const completeTotpCredentialMutation = useCompleteTotpCredential(
         userId,
     );
+
     // --Webauthn setup flow--
     function handleReset() {
         // If exited in the last step without naming then refetch the list
         if (currentStep === "success") {
-            queryClient.invalidateQueries({
-                queryKey: [WEBAUTHN_LIST_KEY],
-            });
+            if (credentialType === "webauthn") {
+                queryClient.invalidateQueries({
+                    queryKey: [WEBAUTHN_LIST_KEY],
+                });
+            } else {
+                queryClient.invalidateQueries({
+                    queryKey: [TOTP_LIST_KEY],
+                });
+            }
         }
-        passkeyName = "";
+        credentialName = "";
         credentialId = "";
         currentStep = "select";
         createWebAuthnMutation.reset();
         updateNameMutation.reset();
+        createTotpCredentialMutation.reset();
     }
 
     function handlePasskeySetup() {
-        currentStep = "waiting";
+        currentStep = "waiting_authn";
         createWebAuthnMutation.mutate(undefined, {
             onSuccess: (id) => {
                 credentialId = id;
+                credentialType = "webauthn";
                 currentStep = "success";
             },
         });
@@ -100,12 +116,12 @@
         createWebAuthnMutation.mutate();
     }
 
-    function handlePasskeyNameSubmit() {
-        if (passkeyName.trim()) {
+    function handleCredentialNameSubmit() {
+        if (credentialName.trim()) {
             updateNameMutation.mutate({
                 id: credentialId,
-                name: passkeyName.trim(),
-                type: "webauthn",
+                name: credentialName.trim(),
+                type: credentialType,
             }, {
                 onSuccess: () => {
                     modal.closeModal();
@@ -115,7 +131,25 @@
     }
     // --End Webauthn setup flow--
 
-    // --Webauthn edit modals--
+    // --Totp setup flow--
+    function handleTotpSetup() {
+        currentStep = "waiting_totp";
+        createTotpCredentialMutation.mutate();
+    }
+
+    function handleTotpVerify(code: string) {
+        completeTotpCredentialMutation.mutate({ code }, {
+            onSuccess: ({ id }) => {
+                credentialId = id;
+                credentialType = "totp";
+                currentStep = "success";
+            },
+        });
+    }
+
+    // --End Totp setup flow--
+
+    // --Credential edit modals--
     function onEditMethod(method: MfaCredential) {
         editingCredential = method;
         editingName = method.name || "";
@@ -143,7 +177,7 @@
     }
     // --End Webauthn edit modals--
 
-    // --Webauthn delete modals--
+    // --Credential delete modals--
     function onDeleteMethod(method: MfaCredential) {
         methodToDelete = method;
         deleteModal.openModal();
@@ -215,7 +249,7 @@
             triggerClass="add-method-button"
             title={STEP_TO_TITLE[currentStep]}
             onClose={handleReset}
-            hideCloseButton={currentStep === "waiting"}
+            hideCloseButton={currentStep === "waiting_authn"}
             closeOnOutsideClick={currentStep === "select"}
             bind:this={modal}
         >
@@ -234,13 +268,16 @@
                             Continue with Passkey
                         </button>
 
-                        <button class="method-button secondary">
+                        <button
+                            class="method-button primary"
+                            onclick={handleTotpSetup}
+                        >
                             <IconShield />
-                            Continue with 2FA Code
+                            Continue with 2FA code
                         </button>
                     </div>
                 </div>
-            {:else if currentStep === "waiting"}
+            {:else if currentStep === "waiting_authn"}
                 <div class="step-content centered">
                     {#if createWebAuthnMutation.isError}
                         <InlineNotification
@@ -267,24 +304,43 @@
                             <div class="spinner"></div>
                         </div>
                         <!-- TBD on a cancel button here too, it won't stop the navigator.credentials.create from firing even if it hangs. -->
+                        <!-- Will probably end up on a no-loading spinner solution but leave as is for now -->
                     {/if}
+                </div>
+            {:else if currentStep === "waiting_totp"}
+                <div class="step-content">
+                    <TotpSetup
+                        createMutation={createTotpCredentialMutation}
+                        completeMutation={completeTotpCredentialMutation}
+                        validateCode={handleTotpVerify}
+                    />
                 </div>
             {:else if currentStep === "success"}
                 <div class="step-content">
                     <div class="success-message">
                         <IconCheckSmall />
-                        New passkey successfully added
+                        New {
+                            credentialType === "webauthn"
+                            ? "passkey"
+                            : "2FA device"
+                        } successfully added
                     </div>
 
                     <p class="optional-text">
-                        Optionally you can name the passkey.
+                        Optionally you can name the {
+                            credentialType === "webauthn"
+                            ? "passkey"
+                            : "2FA device"
+                        }.
                     </p>
 
                     <input
                         type="text"
-                        bind:value={passkeyName}
-                        placeholder={DEFAULT_WEBAUTHN_AUTH_NAME}
-                        class="passkey-input"
+                        bind:value={credentialName}
+                        placeholder={credentialType === "webauthn"
+                        ? DEFAULT_WEBAUTHN_AUTH_NAME
+                        : DEFAULT_TOTP_AUTH_NAME}
+                        class="credential-input"
                     />
                     {#if updateNameMutation.isError}
                         <InlineNotification
@@ -295,7 +351,7 @@
                     {/if}
                     <button
                         class="done-button"
-                        onclick={handlePasskeyNameSubmit}
+                        onclick={handleCredentialNameSubmit}
                     >
                         Done
                     </button>
@@ -456,25 +512,6 @@
       color: var(--colors-brown90);
     }
 
-    /*
-        .primary-badge {
-          font-size: 0.75rem;
-          font-weight: 700;
-          padding: 0.125rem 0.5rem;
-          border-radius: 5.25rem;
-          background: #fef3c7;
-          color: #d97706;
-        }
-
-        .method-type {
-          font-size: 0.875rem;
-          font-weight: 600;
-          padding: 0.125rem 0.5rem;
-          border-radius: 0.25rem;
-          background: var(--colors-gray50);
-          color: var(--colors-brown70);
-        } */
-
     .add-method-button-container {
       display: flex;
       justify-content: center;
@@ -562,12 +599,6 @@
     .method-button.primary:hover {
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-
-    .method-button.secondary {
-      background-color: rgb(228, 228, 231);
-      color: rgb(161, 161, 170);
-    }
-
     .method-button:disabled {
       cursor: not-allowed;
     }
@@ -632,7 +663,7 @@
       margin: 0;
     }
 
-    .passkey-input {
+    .credential-input {
       padding: 0.875rem 1rem;
       border: 1px solid rgb(212, 212, 216);
       border-radius: 0.5rem;
@@ -640,7 +671,7 @@
       background-color: white;
     }
 
-    .passkey-input:focus {
+    .credential-input:focus {
       outline: none;
       border-color: rgb(247, 177, 85);
     }

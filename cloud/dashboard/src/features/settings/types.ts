@@ -4,4 +4,4 @@ export type MfaCredential =
     | (TotpCredential & { type: "totp" })
     | (WebauthnCredential & { type: "webauthn" });
 
-export type MfaCredentialType = "webauthn" | "totp";
+export type MfaCredentialType = MfaCredential["type"];

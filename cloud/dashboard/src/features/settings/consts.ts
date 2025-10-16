@@ -1,7 +1,8 @@
 export const STEP_TO_TITLE = {
     select: "New 2FA method",
-    waiting: "Waiting for results...",
-    success: "Passkey added",
+    waiting_authn: "Waiting for results...",
+    waiting_totp: "2FA Setup",
+    success: "2FA device added",
 };
 
 export type AuthStepType = keyof typeof STEP_TO_TITLE;

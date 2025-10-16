@@ -1,7 +1,7 @@
 <script lang="ts">
+    import CodeInput from "$lib/components/code-input.svelte";
     import LoginOrDivider from "$lib/components/login-or-divider.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
-    import { PinInput } from "melt/builders";
     import RecoveryCodeCollapsible from "./recovery-code-collapsible.svelte";
 
     interface Props {
@@ -11,21 +11,21 @@
 
     let { onModeChange, onBackupCodeChange }: Props = $props();
 
+    let pinValue = $state("");
     let isLoading = $state(false);
+
     function onSubmit(code: string) {
         console.log("Submit code", code);
     }
 
-    const pinInput = new PinInput({
-        maxLength: 6,
-        type: "numeric",
-        placeholder: "-",
-        disabled: () => isLoading,
-    });
-
     async function handleContinue() {
-        if (pinInput.value.length === 6 && !isLoading) {
-            await onSubmit(pinInput.value);
+        if (pinValue.length === 6 && !isLoading) {
+            isLoading = true;
+            try {
+                await onSubmit(pinValue);
+            } finally {
+                isLoading = false;
+            }
         }
     }
 </script>
@@ -37,17 +37,19 @@
     Enter the 6-digit code from your 2FA authenticator app below
 </p>
 
-<div {...pinInput.root} class="pin-input-root">
-    {#each pinInput.inputs as input, index (`pin-input-${index}`)}
-        <input {...input} class="pin-input" />
-    {/each}
-</div>
+<CodeInput
+    bind:value={pinValue}
+    disabled={isLoading}
+    maxLength={6}
+    type="numeric"
+    placeholder="-"
+/>
 
 <button
     type="button"
     onclick={handleContinue}
     class="continue-btn"
-    disabled={isLoading || pinInput.value.length !== 6}
+    disabled={isLoading || pinValue.length !== 6}
 >
     {#if isLoading}
         <div class="spinner"></div>
@@ -56,6 +58,7 @@
         Continue
     {/if}
 </button>
+
 {#if onModeChange}
     <LoginOrDivider />
     <button
@@ -67,6 +70,7 @@
         Continue with Passkey
     </button>
 {/if}
+
 <RecoveryCodeCollapsible onAction={onBackupCodeChange} />
 
 <style>
@@ -108,38 +112,6 @@
       font-size: 0.95rem;
       line-height: 1.5;
       margin: 0 0 2rem 0;
-    }
-
-    .pin-input-root {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-      margin-bottom: 2rem;
-    }
-
-    .pin-input {
-      width: 3rem;
-      height: 3rem;
-      border: 2px solid #e5e7eb;
-      border-radius: 0.5rem;
-      text-align: center;
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #1f2937;
-      background: white;
-      transition: all 0.2s;
-      outline: none;
-    }
-
-    .pin-input:focus {
-      border-color: #f59e0b;
-      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
-    }
-
-    .pin-input:disabled {
-      background: #f9fafb;
-      color: #9ca3af;
-      cursor: not-allowed;
     }
 
     .continue-btn {
@@ -190,16 +162,6 @@
       .mfa-container {
         padding: 1.5rem;
         margin: 1rem;
-      }
-
-      .pin-input {
-        width: 2.5rem;
-        height: 2.5rem;
-        font-size: 1.1rem;
-      }
-
-      .pin-input-root {
-        gap: 0.375rem;
       }
     }
 </style>

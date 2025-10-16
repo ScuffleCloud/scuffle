@@ -99,18 +99,6 @@
       gap: 0.75rem;
     }
 
-    .skeleton {
-      background: linear-gradient(
-        90deg,
-        var(--colors-gray40) 0%,
-        var(--colors-gray50) 50%,
-        var(--colors-gray40) 100%
-      );
-      background-size: 200% 100%;
-      animation: skeleton-loading 1.5s ease-in-out infinite;
-      border-radius: 0.25rem;
-    }
-
     .skeleton-title {
       height: 1.5rem;
       width: 60%;
@@ -124,14 +112,5 @@
     .skeleton-content {
       flex: 1;
       min-height: 3rem;
-    }
-
-    @keyframes skeleton-loading {
-      0% {
-        background-position: 200% 0;
-      }
-      100% {
-        background-position: -200% 0;
-      }
     }
 </style>

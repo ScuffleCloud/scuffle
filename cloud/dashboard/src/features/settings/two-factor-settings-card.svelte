@@ -15,11 +15,14 @@
         type AuthStepType,
         DEFAULT_WEBAUTHN_AUTH_NAME,
         STEP_TO_TITLE,
+        WEBAUTHN_LIST_KEY,
     } from "./consts";
     import {
+        useCompleteTotpCredential,
+        useCreateTotpCredential,
         useCreateWebauthnCredential,
-        useDeleteWebauthnCredential,
-        useUpdateWebauthnName,
+        useDeleteCredential,
+        useUpdateCredentialName,
     } from "./credentialMutations.svelte";
     import { type MfaCredential } from "./types";
     interface Props {
@@ -43,7 +46,7 @@
     let passkeyName = $state("");
 
     // Edit state
-    let editingCredentialId = $state<string | null>(null);
+    let editingCredential = $state<MfaCredential | null>(null);
     let editingName = $state("");
 
     // Delete state
@@ -55,17 +58,23 @@
 
     // --Mutations--
     const createWebAuthnMutation = useCreateWebauthnCredential(userId);
-    const updateNameMutation = useUpdateWebauthnName(userId);
-    const deleteCredentialMutation = useDeleteWebauthnCredential(
+    const updateNameMutation = useUpdateCredentialName(userId);
+    const deleteCredentialMutation = useDeleteCredential(
         userId,
     );
 
+    const createTotpCredentialMutation = useCreateTotpCredential(
+        userId,
+    );
+    const completeTotpCredentialMutation = useCompleteTotpCredential(
+        userId,
+    );
     // --Webauthn setup flow--
     function handleReset() {
         // If exited in the last step without naming then refetch the list
         if (currentStep === "success") {
             queryClient.invalidateQueries({
-                queryKey: ["webauthn-list"],
+                queryKey: [WEBAUTHN_LIST_KEY],
             });
         }
         passkeyName = "";
@@ -96,6 +105,7 @@
             updateNameMutation.mutate({
                 id: credentialId,
                 name: passkeyName.trim(),
+                type: "webauthn",
             }, {
                 onSuccess: () => {
                     modal.closeModal();
@@ -107,22 +117,23 @@
 
     // --Webauthn edit modals--
     function onEditMethod(method: MfaCredential) {
-        editingCredentialId = method.id;
+        editingCredential = method;
         editingName = method.name || "";
         editModal.openModal();
     }
 
     function handleEditModalClose() {
-        editingCredentialId = null;
+        editingCredential = null;
         editingName = "";
         updateNameMutation.reset();
     }
 
     function handleEditModalSubmit() {
-        if (editingCredentialId && editingName.trim()) {
+        if (editingCredential && editingName.trim()) {
             updateNameMutation.mutate({
-                id: editingCredentialId,
+                id: editingCredential.id,
                 name: editingName.trim(),
+                type: editingCredential.type,
             }, {
                 onSuccess: () => {
                     editModal.closeModal();
@@ -145,7 +156,10 @@
 
     function handleDeleteConfirm() {
         if (methodToDelete) {
-            deleteCredentialMutation.mutate({ id: methodToDelete.id }, {
+            deleteCredentialMutation.mutate({
+                id: methodToDelete.id,
+                type: methodToDelete.type,
+            }, {
                 onSuccess: () => {
                     deleteModal.closeModal();
                 },
@@ -167,7 +181,7 @@
         Active authentication methods
         <div class="divider-line"></div>
     </div>
-    {#if enabled && methods.length > 0}
+    {#if enabled}
         <div class="methods-list">
             {#each methods as method (method.id)}
                 <div class="method-item">
@@ -220,7 +234,7 @@
                             Continue with Passkey
                         </button>
 
-                        <button class="method-button secondary" disabled>
+                        <button class="method-button secondary">
                             <IconShield />
                             Continue with 2FA Code
                         </button>

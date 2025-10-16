@@ -9,6 +9,7 @@
         DEFAULT_TOTP_AUTH_NAME,
         DEFAULT_WEBAUTHN_AUTH_NAME,
     } from "./consts";
+    import { TOTP_LIST_KEY, WEBAUTHN_LIST_KEY } from "./consts";
     import RecoveryCodesButton from "./recovery-codes-button.svelte";
     import TwoFactorSettingsCard from "./two-factor-settings-card.svelte";
     import { type MfaCredential } from "./types";
@@ -16,7 +17,7 @@
     const user = authState().user;
 
     const totpListQuery = createQuery(() => ({
-        queryKey: ["totp-list"],
+        queryKey: [TOTP_LIST_KEY],
         queryFn: async () => {
             const call = usersServiceClient.listTotpCredentials({
                 id: user!.id,
@@ -28,7 +29,7 @@
     }));
 
     const webauthnListQuery = createQuery(() => ({
-        queryKey: ["webauthn-list"],
+        queryKey: [WEBAUTHN_LIST_KEY],
         queryFn: async () => {
             const call = usersServiceClient.listWebauthnCredentials({
                 id: user!.id,
@@ -38,17 +39,6 @@
         },
         enabled: !!user,
     }));
-
-    const activeMethods = $state([
-        {
-            id: "1",
-            name: "Google Authenticator",
-            type: "TOTP",
-            isPrimary: true,
-        },
-        { id: "2", name: "Passkey", type: "WEBAUTH" },
-        { id: "3", name: "Passkey", type: "WEBAUTH" },
-    ]);
 
     // Account Settings Cards
     // const accountCards = $derived<Card[]>([
@@ -249,8 +239,8 @@
             {isLoading}
         >
             <RecoveryCodesButton
-                enabled={activeMethods.length > 0}
-                hasExistingCodes={activeMethods.length > 0}
+                enabled={authCredentials.length > 0}
+                hasExistingCodes={authCredentials.length > 0}
             />
         </SettingsCard>
     </SettingsBlock>

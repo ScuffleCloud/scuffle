@@ -3,3 +3,5 @@ import type { TotpCredential, WebauthnCredential } from "@scufflecloud/proto/scu
 export type MfaCredential =
     | (TotpCredential & { type: "totp" })
     | (WebauthnCredential & { type: "webauthn" });
+
+export type MfaCredentialType = "webauthn" | "totp";

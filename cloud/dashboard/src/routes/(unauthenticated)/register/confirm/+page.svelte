@@ -3,8 +3,8 @@
     import { onMount } from "svelte";
     import {
         useCompleteMagicLink,
-    } from "../../../features/login/authMutations";
-    import { handleMagicLinkCallback } from "../../../features/login/utils";
+    } from "../../../../features/login/authMutations";
+    import { handleMagicLinkCallback } from "../../../../features/login/utils";
 
     const completeMagicLink = useCompleteMagicLink();
 

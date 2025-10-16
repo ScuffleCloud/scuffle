@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { useCompleteGoogleLogin } from "../../../features/login/authMutations";
+    import { useCompleteGoogleLogin } from "../../../../features/login/authMutations";
 
     const completeGoogleLogin = useCompleteGoogleLogin();
 

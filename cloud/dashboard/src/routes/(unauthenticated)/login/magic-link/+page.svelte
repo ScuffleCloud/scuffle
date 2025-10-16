@@ -1,10 +1,10 @@
 <!-- The url that the magic link will return if accessed by a returning user -->
 <script>
-    import { onMount } from "svelte";
     import {
         useCompleteMagicLink,
-    } from "../../../features/login/authMutations";
-    import { handleMagicLinkCallback } from "../../../features/login/utils";
+    } from "$features/login/authMutations";
+    import { handleMagicLinkCallback } from "$features/login/utils";
+    import { onMount } from "svelte";
 
     const completeMagicLink = useCompleteMagicLink();
 

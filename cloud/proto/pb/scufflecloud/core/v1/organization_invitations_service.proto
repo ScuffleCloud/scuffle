@@ -16,7 +16,7 @@ service OrganizationInvitationsService {
   rpc ListOrganizationInvitationsByOrganization(ListOrganizationInvitationsByOrganizationRequest) returns (OrganizationInvitationList) {
     option (tinc.method).endpoint = {get: "/organizations/{id}/invitations"};
   }
-  rpc ListOrgnizationInvitesByUser(ListOrgnizationInvitesByUserRequest) returns (OrganizationInvitationList) {
+  rpc ListOrganizationInvitesByUser(ListOrganizationInvitesByUserRequest) returns (OrganizationInvitationList) {
     option (tinc.method).endpoint = {get: "/users/{id}/invitations"};
   }
 
@@ -38,7 +38,7 @@ message CreateOrganizationInvitationRequest {
   optional uint64 expires_in_s = 3;
 }
 
-message ListOrgnizationInvitesByUserRequest {
+message ListOrganizationInvitesByUserRequest {
   string id = 1 [(string_constraint).id = true];
 }
 

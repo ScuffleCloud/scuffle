@@ -18,7 +18,7 @@
             auth.userSessionToken.state !== "authenticated"
             || !auth.userSessionToken.data.mfaPending
         ) {
-            console.error(
+            console.log(
                 "2FA page accessed without pending MFA - routing bug",
             );
 

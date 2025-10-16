@@ -43,6 +43,7 @@
 
 <style>
     .troubleshoot-section {
+      margin-top: 1rem;
       width: 100%;
     }
 

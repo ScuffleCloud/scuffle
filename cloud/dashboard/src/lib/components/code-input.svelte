@@ -7,6 +7,7 @@
         placeholder?: string;
         maxLength?: number;
         type?: "numeric" | "alphanumeric" | "text";
+        onComplete?: () => void;
     }
 
     let {
@@ -15,6 +16,7 @@
         placeholder = "-",
         maxLength = 6,
         type = "numeric",
+        onComplete,
     }: Props = $props();
 
     const pinInput = new PinInput({
@@ -25,6 +27,9 @@
         value: () => value,
         onValueChange: (newValue) => {
             value = newValue;
+        },
+        onComplete: () => {
+            onComplete?.();
         },
     });
 </script>

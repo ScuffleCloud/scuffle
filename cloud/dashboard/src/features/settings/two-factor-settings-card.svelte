@@ -372,7 +372,7 @@
             type="text"
             bind:value={editingName}
             placeholder="Passkey name"
-            class="passkey-input"
+            class="credential-input"
             disabled={updateNameMutation.isPending}
         />
 

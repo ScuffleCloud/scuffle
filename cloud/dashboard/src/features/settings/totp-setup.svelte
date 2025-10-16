@@ -28,7 +28,7 @@
 </script>
 
 {#if createMutation.isPending}
-    <div class="qr-skeleton-container">
+    <div class="skeleton-container">
         <div class="qr-skeleton skeleton"></div>
         <div class="text-skeleton skeleton"></div>
     </div>
@@ -169,24 +169,24 @@
       }
     }
 
-    .qr-skeleton-container {
+    .skeleton-container {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 1rem;
       padding: 1.5rem;
-    }
 
-    .qr-skeleton {
-      width: 200px;
-      height: 200px;
-      border-radius: 0.5rem;
-    }
+      .qr-skeleton {
+        width: 200px;
+        height: 200px;
+        border-radius: 0.5rem;
+      }
 
-    .text-skeleton {
-      width: 250px;
-      height: 2.5rem;
-      border-radius: 0.25rem;
+      .text-skeleton {
+        width: 250px;
+        height: 2.5rem;
+        border-radius: 0.25rem;
+      }
     }
 
     .verification-section {

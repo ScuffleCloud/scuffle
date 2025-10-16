@@ -2,6 +2,7 @@
     import CodeInput from "$lib/components/code-input.svelte";
     import LoginOrDivider from "$lib/components/login-or-divider.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
+    import { useValidateMfaTotp } from "./mfaChallengeMutations";
     import RecoveryCodeCollapsible from "./recovery-code-collapsible.svelte";
 
     interface Props {
@@ -11,23 +12,16 @@
 
     let { onModeChange, onBackupCodeChange }: Props = $props();
 
-    let pinValue = $state("");
-    let isLoading = $state(false);
+    const validateMfaTotpMutation = useValidateMfaTotp();
 
-    function onSubmit(code: string) {
-        console.log("Submit code", code);
-    }
+    let pinValue = $state("");
 
     async function handleContinue() {
-        if (pinValue.length === 6 && !isLoading) {
-            isLoading = true;
-            try {
-                await onSubmit(pinValue);
-            } finally {
-                isLoading = false;
-            }
+        if (pinValue.length === 6) {
+            validateMfaTotpMutation.mutate(pinValue);
         }
     }
+    let continueRef = $state<HTMLButtonElement | null>(null);
 </script>
 
 <div class="header">
@@ -39,19 +33,23 @@
 
 <CodeInput
     bind:value={pinValue}
-    disabled={isLoading}
+    disabled={validateMfaTotpMutation.isPending || validateMfaTotpMutation.isSuccess}
     maxLength={6}
     type="numeric"
     placeholder="-"
+    onComplete={() => {
+        // Allow continue to be selected by the cursor
+        continueRef?.focus();
+    }}
 />
-
 <button
+    bind:this={continueRef}
     type="button"
     onclick={handleContinue}
     class="continue-btn"
-    disabled={isLoading || pinValue.length !== 6}
+    disabled={validateMfaTotpMutation.isPending || validateMfaTotpMutation.isSuccess}
 >
-    {#if isLoading}
+    {#if validateMfaTotpMutation.isPending}
         <div class="spinner"></div>
         Verifying...
     {:else}
@@ -78,7 +76,7 @@
       display: flex;
       align-items: center;
       position: relative;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
     }
 
     .back-button {
@@ -117,8 +115,8 @@
     .continue-btn {
       width: 100%;
       padding: 0.875rem;
-      background: #f59e0b;
-      color: white;
+      background: var(--colors-yellow40);
+      color: var(--colors-yellow80);
       border: none;
       border-radius: 0.5rem;
       font-size: 1rem;

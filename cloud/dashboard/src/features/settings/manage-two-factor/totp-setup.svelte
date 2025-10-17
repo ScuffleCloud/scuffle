@@ -3,6 +3,7 @@
     import IconCopy from "$lib/images/icon-copy.svelte";
     import { TotpCredential } from "@scufflecloud/proto/scufflecloud/core/v1/users_service.js";
     import type { CreateMutationResult } from "@tanstack/svelte-query";
+    import { onMount } from "svelte";
     import type { CreateTotpCredentialMutationResponse } from "./credentialMutations.svelte";
 
     interface Props {
@@ -24,19 +25,32 @@
     let { createMutation, completeMutation, validateCode }: Props =
         $props();
 
+    // So loading state does not flicker when this component is mounted
+    let loading = $state(false);
+
+    onMount(() => {
+        loading = true;
+    });
+
+    $effect(() => {
+        if (createMutation.data) {
+            loading = false;
+        }
+    });
+
     let verificationCode = $state("");
 </script>
 
-{#if createMutation.isPending}
-    <div class="skeleton-container">
-        <div class="qr-skeleton skeleton"></div>
-        <div class="text-skeleton skeleton"></div>
-    </div>
-{:else if createMutation.isError}
+{#if createMutation.isError}
     <InlineNotification
         type="error"
         message={createMutation.error?.message || "Failed to generate QR code"}
     />
+{:else if loading}
+    <div class="skeleton-container">
+        <div class="qr-skeleton skeleton"></div>
+        <div class="text-skeleton skeleton"></div>
+    </div>
 {:else if createMutation.data}
     {@const { qrCodeUrl, secretKey } = createMutation.data}
     <div class="totp-scan">

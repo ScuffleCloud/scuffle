@@ -53,7 +53,7 @@ export function useCreateTotpCredential(userId: string | undefined) {
                 qr.addData(createResponse.secretUrl);
                 qr.make();
 
-                const qrCodeUrl = qr.createDataURL(4, 4); // cellSize: 4, margin: 4
+                const qrCodeUrl = qr.createDataURL(4, 4);
 
                 const secretKey = createResponse.secretUrl.split("secret=")[1]?.split("&")[0]
                     || createResponse.secretUrl;

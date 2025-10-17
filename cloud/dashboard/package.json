@@ -43,5 +43,8 @@
     },
     "dependenciesComments": {
         "svelte-eslint-parser": "New version has errors with `pnpm lint`. Can resolve later."
+    },
+    "overrides": {
+        "pngjs": "npm:empty-npm-package@1.0.0"
     }
 }

@@ -178,7 +178,6 @@
 <style>
     .password-actions {
       display: flex;
-      margin-top: 1rem;
     }
 
     .password-actions :global(.change-password-button) {
@@ -284,7 +283,6 @@
 
     .change-password-container {
       display: flex;
-      margin-top: 1rem;
     }
 
     .change-password-button {

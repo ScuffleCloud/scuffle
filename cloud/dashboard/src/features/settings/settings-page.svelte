@@ -1,18 +1,20 @@
 <script lang="ts">
     import { authState } from "$lib/auth.svelte";
     import SettingsBlock from "$lib/components/settings-block.svelte";
-    import SettingsCard from "$lib/components/settings-card.svelte";
     import { usersServiceClient } from "$lib/grpcClient";
     import IconShield from "$lib/images/icon-shield.svelte";
     import { createQuery } from "@tanstack/svelte-query";
     import {
         DEFAULT_TOTP_AUTH_NAME,
         DEFAULT_WEBAUTHN_AUTH_NAME,
-    } from "./consts";
-    import { TOTP_LIST_KEY, WEBAUTHN_LIST_KEY } from "./consts";
-    import RecoveryCodesButton from "./recovery-codes-button.svelte";
-    import TwoFactorSettingsCard from "./two-factor-settings-card.svelte";
-    import { type MfaCredential } from "./types";
+    } from "./manage-two-factor/consts";
+    import {
+        TOTP_LIST_KEY,
+        WEBAUTHN_LIST_KEY,
+    } from "./manage-two-factor/consts";
+    import TwoFactorSettingsCard from "./manage-two-factor/two-factor-settings-card.svelte";
+    import { type MfaCredential } from "./manage-two-factor/types";
+    import PasswordSettingsCard from "./password-settings-card.svelte";
 
     const user = authState().user;
 
@@ -39,6 +41,18 @@
         },
         enabled: !!user,
     }));
+
+    // const passwordSettingsQuery = createQuery(() => ({
+    //     queryKey: [PASSWORD_SETTINGS_KEY],
+    //     queryFn: async () => {
+    //         const call = usersServiceClient.getPasswordSettings({
+    //             id: user!.id,
+    //         });
+    //         const response = await call.response;
+    //         return response.settings;
+    //     },
+    //     enabled: !!user,
+    // }));
 
     // Account Settings Cards
     // const accountCards = $derived<Card[]>([
@@ -176,73 +190,15 @@
 </script>
 
 <div class="settings-page">
-    <!-- WEBAUTHN -->
-    <!-- <div class="two-factor-auth">
-    <div class="two-factor-auth">
-        <button onclick={() => totpList()}>
-            Load TOTP Credentials
-        </button>
-        <br>
-        Here:
-        <button onclick={() => totpAuth.initiateTotpSetup()}>
-            Initiate TOTP Setup
-        </button>
-        {#if totpAuth.qrCodeData()}
-            <div>
-                QR Code generated! Scan with your authenticator app.
-                <br>
-                Secret URL: {totpAuth.qrCodeData()?.secretUrl}
-            </div>
-        {/if}
-        <input
-            type="text"
-            bind:value={totpCredentialName}
-            placeholder="Credential name"
-        />
-        <br>
-        <input
-            type="text"
-            bind:value={totpCode}
-            placeholder="6-digit code from app"
-        />
-        <br>
-        <button
-            onclick={() =>
-            totpAuth.completeTotpSetup(
-                totpCredentialName,
-                totpCode,
-            )}
-            disabled={!totpAuth.qrCodeData() || !totpCredentialName
-            || !totpCode}
-        >
-            Complete TOTP Setup
-        </button>
-        <br>
-
-        Loading: {totpAuth.loading()}
-        <br>
-        Error: {totpAuth.error()}
-        <br>
-    </div> -->
     <SettingsBlock
-        title="Two-factor Authentication"
-        subtitle="(2FA)"
+        title="Sign in methods"
         icon={IconShield}
     >
+        <PasswordSettingsCard />
         <TwoFactorSettingsCard
             methods={authCredentials}
             {isLoading}
         />
-        <SettingsCard
-            title="Recovery Codes"
-            description="Generate backup codes to access your account if you lose your authenticator device."
-            {isLoading}
-        >
-            <RecoveryCodesButton
-                enabled={authCredentials.length > 0}
-                hasExistingCodes={authCredentials.length > 0}
-            />
-        </SettingsCard>
     </SettingsBlock>
 
     <!-- Notification Settings -->

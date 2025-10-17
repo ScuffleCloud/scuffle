@@ -94,13 +94,13 @@
       color: var(--colors-red70);
     }
     .notification-warning {
-      background-color: #fef3c7;
-      border-color: #fde68a;
-      color: #78350f;
+      background-color: var(--colors-yellow10);
+      border-color: var(--colors-yellow30);
+      color: var(--colors-yellow80);
     }
 
     .notification-warning .notification-icon {
-      background-color: #ca8a04;
+      background-color: inherit;
     }
 
     /* Success variant */

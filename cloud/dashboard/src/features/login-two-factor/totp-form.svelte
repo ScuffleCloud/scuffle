@@ -37,17 +37,15 @@
     maxLength={6}
     type="numeric"
     placeholder="-"
-    onComplete={() => {
-        // Allow continue to be selected by the cursor
-        continueRef?.focus();
-    }}
 />
+
 <button
     bind:this={continueRef}
     type="button"
     onclick={handleContinue}
     class="continue-btn"
-    disabled={validateMfaTotpMutation.isPending || validateMfaTotpMutation.isSuccess}
+    disabled={validateMfaTotpMutation.isPending || validateMfaTotpMutation.isSuccess
+    || pinValue.length !== 6}
 >
     {#if validateMfaTotpMutation.isPending}
         <div class="spinner"></div>

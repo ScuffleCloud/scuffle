@@ -1,19 +1,19 @@
-<!-- TODO: Refactor this component, add verification of user identity (password/2fa code) -->
 <script lang="ts">
     import { authState } from "$lib/auth.svelte";
+    import InlineNotification from "$lib/components/inline-notification.svelte";
     import Modal from "$lib/components/modal.svelte";
     import { usersServiceClient } from "$lib/grpcClient";
+    import IconCopy from "$lib/images/icon-copy.svelte";
     import { createMutation } from "@tanstack/svelte-query";
 
     interface Props {
-        enabled: boolean;
+        modal: Modal | null;
         hasExistingCodes: boolean;
     }
 
-    let { hasExistingCodes }: Props = $props();
+    let { modal = $bindable(), hasExistingCodes }: Props = $props();
 
     const user = authState().user;
-    let modal: Modal;
     let currentStep = $state<"confirm" | "success">("confirm");
     let generatedCodes = $state<string[]>([]);
 
@@ -35,30 +35,16 @@
     function handleDone() {
         currentStep = "confirm";
         generatedCodes = [];
-        modal.closeModal();
+        modal?.closeModal();
     }
 
     function handleCopy() {
         navigator.clipboard.writeText(generatedCodes.join("\n"));
     }
-
-    function handleDownload() {
-        const blob = new Blob([generatedCodes.join("\n")], {
-            type: "text/plain",
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "recovery-codes.txt";
-        a.click();
-        URL.revokeObjectURL(url);
-    }
 </script>
 
 <Modal
     bind:this={modal}
-    triggerLabel={hasExistingCodes ? "Regenerate Codes" : "Generate Codes"}
-    triggerClass="action-button action-secondary"
     title={currentStep === "confirm"
     ? "Generate Recovery Codes"
     : "Your Recovery Codes"}
@@ -79,18 +65,16 @@
                 {/if}
             </p>
 
-            <div class="warning-box">
-                <p class="warning-title">Important</p>
-                <p class="warning-description">
-                    Save these codes in a secure location. Each code can only be
-                    used once.
-                </p>
-            </div>
+            <InlineNotification
+                type="warning"
+                message="Save these codes in a secure location. Each code can only be used once."
+            />
 
             <div class="button-group">
                 <button
                     class="button button-secondary"
                     onclick={() => handleDone()}
+                    disabled={generateCodesMutation.isPending}
                 >
                     Cancel
                 </button>
@@ -128,30 +112,8 @@
 
             <div class="action-buttons">
                 <button class="button button-secondary" onclick={handleCopy}>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path
-                            d="M5.5 4.5H3.5C2.94772 4.5 2.5 4.94772 2.5 5.5V12.5C2.5 13.0523 2.94772 13.5 3.5 13.5H10.5C11.0523 13.5 11.5 13.0523 11.5 12.5V10.5M5.5 10.5H12.5C13.0523 10.5 13.5 10.0523 13.5 9.5V2.5C13.5 1.94772 13.0523 1.5 12.5 1.5H5.5C4.94772 1.5 4.5 1.94772 4.5 2.5V9.5C4.5 10.0523 4.94772 10.5 5.5 10.5Z"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                        />
-                    </svg>
+                    <IconCopy />
                     Copy All
-                </button>
-                <button
-                    class="button button-secondary"
-                    onclick={handleDownload}
-                >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path
-                            d="M8 10.5V2.5M8 10.5L10.5 8M8 10.5L5.5 8M13.5 10.5V12.5C13.5 13.0523 13.0523 13.5 12.5 13.5H3.5C2.94772 13.5 2.5 13.0523 2.5 12.5V10.5"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        />
-                    </svg>
-                    Download
                 </button>
             </div>
 
@@ -178,28 +140,6 @@
       line-height: 1.5;
       margin: 0;
     }
-
-    .warning-box {
-      display: flex;
-      gap: 0.75rem;
-      padding: 1rem;
-      background-color: rgb(254, 243, 199);
-      border-radius: 0.5rem;
-      border: 1px solid rgb(251, 191, 36);
-    }
-
-    .warning-title {
-      font-weight: 600;
-      color: rgb(146, 64, 14);
-      margin: 0 0 0.25rem 0;
-    }
-
-    .warning-description {
-      font-size: 0.875rem;
-      color: rgb(146, 64, 14);
-      margin: 0;
-    }
-
     .success-text {
       font-size: 1rem;
       color: rgb(20, 83, 45);

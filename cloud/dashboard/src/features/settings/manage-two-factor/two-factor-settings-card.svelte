@@ -1,16 +1,18 @@
 <script lang="ts">
     import { authState } from "$lib/auth.svelte";
     import IconCheckSmall from "$lib/images/icon-check-small.svelte";
+    import IconEditPen2 from "$lib/images/icon-edit-pen-2.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
     import IconOverviewKey from "$lib/images/icon-overview-key.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
     import { useQueryClient } from "@tanstack/svelte-query";
 
+    import ActionsMenu from "$lib/components/actions-menu.svelte";
     import Badge from "$lib/components/badge.svelte";
     import InlineNotification from "$lib/components/inline-notification.svelte";
     import Modal from "$lib/components/modal.svelte";
     import SettingsCard from "$lib/components/settings-card.svelte";
-    import AuthMethodActionsMenu from "./auth-method-actions-menu.svelte";
+    import IconTrash from "$lib/images/icon-trash.svelte";
     import {
         type AuthStepType,
         DEFAULT_TOTP_AUTH_NAME,
@@ -26,6 +28,7 @@
         useDeleteCredential,
         useUpdateCredentialName,
     } from "./credentialMutations.svelte";
+    import RecoveryCodesModal from "./recovery-codes-modal.svelte";
     import TotpSetup from "./totp-setup.svelte";
     import {
         type MfaCredential,
@@ -62,6 +65,7 @@
     let modal: Modal;
     let editModal: Modal;
     let deleteModal: Modal;
+    let recoveryModal = $state<Modal | null>(null);
 
     // --Mutations--
     const createWebAuthnMutation = useCreateWebauthnCredential(userId);
@@ -69,7 +73,6 @@
     const deleteCredentialMutation = useDeleteCredential(
         userId,
     );
-
     const createTotpCredentialMutation = useCreateTotpCredential(
         userId,
     );
@@ -201,6 +204,33 @@
         }
     }
     // --End Webauthn delete modals--
+
+    function getMenuItems(method: MfaCredential) {
+        return [
+            {
+                label: "Edit name",
+                key: "edit-name",
+                icon: IconEditPen2,
+                onClick: () => onEditMethod(method),
+            },
+            {
+                label: "Delete",
+                key: "delete",
+                icon: IconTrash,
+                onClick: () => onDeleteMethod(method),
+                variant: "danger" as const,
+            },
+        ];
+    }
+
+    const dividerMenuItems = [
+        {
+            label: "Regenerate codes",
+            key: "regenerate-codes",
+            icon: IconOverviewKey,
+            onClick: () => recoveryModal?.openModal(),
+        },
+    ];
 </script>
 <SettingsCard
     title="Two-factor authentication"
@@ -214,6 +244,7 @@
     <div class="divider">
         Active authentication methods
         <div class="divider-line"></div>
+        <ActionsMenu items={dividerMenuItems} />
     </div>
     {#if enabled}
         <div class="methods-list">
@@ -230,10 +261,7 @@
                             }</Badge>
                         </div>
                     </div>
-                    <AuthMethodActionsMenu
-                        onEdit={() => onEditMethod(method)}
-                        onDelete={() => onDeleteMethod(method)}
-                    />
+                    <ActionsMenu items={getMenuItems(method)} />
                 </div>
             {/each}
         </div>
@@ -452,6 +480,10 @@
         </div>
     </div>
 </Modal>
+<RecoveryCodesModal
+    bind:modal={recoveryModal}
+    hasExistingCodes={enabled}
+/>
 
 <style>
     .divider {

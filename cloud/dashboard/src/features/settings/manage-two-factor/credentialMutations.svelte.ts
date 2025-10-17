@@ -1,7 +1,7 @@
 import { usersServiceClient } from "$lib/grpcClient";
 import { withRpcErrorHandling } from "$lib/utils";
 import { createMutation, QueryClient, useQueryClient } from "@tanstack/svelte-query";
-import QRCode from "qrcode";
+import qrcode from "qrcode-generator";
 import { TOTP_LIST_KEY, WEBAUTHN_LIST_KEY } from "./consts";
 import { createWebauthnCredential } from "./createWebAuthn.svelte";
 import type { MfaCredential, MfaCredentialType } from "./types";
@@ -49,10 +49,11 @@ export function useCreateTotpCredential(userId: string | undefined) {
 
                 const createResponse = await createCall.response;
 
-                const qrCodeUrl = await QRCode.toDataURL(createResponse.secretUrl, {
-                    width: 256,
-                    margin: 4,
-                });
+                const qr = qrcode(0, "H");
+                qr.addData(createResponse.secretUrl);
+                qr.make();
+
+                const qrCodeUrl = qr.createDataURL(4, 4); // cellSize: 4, margin: 4
 
                 const secretKey = createResponse.secretUrl.split("secret=")[1]?.split("&")[0]
                     || createResponse.secretUrl;

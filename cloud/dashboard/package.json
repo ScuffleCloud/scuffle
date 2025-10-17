@@ -22,7 +22,6 @@
         "@tanstack/svelte-query": "^6.0.0",
         "@types/d3-geo": "^3.1.0",
         "@types/lodash": "^4.17.16",
-        "@types/qrcode": "^1.5.5",
         "d3-geo": "^3.1.1",
         "date-fns": "^4.1.0",
         "echarts": "^5.6.0",
@@ -32,7 +31,7 @@
         "globals": "^16.0.0",
         "lodash": "^4.17.21",
         "melt": "^0.17.8",
-        "qrcode": "^1.5.4",
+        "qrcode-generator": "^2.0.4",
         "svelte": "^5.39.8",
         "svelte-echarts": "^1.0.0",
         "svelte-eslint-parser": "^0.43.0",
@@ -43,8 +42,5 @@
     },
     "dependenciesComments": {
         "svelte-eslint-parser": "New version has errors with `pnpm lint`. Can resolve later."
-    },
-    "overrides": {
-        "pngjs": "npm:empty-npm-package@1.0.0"
     }
 }

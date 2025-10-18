@@ -14,7 +14,7 @@
     } from "./manage-two-factor/consts";
     import TwoFactorSettingsCard from "./manage-two-factor/two-factor-settings-card.svelte";
     import { type MfaCredential } from "./manage-two-factor/types";
-    import PasswordSettingsCard from "./password-settings-card.svelte";
+    import PasswordSettingsCard from "./password/password-settings-card.svelte";
 
     const user = authState().user;
 
@@ -153,6 +153,19 @@
             || hasAnyError,
     );
 
+    console.log("has any error");
+    $inspect(hasAnyError);
+    console.log("totp list query");
+    $inspect(totpListQuery.data);
+    console.log("webauthn list query");
+    $inspect(webauthnListQuery.data);
+    console.log("is loading");
+    $inspect(isLoading);
+    console.log("totp list query is loading");
+    $inspect(totpListQuery.isLoading);
+    console.log("webauthn list query is loading");
+    $inspect(webauthnListQuery.isLoading);
+
     const authCredentials: MfaCredential[] = $derived(
         (() => {
             const totpCreds = (totpListQuery.data || []).map((
@@ -194,7 +207,7 @@
         title="Sign in methods"
         icon={IconShield}
     >
-        <PasswordSettingsCard />
+        <PasswordSettingsCard {isLoading} />
         <TwoFactorSettingsCard
             methods={authCredentials}
             {isLoading}

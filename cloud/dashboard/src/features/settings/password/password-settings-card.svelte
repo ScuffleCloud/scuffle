@@ -1,82 +1,46 @@
 <script lang="ts">
+    import { authState } from "$lib/auth.svelte";
     import InlineNotification from "$lib/components/inline-notification.svelte";
     import Modal from "$lib/components/modal.svelte";
     import SettingsCard from "$lib/components/settings-card.svelte";
+    import { useUpdatePassword } from "./passwordMutations";
 
     interface Props {
-        isLoading?: boolean;
+        isLoading: boolean;
     }
 
     let { isLoading }: Props = $props();
+
+    const userId = authState().user?.id;
+
+    // TODO: Add a new modal for setting password when one originally doesn't exist
+    // Pending UI mock and logic to determine if user has a password initially set
 
     // Password change state
     let currentPassword = $state("");
     let newPassword = $state("");
     let confirmPassword = $state("");
-    let passwordError = $state("");
-    let isUpdating = $state(false);
 
     let modal: Modal;
-
-    function validatePassword(password: string): string | null {
-        if (password.length < 8) {
-            return "Password must be at least 8 characters";
-        }
-        if (password.length < 15 && !/\d/.test(password)) {
-            return "Password must contain at least one number";
-        }
-        if (password.length < 15 && !/[a-z]/.test(password)) {
-            return "Password must contain at least one lowercase letter";
-        }
-        return null;
-    }
 
     function handlePasswordModalClose() {
         currentPassword = "";
         newPassword = "";
         confirmPassword = "";
-        passwordError = "";
     }
 
-    async function handlePasswordChange() {
-        passwordError = "";
+    const updatePasswordMutation = useUpdatePassword(userId);
 
-        if (!currentPassword || !newPassword || !confirmPassword) {
-            passwordError = "All fields are required";
-            return;
-        }
-
-        if (newPassword !== confirmPassword) {
-            passwordError = "New passwords do not match";
-            return;
-        }
-
-        const validationError = validatePassword(newPassword);
-        if (validationError) {
-            passwordError = validationError;
-            return;
-        }
-
-        isUpdating = true;
-
-        try {
-            // TODO: Implement actual password change mutation
-            // await updatePasswordMutation.mutate({
-            //     currentPassword,
-            //     newPassword
-            // });
-
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            modal.closeModal();
-        } catch (error) {
-            passwordError = error instanceof Error
-                ? error.message
-                : "Failed to update password";
-        } finally {
-            isUpdating = false;
-        }
+    function handlePasswordChange() {
+        updatePasswordMutation.mutate({
+            currentPassword,
+            newPassword,
+            confirmPassword,
+        }, {
+            onSuccess: () => {
+                modal.closeModal();
+            },
+        });
     }
 </script>
 
@@ -94,7 +58,7 @@
             title="Change password"
             onClose={handlePasswordModalClose}
             bind:this={modal}
-            closeOnOutsideClick={!isUpdating}
+            closeOnOutsideClick={!updatePasswordMutation.isPending}
         >
             <div class="password-modal-content">
                 <div class="input-group">
@@ -105,7 +69,7 @@
                         bind:value={currentPassword}
                         placeholder="Enter current password"
                         class="password-input"
-                        disabled={isUpdating}
+                        disabled={updatePasswordMutation.isPending}
                     />
                 </div>
 
@@ -117,7 +81,7 @@
                         bind:value={newPassword}
                         placeholder="Enter new password"
                         class="password-input"
-                        disabled={isUpdating}
+                        disabled={updatePasswordMutation.isPending}
                     />
                 </div>
 
@@ -129,14 +93,14 @@
                         bind:value={confirmPassword}
                         placeholder="Confirm new password"
                         class="password-input"
-                        disabled={isUpdating}
+                        disabled={updatePasswordMutation.isPending}
                     />
                 </div>
 
-                {#if passwordError}
+                {#if updatePasswordMutation.error}
                     <InlineNotification
                         type="error"
-                        message={passwordError}
+                        message={updatePasswordMutation.error.message}
                     />
                 {/if}
 
@@ -144,12 +108,14 @@
                     <button
                         class="done-button"
                         onclick={handlePasswordChange}
-                        disabled={isUpdating || !currentPassword
+                        disabled={updatePasswordMutation.isPending
+                        || !currentPassword
                         || !newPassword
                         || !confirmPassword}
                     >
                         {
-                            isUpdating
+                            updatePasswordMutation
+                                .isPending
                             ? "Updating..."
                             : "Update password"
                         }
@@ -157,7 +123,7 @@
                     <button
                         class="default-button"
                         onclick={() => modal.closeModal()}
-                        disabled={isUpdating}
+                        disabled={updatePasswordMutation.isPending}
                     >
                         Cancel
                     </button>

@@ -34,6 +34,11 @@ service SessionsService {
     option (tinc.method).endpoint = {post: "/sessions/webauthn"};
   }
 
+  // List all active sessions for the current user.
+  rpc List(ListUserSessionsRequest) returns (ListUserSessionsResponse) {
+    option (tinc.method).endpoint = {get: "/sessions"};
+  }
+
   rpc CreateUserSessionRequest(CreateUserSessionRequestRequest) returns (UserSessionRequest) {
     option (tinc.method).endpoint = {post: "/session-requests"};
   }
@@ -59,8 +64,8 @@ service SessionsService {
   rpc RefreshUserSession(google.protobuf.Empty) returns (NewUserSessionToken) {
     option (tinc.method).endpoint = {put: "/sessions/refresh"};
   }
-  // Deletes the current session.
-  rpc InvalidateUserSession(google.protobuf.Empty) returns (google.protobuf.Empty) {
+  // Deletes the session.
+  rpc InvalidateUserSession(InvalidateUserSessionRequest) returns (google.protobuf.Empty) {
     option (tinc.method).endpoint = {delete: "/sessions"};
   }
 }
@@ -148,6 +153,12 @@ message LoginWithWebauthnRequest {
   Device device = 3;
 }
 
+message ListUserSessionsRequest {}
+
+message ListUserSessionsResponse {
+  repeated UserSession sessions = 1;
+}
+
 message CreateUserSessionRequestRequest {
   string name = 1;
 }
@@ -197,4 +208,9 @@ message ValidateMfaForUserSessionRequest {
     ValidateMfaForUserSessionWebauthn webauthn = 2;
     ValidateMfaForUserSessionRecoveryCode recovery_code = 3;
   }
+}
+
+message InvalidateUserSessionRequest {
+  string user_id = 1 [(string_constraint).id = true];
+  bytes device_fingerprint = 2;
 }

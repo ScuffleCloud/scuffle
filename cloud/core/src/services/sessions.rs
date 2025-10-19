@@ -5,7 +5,7 @@ use sha2::Digest;
 use crate::google_api;
 use crate::http_ext::CoreRequestExt;
 use crate::operations::Operation;
-use crate::operations::user_sessions::{InvalidateUserSessionRequest, RefreshUserSessionRequest};
+use crate::operations::user_sessions::RefreshUserSessionRequest;
 use crate::services::CoreSvc;
 
 #[async_trait::async_trait]
@@ -115,9 +115,17 @@ impl<G: core_traits::Global> pb::scufflecloud::core::v1::sessions_service_server
         Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
-    async fn invalidate_user_session(&self, req: tonic::Request<()>) -> Result<tonic::Response<()>, tonic::Status> {
-        let (metadata, extensions, _) = req.into_parts();
-        let req = tonic::Request::from_parts(metadata, extensions, InvalidateUserSessionRequest);
+    async fn invalidate_user_session(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::InvalidateUserSessionRequest>,
+    ) -> Result<tonic::Response<()>, tonic::Status> {
+        Operation::<G>::run(req).await.map(tonic::Response::new)
+    }
+
+    async fn list(
+        &self,
+        req: tonic::Request<pb::scufflecloud::core::v1::ListUserSessionsRequest>,
+    ) -> Result<tonic::Response<pb::scufflecloud::core::v1::ListUserSessionsResponse>, tonic::Status> {
         Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 }

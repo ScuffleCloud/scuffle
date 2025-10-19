@@ -223,6 +223,12 @@ action "validate_mfa_for_user_session", "refresh_user_session", "invalidate_user
   context: GlobalContext,
 };
 
+action "list_user_sessions" appliesTo {
+  principal: [User],
+  resource: [Application],
+  context: GlobalContext,
+};
+
 action "get_user", "update_user", "list_user_emails" appliesTo {
   principal: [User],
   resource: [User],

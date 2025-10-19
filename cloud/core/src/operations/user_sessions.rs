@@ -1,11 +1,11 @@
-use core_db_types::models::{User, UserSession, UserSessionTokenId};
+use core_db_types::models::{User, UserId, UserSession, UserSessionTokenId};
 use core_db_types::schema::user_sessions;
-use diesel::{BoolExpressionMethods, ExpressionMethods, SelectableHelper};
+use diesel::{BoolExpressionMethods, ExpressionMethods, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
 use ext_traits::{OptionExt, RequestExt, ResultExt};
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::cedar::Action;
+use crate::cedar::{Action, CoreApplication};
 use crate::chrono_ext::ChronoDateTimeExt;
 use crate::http_ext::CoreRequestExt;
 use crate::operations::{Operation, OperationDriver};
@@ -158,9 +158,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<RefreshUserSessionR
     }
 }
 
-pub(crate) struct InvalidateUserSessionRequest;
-
-impl<G: core_traits::Global> Operation<G> for tonic::Request<InvalidateUserSessionRequest> {
+impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::InvalidateUserSessionRequest> {
     type Principal = User;
     type Resource = UserSession;
     type Response = ();
@@ -173,30 +171,72 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<InvalidateUserSessi
         common::get_user_by_id(global, session.user_id).await
     }
 
-    async fn load_resource(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Resource, tonic::Status> {
-        let session = self.session_or_err()?;
-        Ok(session.clone())
+    async fn load_resource(&mut self, driver: &mut OperationDriver<'_, G>) -> Result<Self::Resource, tonic::Status> {
+        let user_id: UserId = self
+            .get_ref()
+            .user_id
+            .parse()
+            .into_tonic_err_with_field_violation("id", "invalid ID")?;
+        let device_fingerprint = &self.get_ref().device_fingerprint;
+
+        let session = diesel::delete(user_sessions::dsl::user_sessions)
+            .filter(
+                user_sessions::dsl::user_id
+                    .eq(&user_id)
+                    .and(user_sessions::dsl::device_fingerprint.eq(device_fingerprint)),
+            )
+            .returning(UserSession::as_select())
+            .get_result(driver.conn().await?)
+            .await
+            .into_tonic_internal_err("failed to delete user session")?;
+
+        Ok(session)
     }
 
     async fn execute(
         self,
         _driver: &mut OperationDriver<'_, G>,
         _principal: Self::Principal,
-        resource: Self::Resource,
+        _resource: Self::Resource,
+    ) -> Result<Self::Response, tonic::Status> {
+        Ok(())
+    }
+}
+
+impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::core::v1::ListUserSessionsRequest> {
+    type Principal = User;
+    type Resource = CoreApplication;
+    type Response = pb::scufflecloud::core::v1::ListUserSessionsResponse;
+
+    const ACTION: Action = Action::ListUserSessions;
+
+    async fn load_principal(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Principal, tonic::Status> {
+        let global = &self.global::<G>()?;
+        let session = self.session_or_err()?;
+        common::get_user_by_id(global, session.user_id).await
+    }
+
+    async fn load_resource(&mut self, _driver: &mut OperationDriver<'_, G>) -> Result<Self::Resource, tonic::Status> {
+        Ok(CoreApplication)
+    }
+
+    async fn execute(
+        self,
+        _driver: &mut OperationDriver<'_, G>,
+        principal: Self::Principal,
+        _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
         let mut db = global.db().await.into_tonic_internal_err("failed to connect to database")?;
 
-        diesel::delete(user_sessions::dsl::user_sessions)
-            .filter(
-                user_sessions::dsl::user_id
-                    .eq(&resource.user_id)
-                    .and(user_sessions::dsl::device_fingerprint.eq(&resource.device_fingerprint)),
-            )
-            .execute(&mut db)
+        let sessions = user_sessions::dsl::user_sessions
+            .filter(user_sessions::dsl::user_id.eq(principal.id))
+            .load::<UserSession>(&mut db)
             .await
-            .into_tonic_internal_err("failed to delete user session")?;
+            .into_tonic_internal_err("failed to load user sessions")?;
 
-        Ok(())
+        Ok(pb::scufflecloud::core::v1::ListUserSessionsResponse {
+            sessions: sessions.into_iter().map(Into::into).collect(),
+        })
     }
 }

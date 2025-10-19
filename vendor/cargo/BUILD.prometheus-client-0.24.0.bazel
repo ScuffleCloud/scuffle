@@ -73,7 +73,7 @@ rust_library(
     deps = [
         "@cargo_vendor__dtoa-1.0.10//:dtoa",
         "@cargo_vendor__itoa-1.0.15//:itoa",
-        "@cargo_vendor__parking_lot-0.12.4//:parking_lot",
+        "@cargo_vendor__parking_lot-0.12.5//:parking_lot",
         "@cargo_vendor__prometheus-client-0.24.0//:build_script_build",
     ],
 )

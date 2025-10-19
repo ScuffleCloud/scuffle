@@ -66,6 +66,6 @@ rust_library(
         "@cargo_vendor__serde-1.0.228//:serde",
         "@cargo_vendor__serde_json-1.0.145//:serde_json",
         "@cargo_vendor__smol_str-0.3.2//:smol_str",
-        "@cargo_vendor__target-spec-3.5.2//:target_spec",
+        "@cargo_vendor__target-spec-3.5.4//:target_spec",
     ],
 )

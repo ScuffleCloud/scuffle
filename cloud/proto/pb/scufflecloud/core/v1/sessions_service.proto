@@ -94,9 +94,8 @@ message NewUserSessionToken {
   bytes encrypted_token = 2;
   string user_id = 3 [(string_constraint).id = true];
   optional google.protobuf.Timestamp expires_at = 4;
-  google.protobuf.Timestamp session_expires_at = 5;
-  bool session_mfa_pending = 6;
-  repeated MfaOption mfa_options = 7;
+  UserSession session = 5;
+  repeated MfaOption mfa_options = 6;
 }
 
 message LoginWithEmailAndPasswordRequest {

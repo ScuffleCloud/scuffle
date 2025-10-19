@@ -35,6 +35,7 @@ export type UserSessionToken = {
     id: string;
     token: ArrayBuffer;
     userId: string;
+    deviceFingerprint: ArrayBuffer;
     expiresAt: Date | null;
     sessionExpiresAt: Date | null;
     mfaPending: MfaOption[] | null;
@@ -44,6 +45,7 @@ export type StoredUserSessionToken = {
     id: string;
     token: string;
     userId: string;
+    deviceFingerprint: string;
     expiresAt: string | null;
     sessionExpiresAt: string | null;
     mfaPending: number[] | null;
@@ -54,6 +56,7 @@ function toStoredUserSessionToken(token: UserSessionToken): StoredUserSessionTok
         id: token.id,
         token: arrayBufferToBase64(token.token),
         userId: token.userId,
+        deviceFingerprint: arrayBufferToBase64(token.deviceFingerprint),
         expiresAt: token.expiresAt ? token.expiresAt.toISOString() : null,
         sessionExpiresAt: token.sessionExpiresAt ? token.sessionExpiresAt.toISOString() : null,
         mfaPending: token.mfaPending,
@@ -65,6 +68,7 @@ function fromStoredUserSessionToken(token: StoredUserSessionToken): UserSessionT
         id: token.id,
         token: base64ToArrayBuffer(token.token),
         userId: token.userId,
+        deviceFingerprint: base64ToArrayBuffer(token.deviceFingerprint),
         expiresAt: token.expiresAt ? new Date(token.expiresAt) : null,
         sessionExpiresAt: token.sessionExpiresAt ? new Date(token.sessionExpiresAt) : null,
         mfaPending: token.mfaPending ?? null,
@@ -260,6 +264,8 @@ export function authState() {
             if (deviceKeypair.state !== "loaded") throw new Error("Device key is not loaded");
             if (!deviceKeypair.data) throw new Error("No device key available to decrypt session token");
 
+            if (!newToken.session) throw new Error("No session information in new token");
+
             // Decrypt the session token with the device key
             const data = new Uint8Array(newToken.encryptedToken).buffer;
             return window.crypto.subtle.decrypt(RSA_OAEP_SHA256_ALGO, deviceKeypair.data.privateKey, data).then(
@@ -270,11 +276,12 @@ export function authState() {
                             id: newToken.id,
                             token: decrypted,
                             userId: newToken.userId,
+                            deviceFingerprint: new Uint8Array(newToken.session!.deviceFingerprint).buffer,
                             expiresAt: newToken.expiresAt ? timestampToDate(newToken.expiresAt) : null,
-                            sessionExpiresAt: newToken.sessionExpiresAt
-                                ? timestampToDate(newToken.sessionExpiresAt)
+                            sessionExpiresAt: newToken.session!.expiresAt
+                                ? timestampToDate(newToken.session!.expiresAt)
                                 : null,
-                            mfaPending: newToken.sessionMfaPending ? newToken.mfaOptions : null,
+                            mfaPending: newToken.session!.mfaPending ? newToken.mfaOptions : null,
                         },
                     };
 
@@ -299,8 +306,15 @@ export function authState() {
         async logout() {
             if (!browser) return;
 
+            if (userSessionToken.state !== "authenticated") {
+                return;
+            }
+
             try {
-                const call = sessionsServiceClient.invalidateUserSession({});
+                const call = sessionsServiceClient.invalidateUserSession({
+                    userId: userSessionToken.data.userId,
+                    deviceFingerprint: new Uint8Array(userSessionToken.data.deviceFingerprint),
+                });
                 await call.status;
 
                 userSessionToken = { state: "unauthenticated" };

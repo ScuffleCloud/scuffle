@@ -149,8 +149,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<RefreshUserSessionR
             encrypted_token,
             user_id: session.user_id.to_string(),
             expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
-            session_expires_at: Some(session.expires_at.to_prost_timestamp_utc()),
-            session_mfa_pending: session.mfa_pending,
+            session: Some(session.into()),
             mfa_options: mfa_options.into_iter().map(|o| o as i32).collect(),
         };
 

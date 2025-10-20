@@ -5,11 +5,14 @@ use chrono::{DateTime, Utc};
 use crate::models::UserId;
 use crate::models::sha256::Sha256;
 
+id::impl_id!(pub MfaPasskeyCredentialId, "mpk_");
+
 #[derive(Debug, Clone, diesel::Queryable, diesel::Selectable)]
-#[diesel(table_name = crate::schema::mfa_webauthn_credentials)]
+#[diesel(table_name = crate::schema::mfa_passkey_credentials)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct MfaWebauthnCredential {
-    pub id: Sha256,
+pub struct MfaPasskeyCredential {
+    pub id: MfaPasskeyCredentialId,
+    pub credential_id: Vec<u8>,
     pub user_id: UserId,
     pub name: Option<String>,
     pub credential: serde_json::Value,
@@ -18,11 +21,12 @@ pub struct MfaWebauthnCredential {
 }
 
 #[derive(Debug, Clone, diesel::Insertable, diesel::Identifiable, diesel::AsChangeset, bon::Builder)]
-#[diesel(table_name = crate::schema::mfa_webauthn_credentials)]
+#[diesel(table_name = crate::schema::mfa_passkey_credentials)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct NewMfaWebauthnCredential<'a> {
+pub struct NewMfaPasskeyCredential<'a> {
     #[builder(default)]
-    pub id: Sha256,
+    pub id: MfaPasskeyCredentialId,
+    pub credential_id: Vec<u8>,
     pub user_id: UserId,
     pub name: Option<Cow<'a, str>>,
     pub credential: serde_json::Value,

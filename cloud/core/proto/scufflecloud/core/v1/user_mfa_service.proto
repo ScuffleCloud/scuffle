@@ -22,8 +22,8 @@ service UserMfaService {
   // ### Authentication
   //
   // This method can only be called when authenticated with a user session.
-  rpc WebauthnCredentialSetup(UserMfaWebauthnCredentialSetupRequest) returns (UserMfaWebauthnCredentialSetupResponse) {
-    option (tinc.method).endpoint = {post: "/webauthn"};
+  rpc PasskeyCredentialSetup(UserMfaPasskeyCredentialSetupRequest) returns (UserMfaPasskeyCredentialSetupResponse) {
+    option (tinc.method).endpoint = {post: "/passkey"};
   }
 
   // Complete the WebAuthn credential setup.
@@ -37,18 +37,18 @@ service UserMfaService {
   //
   // In some cases the user may be required to provide an additional factor
   // of authentication (MFA) to perform this operation.
-  rpc WebauthnCredentialFinalize(UserMfaWebauthnCredentialFinalizeRequest) returns (UserMfaWebauthnCredentialFinalizeResponse) {
-    option (tinc.method).endpoint = {put: "/webauthn/{webauthn_credential_id}"};
+  rpc PasskeyCredentialFinalize(UserMfaPasskeyCredentialFinalizeRequest) returns (UserMfaPasskeyCredentialFinalizeResponse) {
+    option (tinc.method).endpoint = {put: "/passkey/{passkey_credential_id}"};
   }
 
   // Update the WebAuthn credential.
   //
-  // The `webauthn_credential_id` is the ID of the WebAuthn credential that
-  // was returned from the `WebauthnCredentialSetup` method.
+  // The `passkey_credential_id` is the ID of the WebAuthn credential that
+  // was returned from the `PasskeyCredentialSetup` method.
   //
   // ### Authentication
-  rpc WebauthnCredentialUpdate(UserMfaWebauthnCredentialUpdateRequest) returns (UserMfaWebauthnCredentialUpdateResponse) {
-    option (tinc.method).endpoint = {patch: "/webauthn/{webauthn_credential_id}"};
+  rpc PasskeyCredentialUpdate(UserMfaPasskeyCredentialUpdateRequest) returns (UserMfaPasskeyCredentialUpdateResponse) {
+    option (tinc.method).endpoint = {patch: "/passkey/{passkey_credential_id}"};
   }
 
   // Begin the TOTP credential setup.
@@ -118,32 +118,37 @@ message UserMfaProveChallengeRequest {
 }
 
 // The request for the `UserService.BeginMfaWebauthnCredentialSetup` method.
-message UserMfaWebauthnCredentialSetupRequest {}
+message UserMfaPasskeyCredentialSetupRequest {}
 
 // The response for the `UserService.BeginMfaWebauthnCredentialSetup` method.
-message UserMfaWebauthnCredentialSetupResponse {
-  string webauthn_credential_id = 1 [(string_constraint).id = true];
+message UserMfaPasskeyCredentialSetupResponse {
+  // A unique id for the Passkey credential.
+  string passkey_credential_id = 1 [(string_constraint).id = true];
+  // A json encoded string of the WebAuthn options.
+  string passkey_options = 2;
 }
 
 // The request for the `UserService.CompleteMfaWebauthnCredentialSetup` method.
-message UserMfaWebauthnCredentialFinalizeRequest {
-  string webauthn_credential_id = 1 [(string_constraint).id = true];
+message UserMfaPasskeyCredentialFinalizeRequest {
+  string passkey_credential_id = 1 [(string_constraint).id = true];
+  // A json encoded string of the WebAuthn response.
+  string passkey_response = 2;
 }
 
-// The response for the `UserService.CompleteMfaWebauthnCredentialSetup` method.
-message UserMfaWebauthnCredentialFinalizeResponse {
-  User.Mfa.WebauthnCredential webauthn_credential = 1;
+// The response for the `UserService.CompleteMfaPasskeyCredentialSetup` method.
+message UserMfaPasskeyCredentialFinalizeResponse {
+  User.Mfa.PasskeyCredential passkey_credential = 1;
 }
 
-// The request for the `UserService.UpdateMfaWebauthnCredential` method.
-message UserMfaWebauthnCredentialUpdateRequest {
-  string webauthn_credential_id = 1 [(string_constraint).id = true];
+// The request for the `UserService.UpdateMfaPasskeyCredential` method.
+message UserMfaPasskeyCredentialUpdateRequest {
+  string passkey_credential_id = 1 [(string_constraint).id = true];
   optional string name = 2;
 }
 
-// The response for the `UserService.UpdateMfaWebauthnCredential` method.
-message UserMfaWebauthnCredentialUpdateResponse {
-  User.Mfa.WebauthnCredential webauthn_credential = 1;
+// The response for the `UserService.UpdateMfaPasskeyCredential` method.
+message UserMfaPasskeyCredentialUpdateResponse {
+  User.Mfa.PasskeyCredential passkey_credential = 1;
 }
 
 // The request for the `UserService.BeginMfaTotpCredentialSetup` method.

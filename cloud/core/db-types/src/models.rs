@@ -21,7 +21,7 @@ mod_export!(
     organization_member,
     organization_invitation,
     mfa_totp_credential,
-    mfa_webauthn_credential,
+    mfa_passkey_credential,
     mfa_recovery_code,
     policy_set,
     role,

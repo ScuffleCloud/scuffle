@@ -52,11 +52,14 @@ message User {
 
   // A user's Multi-Factor Authentication (MFA).
   message Mfa {
-    // A user WebAuthn credential.
-    message WebauthnCredential {
-      // The WebAuthn credential ID.
+    // A user Passkey credential.
+    message PasskeyCredential {
+      // The Passkey ID.
       string id = 1 [(string_constraint).id = true];
-      google.protobuf.Timestamp created_at = 2;
+      // The Passkey credential ID.
+      bytes credential_id = 2;
+      // The date and time the Passkey was created.
+      google.protobuf.Timestamp created_at = 3;
     }
 
     // A user TOTP credential.

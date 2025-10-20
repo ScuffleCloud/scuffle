@@ -13,10 +13,11 @@ ON DELETE CASCADE;
 CREATE UNIQUE INDEX ON "mfa_totp_credentials"("user_id");
 
 
-CREATE TABLE "mfa_webauthn_credentials" (
+CREATE TABLE "mfa_passkey_credentials" (
     -- A sha256 of the credential ID (https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.Passkey.html#method.cred_id)
-    "id" sha256 PRIMARY KEY,
+    "id" UUID PRIMARY KEY,
     "user_id" UUID NOT NULL,
+    "credential_id" BYTEA NOT NULL,
     "name" VARCHAR(255),
     -- contains the Passkey (https://docs.rs/webauthn-rs/latest/webauthn_rs/prelude/struct.Passkey.html)
     "credential" JSONB NOT NULL,
@@ -24,11 +25,13 @@ CREATE TABLE "mfa_webauthn_credentials" (
     "last_used_at" TIMESTAMPTZ
 );
 
-ALTER TABLE "mfa_webauthn_credentials"
+CREATE UNIQUE INDEX ON "mfa_passkey_credentials"("user_id", "credential_id");
+
+ALTER TABLE "mfa_passkey_credentials"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
 ON DELETE CASCADE;
 
-CREATE INDEX ON "mfa_webauthn_credentials"("user_id");
+CREATE INDEX ON "mfa_passkey_credentials"("user_id");
 
 
 CREATE TABLE "mfa_recovery_codes" (

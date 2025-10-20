@@ -26,6 +26,7 @@ cedar-policy = "4"
 chrono = "0.4"
 core-db-types = { path = "./db-types", package = "scufflecloud-core-db-types" }
 core-emails = { path = "./emails", package = "scufflecloud-core-emails" }
+core-pb = { package = "scufflecloud-core-proto", path = "./proto" }
 core-traits = { path = "./traits", package = "scufflecloud-core-traits" }
 derive_more = { features = ["display"], version = "2" }
 diesel = { features = ["chrono", "network-address", "serde_json", "uuid"], version = "2" }
@@ -33,10 +34,10 @@ diesel-async = { features = ["async-connection-wrapper", "bb8", "postgres"], ver
 ext-traits = { path = "../ext-traits", package = "scufflecloud-ext-traits" }
 fred = "10"
 geo-ip = { path = "../geo-ip", package = "scufflecloud-geo-ip" }
+hex = "0.4"
 hmac = "0.12"
 ipnetwork = { features = ["serde"], version = "0.21" }
 itertools = "0.14"
-core-pb = { package = "scufflecloud-core-proto", path = "./proto" }
 pkcs8 = "0.10"
 prost = "0.14"
 rand = "0.8"

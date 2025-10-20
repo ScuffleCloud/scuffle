@@ -16,9 +16,9 @@ anyhow = "1"
 core-db-types = { path = "../db-types", package = "scufflecloud-core-db-types" }
 diesel = { version = "2", default-features = false }
 diesel-async = { version = "0.7", features = ["postgres"] }
+email-pb = { path = "../../email/proto", package = "scufflecloud-email-proto" }
 fred = "10"
 geo-ip = { path = "../../geo-ip", package = "scufflecloud-geo-ip" }
-email-pb = { path = "../../email/proto", package = "scufflecloud-email-proto" }
 reqwest = { version = "0.12", default-features = false }
 rustls = { version = "0.23", default-features = false }
 scuffle-batching.path = "../../../crates/batching"

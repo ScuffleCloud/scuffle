@@ -1,9 +1,9 @@
+load("@npm//:defs.bzl", "npm_link_all_packages")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
 load("//misc/utils:proto_descriptor_set.bzl", "proto_descriptor_set")
+load("//misc/utils/js:proto.bzl", "ts_proto")
 load("//misc/utils/rust:manifest.bzl", "cargo_toml")
 load("//misc/utils/rust:package.bzl", "scuffle_build_script", "scuffle_package")
-load("@npm//:defs.bzl", "npm_link_all_packages")
-load("//misc/utils/js:proto.bzl", "ts_proto")
 
 npm_link_all_packages()
 
@@ -18,9 +18,9 @@ proto_library(
     deps = [
         "//crates/tinc:protobuf",
         "@protobuf//:descriptor_proto",
+        "@protobuf//:duration_proto",
         "@protobuf//:empty_proto",
         "@protobuf//:timestamp_proto",
-        "@protobuf//:duration_proto",
     ],
 )
 
@@ -39,8 +39,8 @@ scuffle_build_script(
 )
 
 scuffle_package(
-    crate_name = "scufflecloud-core-proto",
     srcs = ["lib.rs"],
+    crate_name = "scufflecloud-core-proto",
     deps = [
         ":build_script",
         "//crates/tinc",

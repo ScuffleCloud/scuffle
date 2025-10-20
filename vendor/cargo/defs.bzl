@@ -455,6 +455,7 @@ _NORMAL_DEPENDENCIES = {
                 "diesel": Label("@cargo_vendor//:diesel-2.3.2"),
                 "diesel-async": Label("@cargo_vendor//:diesel-async-0.7.3"),
                 "fred": Label("@cargo_vendor//:fred-10.1.0"),
+                "hex": Label("@cargo_vendor//:hex-0.4.3"),
                 "hmac": Label("@cargo_vendor//:hmac-0.12.1"),
                 "ipnetwork": Label("@cargo_vendor//:ipnetwork-0.21.1"),
                 "itertools": Label("@cargo_vendor//:itertools-0.14.0"),

@@ -12,8 +12,8 @@ scuffle_package(
     crate_name = "scufflecloud-core-traits",
     deps = [
         "//cloud/core/db-types",
-        "//cloud/geo-ip",
         "//cloud/email/proto",
+        "//cloud/geo-ip",
         "//crates/batching",
         "//crates/bootstrap",
         "//crates/bootstrap-telemetry",

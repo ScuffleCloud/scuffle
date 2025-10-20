@@ -4,10 +4,7 @@ use tonic::async_trait;
 
 #[async_trait]
 impl<G: core_traits::Global> UserService for crate::services::CoreSvc<G> {
-    async fn get(
-        &self,
-        request: tonic::Request<UserGetRequest>,
-    ) -> tonic::Result<tonic::Response<UserGetResponse>> {
+    async fn get(&self, request: tonic::Request<UserGetRequest>) -> tonic::Result<tonic::Response<UserGetResponse>> {
         Err(tonic::Status::unimplemented("not implemented"))
     }
 
@@ -18,4 +15,3 @@ impl<G: core_traits::Global> UserService for crate::services::CoreSvc<G> {
         Err(tonic::Status::unimplemented("not implemented"))
     }
 }
-

@@ -2,16 +2,17 @@ use std::sync::Arc;
 
 use argon2::{Argon2, PasswordVerifier};
 use core_db_types::models::{
-    MfaRecoveryCode, MfaWebauthnCredential, Organization, OrganizationId, User, UserEmail, UserId, UserSession,
-    UserSessionTokenId,
+    MfaRecoveryCode, MfaWebauthnCredential, MfaWebauthnCredential, Organization, Organization, OrganizationId, User, User,
+    UserEmail, UserId, UserSession, UserSession, UserSessionTokenId,
 };
 use core_db_types::schema::{
-    mfa_recovery_codes, mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials, organizations,
-    user_emails, user_sessions, users,
+    mfa_recovery_codes, mfa_totp_credentials, mfa_totp_credentials, mfa_webauthn_auth_sessions, mfa_webauthn_credentials,
+    mfa_webauthn_credentials, organizations, organizations, user_emails, user_sessions, user_sessions, users, users,
 };
 use core_traits::EmailServiceClient;
 use diesel::{BoolExpressionMethods, ExpressionMethods, JoinOnDsl, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
+use ext_traits::{ChronoDateTimeExt, DisplayExt, OptionExt, ResultExt};
 use geo_ip::maxminddb;
 use geo_ip::middleware::IpAddressInfo;
 use pkcs8::DecodePublicKey;
@@ -19,11 +20,6 @@ use rand::RngCore;
 use sha2::Digest;
 use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
-use core_db_types::models::{MfaRecoveryCode, MfaWebauthnCredential, Organization, User, UserSession};
-use core_db_types::schema::{
-    mfa_recovery_codes, mfa_totp_credentials, mfa_webauthn_credentials, organizations, user_sessions, users,
-};
-use ext_traits::{ChronoDateTimeExt, DisplayExt, OptionExt, ResultExt};
 
 pub(crate) fn email_to_pb<G: core_traits::ConfigInterface>(
     global: &Arc<G>,

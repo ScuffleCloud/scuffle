@@ -4,8 +4,7 @@ use core_pb::v1::{
     UserMfaTotpCredentialFinalizeResponse, UserMfaTotpCredentialSetupRequest, UserMfaTotpCredentialSetupResponse,
     UserMfaTotpCredentialUpdateRequest, UserMfaTotpCredentialUpdateResponse, UserMfaWebauthnCredentialFinalizeRequest,
     UserMfaWebauthnCredentialFinalizeResponse, UserMfaWebauthnCredentialSetupRequest,
-    UserMfaWebauthnCredentialSetupResponse, UserMfaWebauthnCredentialUpdateRequest,
-    UserMfaWebauthnCredentialUpdateResponse,
+    UserMfaWebauthnCredentialSetupResponse, UserMfaWebauthnCredentialUpdateRequest, UserMfaWebauthnCredentialUpdateResponse,
 };
 use tonic::async_trait;
 
@@ -60,4 +59,3 @@ impl<G: core_traits::Global> UserMfaService for crate::services::CoreSvc<G> {
         Err(tonic::Status::unimplemented("not implemented"))
     }
 }
-

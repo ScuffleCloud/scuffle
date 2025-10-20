@@ -2,7 +2,8 @@ use std::borrow::Cow;
 
 use chrono::{DateTime, Utc};
 
-use crate::models::{UserId, sha256::Sha256};
+use crate::models::UserId;
+use crate::models::sha256::Sha256;
 
 #[derive(Debug, Clone, diesel::Queryable, diesel::Selectable)]
 #[diesel(table_name = crate::schema::mfa_webauthn_credentials)]

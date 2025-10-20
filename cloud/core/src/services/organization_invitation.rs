@@ -51,4 +51,3 @@ impl<G: core_traits::Global> OrganizationInvitationService for crate::services::
         Err(tonic::Status::unimplemented("not implemented"))
     }
 }
-

@@ -28,4 +28,3 @@ impl<G: core_traits::Global> UserEmailService for crate::services::CoreSvc<G> {
         Err(tonic::Status::unimplemented("not implemented"))
     }
 }
-

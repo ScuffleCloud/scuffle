@@ -21,11 +21,11 @@ anyhow = "1"
 async-trait = "0.1"
 axum = "0.8"
 base64 = "0.22"
+email-pb = { package = "scufflecloud-email-proto", path = "proto" }
 email-traits = { path = "./traits", package = "scufflecloud-email-traits" }
 ext-traits = { path = "../ext-traits", package = "scufflecloud-ext-traits" }
 http = "1"
 mail-builder = "0.4"
-email-pb = { package = "scufflecloud-email-proto", path = "proto" }
 prost = "0.14"
 reqsign = { version = "0.18", default-features = false, features = ["aws"] }
 reqwest = { features = ["rustls-tls-native-roots-no-provider"], version = "0.12", default-features = false }

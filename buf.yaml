@@ -1,7 +1,8 @@
 # For details on buf.yaml configuration, visit https://buf.build/docs/configuration/v2/buf-yaml
 version: v2
 modules:
-  - path: cloud/proto/pb
+  - path: cloud/core/proto
+  - path: cloud/email/proto
   - path: crates/tinc
 lint:
   use:

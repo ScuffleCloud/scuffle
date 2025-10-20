@@ -1,10 +1,10 @@
 load("@aspect_bazel_lib//lib:output_files.bzl", "output_files")
 load("@aspect_rules_js//npm:defs.bzl", "npm_package")
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@npm//misc/utils/js:@swc/cli/package_json.bzl", swc_cli_bin = "bin")
 load("@npm//misc/utils/js:typescript/package_json.bzl", typescript_bin = "bin")
-load("//misc/utils/protobuf/ts:defs.bzl", "protobuf_ts_compile")
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("//misc/utils:binary_wrapper.bzl", "binary_wrapper")
+load("//misc/utils/protobuf/ts:defs.bzl", "protobuf_ts_compile")
 
 def ts_proto(name, protos):
     """

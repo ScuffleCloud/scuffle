@@ -48,8 +48,8 @@ message DeviceSetupResponse {
 message DeviceFinalizeRequest {
   // The device's fingerprint.
   string device_fingerprint = 1;
-  // The code signed by the device's private key.
-  string signed_code = 2;
+  // The signature of the code signed by the device's private key.
+  bytes code_signature = 2;
 }
 
 // The response for the `DeviceService.Finalize` method.

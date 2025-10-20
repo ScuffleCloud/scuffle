@@ -82,4 +82,3 @@ impl<G: core_traits::Global> UserLoginService for crate::services::CoreSvc<G> {
         Err(tonic::Status::unimplemented("not implemented"))
     }
 }
-

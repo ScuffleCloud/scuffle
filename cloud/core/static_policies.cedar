@@ -8,7 +8,12 @@ unless
 {
   action == Action::"create_webauthn_challenge" ||
   action == Action::"validate_mfa_for_user_session" ||
-  action == Action::"invalidate_user_session"
+  action == Action::"invalidate_user_session" ||
+  action == Action::"login_with_email_password" ||
+  action == Action::"request_magic_link" ||
+  action == Action::"login_with_magic_link" ||
+  action == Action::"login_with_google" ||
+  action == Action::"login_with_webauthn"
 };
 
 permit (

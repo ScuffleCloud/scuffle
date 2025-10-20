@@ -63,8 +63,8 @@ rust_library(
     }),
     version = "0.2.4",
     deps = [
-        "@cargo_vendor__libc-0.2.175//:libc",
-        "@cargo_vendor__os_pipe-1.2.2//:os_pipe",
+        "@cargo_vendor__libc-0.2.177//:libc",
+        "@cargo_vendor__os_pipe-1.2.3//:os_pipe",
         "@cargo_vendor__signal-hook-0.3.18//:signal_hook",
     ],
 )

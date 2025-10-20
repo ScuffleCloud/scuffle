@@ -75,7 +75,7 @@ rust_library(
         "@cargo_vendor__futures-core-0.3.31//:futures_core",
         "@cargo_vendor__futures-util-0.3.31//:futures_util",
         "@cargo_vendor__scoped-futures-0.1.4//:scoped_futures",
-        "@cargo_vendor__tokio-1.47.1//:tokio",
-        "@cargo_vendor__tokio-postgres-0.7.13//:tokio_postgres",
+        "@cargo_vendor__tokio-1.48.0//:tokio",
+        "@cargo_vendor__tokio-postgres-0.7.15//:tokio_postgres",
     ],
 )

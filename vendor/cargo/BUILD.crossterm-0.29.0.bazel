@@ -75,7 +75,7 @@ rust_library(
         "@cargo_vendor__bitflags-2.9.4//:bitflags",
         "@cargo_vendor__derive_more-2.0.1//:derive_more",
         "@cargo_vendor__futures-core-0.3.31//:futures_core",
-        "@cargo_vendor__parking_lot-0.12.4//:parking_lot",
+        "@cargo_vendor__parking_lot-0.12.5//:parking_lot",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@cargo_vendor__mio-1.0.4//:mio",  # cfg(unix)

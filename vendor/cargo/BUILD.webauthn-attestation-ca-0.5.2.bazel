@@ -66,8 +66,8 @@ rust_library(
     version = "0.5.2",
     deps = [
         "@cargo_vendor__base64urlsafedata-0.5.2//:base64urlsafedata",
-        "@cargo_vendor__openssl-0.10.73//:openssl",
-        "@cargo_vendor__openssl-sys-0.9.109//:openssl_sys",
+        "@cargo_vendor__openssl-0.10.74//:openssl",
+        "@cargo_vendor__openssl-sys-0.9.110//:openssl_sys",
         "@cargo_vendor__serde-1.0.228//:serde",
         "@cargo_vendor__tracing-0.1.41//:tracing",
         "@cargo_vendor__uuid-1.18.1//:uuid",
@@ -110,7 +110,7 @@ cargo_build_script(
     ),
     edition = "2021",
     link_deps = [
-        "@cargo_vendor__openssl-sys-0.9.109//:openssl_sys",
+        "@cargo_vendor__openssl-sys-0.9.110//:openssl_sys",
     ],
     pkg_name = "webauthn-attestation-ca",
     rustc_env_files = [

@@ -36,7 +36,11 @@ rust_library(
     ),
     crate_features = [
         "allocator-api2",
+        "default",
+        "default-hasher",
+        "equivalent",
         "inline-more",
+        "raw-entry",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -66,5 +70,7 @@ rust_library(
     version = "0.16.0",
     deps = [
         "@cargo_vendor__allocator-api2-0.2.21//:allocator_api2",
+        "@cargo_vendor__equivalent-1.0.2//:equivalent",
+        "@cargo_vendor__foldhash-0.2.0//:foldhash",
     ],
 )

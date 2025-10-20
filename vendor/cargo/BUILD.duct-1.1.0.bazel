@@ -65,21 +65,21 @@ rust_library(
     }),
     version = "1.1.0",
     deps = [
-        "@cargo_vendor__os_pipe-1.2.2//:os_pipe",
+        "@cargo_vendor__os_pipe-1.2.3//:os_pipe",
         "@cargo_vendor__shared_child-1.1.1//:shared_child",
         "@cargo_vendor__shared_thread-0.2.0//:shared_thread",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.177//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.177//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.177//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.177//:libc",  # cfg(unix)
         ],
         "//conditions:default": [],
     }),

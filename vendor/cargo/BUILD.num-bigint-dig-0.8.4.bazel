@@ -81,7 +81,7 @@ rust_library(
         "@cargo_vendor__num-traits-0.2.19//:num_traits",
         "@cargo_vendor__rand-0.8.5//:rand",
         "@cargo_vendor__smallvec-1.15.1//:smallvec",
-        "@cargo_vendor__zeroize-1.8.1//:zeroize",
+        "@cargo_vendor__zeroize-1.8.2//:zeroize",
     ],
 )
 

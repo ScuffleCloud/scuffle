@@ -83,6 +83,6 @@ rust_library(
         "@cargo_vendor__signature-2.2.0//:signature",
         "@cargo_vendor__spki-0.7.3//:spki",
         "@cargo_vendor__subtle-2.6.1//:subtle",
-        "@cargo_vendor__zeroize-1.8.1//:zeroize",
+        "@cargo_vendor__zeroize-1.8.2//:zeroize",
     ],
 )

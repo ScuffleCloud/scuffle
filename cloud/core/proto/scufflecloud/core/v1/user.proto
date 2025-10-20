@@ -23,7 +23,7 @@ message User {
   // The user's name.
   Name name = 2;
   // The user's primary email.
-  Email primary_email = 3;
+  string primary_email = 3;
   // The user's avatar URL.
   optional string avatar_url = 4;
   // The date and time the user was created.

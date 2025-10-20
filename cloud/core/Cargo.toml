@@ -24,6 +24,7 @@ axum = "0.8"
 base64 = "0.22"
 cedar-policy = "4"
 chrono = "0.4"
+bon = "3.5"
 core-db-types = { path = "./db-types", package = "scufflecloud-core-db-types" }
 core-emails = { path = "./emails", package = "scufflecloud-core-emails" }
 core-pb = { package = "scufflecloud-core-proto", path = "./proto" }

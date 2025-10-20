@@ -5962,6 +5962,7 @@ dependencies = [
  "async-trait",
  "axum",
  "base64 0.22.1",
+ "bon",
  "cedar-policy",
  "chrono",
  "derive_more",

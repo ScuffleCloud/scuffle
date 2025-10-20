@@ -35,6 +35,10 @@ scuffle_package(
     aliases = aliases,
     crate_name = "scufflecloud-core",
     deps = deps,
+    stable_as_nightly = True,
+    rustc_flags = [
+        "-Zhigher-ranked-assumptions",
+    ],
 )
 
 scuffle_package(

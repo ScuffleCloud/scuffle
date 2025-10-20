@@ -19,7 +19,6 @@
 #![allow(clippy::result_large_err)]
 
 // mod captcha;
-// mod common;
 // mod google_api;
 mod services;
 // mod totp;

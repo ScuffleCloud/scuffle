@@ -449,6 +449,7 @@ _NORMAL_DEPENDENCIES = {
                 "argon2": Label("@cargo_vendor//:argon2-0.5.3"),
                 "axum": Label("@cargo_vendor//:axum-0.8.4"),
                 "base64": Label("@cargo_vendor//:base64-0.22.1"),
+                "bon": Label("@cargo_vendor//:bon-3.7.2"),
                 "cedar-policy": Label("@cargo_vendor//:cedar-policy-4.5.1"),
                 "chrono": Label("@cargo_vendor//:chrono-0.4.42"),
                 "derive_more": Label("@cargo_vendor//:derive_more-2.0.1"),

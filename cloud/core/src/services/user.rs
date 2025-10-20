@@ -1,17 +1,208 @@
+use std::borrow::Cow;
+
+use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+use argon2::password_hash::SaltString;
+use core_db_types::models::{User, UserEmail, UserId};
+use core_db_types::schema::{user_emails, users};
 use core_pb::v1::user_service_server::UserService;
-use core_pb::v1::{UserGetRequest, UserGetResponse, UserUpdateRequest, UserUpdateResponse};
+use core_pb::v1::{User as PbUser, UserGetRequest, UserGetResponse, UserUpdateRequest, UserUpdateResponse};
+use diesel::{OptionalExtension, SelectableHelper};
+use diesel::query_dsl::methods::FindDsl;
+use diesel_async::RunQueryDsl;
+use ext_traits::{OptionExt, RequestExt, ResultExt};
+use core_traits::DatabaseExt;
 use tonic::async_trait;
+use tonic_types::{ErrorDetails, StatusExt};
+
+use crate::auth_session::{AuthSession, AuthSessionExt};
+
+fn user_to_proto(
+    user: User,
+) -> PbUser {
+    PbUser {
+        id: user.id.to_string(),
+        name: Some(core_pb::v1::user::Name {
+            first: user.first_name.unwrap_or_default(),
+            last: user.last_name,
+            preferred: user.preferred_name,
+        }),
+        primary_email: user.primary_email,
+        avatar_url: user.avatar_url,
+        created_at: Some(user.id.datetime().into()),
+    }
+}
+
+#[derive(Debug, Clone, diesel::AsChangeset)]
+#[diesel(table_name = core_db_types::schema::users)]
+struct UserUpdate<'a> {
+    id: UserId,
+    preferred_name: Option<Cow<'a, str>>,
+    first_name: Option<Cow<'a, str>>,
+    last_name: Option<Cow<'a, str>>,
+    password_hash: Option<Cow<'a, str>>,
+    primary_email: Option<Cow<'a, str>>,
+}
+
+impl<'a> UserUpdate<'a> {
+    fn new(id: UserId) -> Self {
+        Self {
+            id,
+            preferred_name: None,
+            first_name: None,
+            last_name: None,
+            password_hash: None,
+            primary_email: None,
+        }
+    }
+
+    fn is_empty(&self) -> bool {
+        self.preferred_name.is_none() && self.first_name.is_none() && self.last_name.is_none() && self.password_hash.is_none() && self.primary_email.is_none()
+    }
+}
 
 #[async_trait]
 impl<G: core_traits::Global> UserService for crate::services::CoreSvc<G> {
     async fn get(&self, request: tonic::Request<UserGetRequest>) -> tonic::Result<tonic::Response<UserGetResponse>> {
-        Err(tonic::Status::unimplemented("not implemented"))
+        let global = request.global::<G>()?;
+
+        // Get authenticated user session
+        let auth_session = request
+            .auth_session::<G>()
+            .await?
+            .into_tonic_err(tonic::Code::Unauthenticated, "authentication required", ErrorDetails::new())?;
+
+        let user_id = match auth_session {
+            AuthSession::User(session) => session.id(),
+        };
+
+        // Get user from database
+        let user = global.user_loader().load(user_id).await
+            .unwrap_or_default()
+            .into_tonic_internal_err("failed to query user")?;
+
+        Ok(tonic::Response::new(UserGetResponse { user: Some(user_to_proto(user)) }))
     }
 
     async fn update(
         &self,
         request: tonic::Request<UserUpdateRequest>,
     ) -> tonic::Result<tonic::Response<UserUpdateResponse>> {
-        Err(tonic::Status::unimplemented("not implemented"))
+        let global = request.global::<G>()?;
+
+        // Get authenticated user session (must be done before into_inner())
+        let auth_session = request
+            .auth_session::<G>()
+            .await?
+            .into_tonic_err(tonic::Code::Unauthenticated, "authentication required", ErrorDetails::new())?;
+
+        let req = request.into_inner();
+
+        let (user_id, has_mfa) = match auth_session {
+            AuthSession::User(session) => (session.id(), session.has_mfa()),
+        };
+
+
+        if !has_mfa {
+            let mut violations = ErrorDetails::new();
+
+            if req.password.is_some() {
+                violations.add_bad_request_violation("password", "MFA is required to update password");
+            }
+
+            if req.primary_email.is_some() {
+                violations.add_bad_request_violation("primary_email", "MFA is required to update primary email");
+            }
+
+            if violations.has_bad_request_violations() {
+                return Err(tonic::Status::with_error_details(
+                    tonic::Code::FailedPrecondition,
+                    "multi-factor authentication required",
+                    violations,
+                ));
+            }
+        }
+
+        let mut db = global.db().await.into_tonic_internal_err("failed to get database connection")?;
+
+        let user = db.tx(async |tx| {
+            let mut update = UserUpdate::new(user_id);
+
+            if let Some(name) = req.name {
+                update.first_name = Some(Cow::Owned(name.first));
+                update.last_name = name.last.map(Cow::Owned);
+                update.preferred_name = name.preferred.map(Cow::Owned);
+            }
+
+            // Update password if provided
+            if let Some(password) = req.password {
+                let salt = SaltString::generate(&mut rand::rngs::OsRng);
+                let argon2 = Argon2::default();
+                let password_hash = argon2.hash_password(password.new_password.as_bytes(), &salt)
+                    .into_tonic_internal_err("failed to hash password")?
+                    .to_string();
+
+                let user = users::table.find(user_id).first::<User>(tx)
+                    .await
+                    .into_tonic_internal_err("failed to query user")?;
+
+                match (user.password_hash, password.current_password) {
+                    (Some(current_hash), Some(current_password)) => {
+                        let current_hash = PasswordHash::new(&current_hash)
+                            .into_tonic_internal_err("failed to parse current password hash")?;
+
+                        argon2.verify_password(current_password.as_bytes(), &current_hash).map_err(|_| {
+                            tonic::Status::with_error_details(
+                                tonic::Code::InvalidArgument,
+                                "invalid current password",
+                                ErrorDetails::with_bad_request_violation("password.current_password", "invalid current password"),
+                            )
+                        })?;
+                    },
+                    (None, None) => {},
+                    _ => {
+                        return Err(tonic::Status::with_error_details(
+                            tonic::Code::InvalidArgument,
+                            "invalid current password",
+                            ErrorDetails::with_bad_request_violation("password.current_password", "invalid current password"),
+                        ));
+                    }
+                }
+
+                update.password_hash = Some(Cow::Owned(password_hash));
+            }
+
+            // Update primary email if provided
+            if let Some(primary_email) = req.primary_email {
+                let user_email = user_emails::table.find(&primary_email).first::<UserEmail>(tx).await.optional().into_tonic_internal_err("failed to query user email")?;
+                if user_email.is_none_or(|e| e.user_id != user_id) {
+                    return Err(tonic::Status::with_error_details(
+                        tonic::Code::InvalidArgument,
+                        "invalid primary email",
+                        ErrorDetails::with_bad_request_violation("primary_email", "primary email is not associated with the user"),
+                    ));
+                }
+
+                update.primary_email = Some(Cow::Owned(primary_email));
+            }
+
+            if update.is_empty() {
+                return Err(tonic::Status::with_error_details(
+                    tonic::Code::InvalidArgument,
+                    "no updates provided",
+                    ErrorDetails::with_bad_request_violation(".", "no updates provided"),
+                ));
+            }
+
+            let user = diesel::update(users::table.find(user_id))
+                .set(update)
+                .returning(User::as_select())
+                .get_result::<User>(tx)
+                .await
+                .into_tonic_internal_err("failed to update user")?;
+
+            Ok(user)
+        }).await?;
+
+        Ok(tonic::Response::new(UserUpdateResponse { user: Some(user_to_proto(user)) }))
     }
 }

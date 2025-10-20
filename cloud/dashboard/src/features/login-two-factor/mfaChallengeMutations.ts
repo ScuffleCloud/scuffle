@@ -1,3 +1,4 @@
+import { goto } from "$app/navigation";
 import { authState } from "$lib/auth.svelte";
 import { sessionsServiceClient } from "$lib/grpcClient";
 import { withRpcErrorHandling } from "$lib/utils";
@@ -11,8 +12,9 @@ export function useCreateWebauthnChallenge(userId: string | undefined) {
                 if (!userId) throw new Error("User not authenticated");
                 return await createMfaWebauthnChallenge(userId);
             }),
-        onSuccess: () => {
-            authState().reloadUserForMfa();
+        onSuccess: async () => {
+            await authState().reloadUserForMfa();
+            goto("/");
         },
     }));
 }
@@ -43,6 +45,7 @@ export function useValidateMfaTotp() {
             }),
         onSuccess: () => {
             authState().reloadUserForMfa();
+            goto("/");
         },
     }));
 }

@@ -9,3 +9,15 @@ export function handleMagicLinkCallback(
         mutateFn({ code });
     }
 }
+
+export function handleGoogleOAuthCallback(
+    mutateFn: (params: { code: string; state: string }) => void,
+): void {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+    const state = urlParams.get("state");
+
+    if (code && state) {
+        mutateFn({ code, state });
+    }
+}

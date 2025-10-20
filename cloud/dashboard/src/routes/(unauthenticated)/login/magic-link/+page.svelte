@@ -1,9 +1,9 @@
-<!-- The url that the magic link will return if accessed by a returning user -->
 <script>
+    import AuthCallbackForm from "$features/login/auth-callbacks/auth-callback-form.svelte";
+    import { handleMagicLinkCallback } from "$features/login/auth-callbacks/utils";
     import {
         useCompleteMagicLink,
     } from "$features/login/authMutations";
-    import { handleMagicLinkCallback } from "$features/login/utils";
     import { onMount } from "svelte";
 
     const completeMagicLink = useCompleteMagicLink();
@@ -13,4 +13,7 @@
     });
 </script>
 
-<div>Processing magic link...</div>
+<AuthCallbackForm
+    message="Verifying email..."
+    mutation={completeMagicLink}
+/>

@@ -31,7 +31,6 @@
         "globals": "^16.0.0",
         "lodash": "^4.17.21",
         "melt": "^0.17.8",
-        "qrcode-generator": "^2.0.4",
         "svelte": "^5.39.8",
         "svelte-echarts": "^1.0.0",
         "svelte-eslint-parser": "^0.43.0",

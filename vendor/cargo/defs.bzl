@@ -4869,7 +4869,6 @@ _CONDITIONS = {
     "cfg(all(target_arch = \"aarch64\", target_vendor = \"apple\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin"],
     "cfg(all(target_arch = \"wasm32\", any(target_os = \"unknown\", target_os = \"none\")))": ["@rules_rust//rust/platform:wasm32-unknown-unknown"],
     "cfg(all(target_arch = \"wasm32\", not(any(target_os = \"emscripten\", target_os = \"wasi\"))))": ["@rules_rust//rust/platform:wasm32-unknown-unknown"],
-    "cfg(all(target_arch = \"wasm32\", not(target_os = \"emscripten\")))": ["@rules_rust//rust/platform:wasm32-unknown-unknown"],
     "cfg(all(target_arch = \"wasm32\", not(target_os = \"wasi\")))": ["@rules_rust//rust/platform:wasm32-unknown-unknown"],
     "cfg(all(target_arch = \"wasm32\", not(target_os = \"wasi\"), not(daku)))": ["@rules_rust//rust/platform:wasm32-unknown-unknown"],
     "cfg(all(target_family = \"wasm\", target_os = \"unknown\"))": ["@rules_rust//rust/platform:wasm32-unknown-unknown"],
@@ -5511,16 +5510,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/byteorder/1.5.0/download"],
         strip_prefix = "byteorder-1.5.0",
         build_file = Label("//vendor/cargo:BUILD.byteorder-1.5.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__byteorder-lite-0.1.0",
-        sha256 = "8f1fe948ff07f4bd06c30984e69f5b4899c516a3ef74f34df92a2df2ab535495",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/byteorder-lite/0.1.0/download"],
-        strip_prefix = "byteorder-lite-0.1.0",
-        build_file = Label("//vendor/cargo:BUILD.byteorder-lite-0.1.0.bazel"),
     )
 
     maybe(
@@ -6645,16 +6634,6 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__fdeflate-0.3.7",
-        sha256 = "1e6853b52649d4ac5c0bd02320cddc5ba956bdb407c4b75a2c6b75bf51500f8c",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/fdeflate/0.3.7/download"],
-        strip_prefix = "fdeflate-0.3.7",
-        build_file = Label("//vendor/cargo:BUILD.fdeflate-0.3.7.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "cargo_vendor__filetime-0.2.26",
         sha256 = "bc0505cd1b6fa6580283f6bdf70a73fcf4aba1184038c90902b92b3dd0df63ed",
         type = "tar.gz",
@@ -7445,16 +7424,6 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__image-0.25.8",
-        sha256 = "529feb3e6769d234375c4cf1ee2ce713682b8e76538cb13f9fc23e1400a591e7",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/image/0.25.8/download"],
-        strip_prefix = "image-0.25.8",
-        build_file = Label("//vendor/cargo:BUILD.image-0.25.8.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "cargo_vendor__indent_write-2.2.0",
         sha256 = "0cfe9645a18782869361d9c8732246be7b410ad4e919d3609ebabdac00ba12c3",
         type = "tar.gz",
@@ -8061,16 +8030,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/mio/1.0.4/download"],
         strip_prefix = "mio-1.0.4",
         build_file = Label("//vendor/cargo:BUILD.mio-1.0.4.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__moxcms-0.7.5",
-        sha256 = "ddd32fa8935aeadb8a8a6b6b351e40225570a37c43de67690383d87ef170cd08",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/moxcms/0.7.5/download"],
-        strip_prefix = "moxcms-0.7.5",
-        build_file = Label("//vendor/cargo:BUILD.moxcms-0.7.5.bazel"),
     )
 
     maybe(
@@ -8835,16 +8794,6 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__png-0.18.0",
-        sha256 = "97baced388464909d42d89643fe4361939af9b7ce7a31ee32a168f832a70f2a0",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/png/0.18.0/download"],
-        strip_prefix = "png-0.18.0",
-        build_file = Label("//vendor/cargo:BUILD.png-0.18.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
         name = "cargo_vendor__portable-atomic-1.11.1",
         sha256 = "f84267b20a16ea918e43c6a88433c2d54fa145c92a811b5b047ccbe153674483",
         type = "tar.gz",
@@ -9101,36 +9050,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/pulldown-cmark-to-cmark/21.0.0/download"],
         strip_prefix = "pulldown-cmark-to-cmark-21.0.0",
         build_file = Label("//vendor/cargo:BUILD.pulldown-cmark-to-cmark-21.0.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__pxfm-0.1.23",
-        sha256 = "f55f4fedc84ed39cb7a489322318976425e42a147e2be79d8f878e2884f94e84",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/pxfm/0.1.23/download"],
-        strip_prefix = "pxfm-0.1.23",
-        build_file = Label("//vendor/cargo:BUILD.pxfm-0.1.23.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__qrcodegen-1.8.0",
-        sha256 = "4339fc7a1021c9c1621d87f5e3505f2805c8c105420ba2f2a4df86814590c142",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/qrcodegen/1.8.0/download"],
-        strip_prefix = "qrcodegen-1.8.0",
-        build_file = Label("//vendor/cargo:BUILD.qrcodegen-1.8.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__qrcodegen-image-1.5.0",
-        sha256 = "221b7eace1aef8c95d65dbe09fb7a1a43d006045394a89afba6997721fcb7708",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/qrcodegen-image/1.5.0/download"],
-        strip_prefix = "qrcodegen-image-1.5.0",
-        build_file = Label("//vendor/cargo:BUILD.qrcodegen-image-1.5.0.bazel"),
     )
 
     maybe(
@@ -10050,16 +9969,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/signature/2.2.0/download"],
         strip_prefix = "signature-2.2.0",
         build_file = Label("//vendor/cargo:BUILD.signature-2.2.0.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__simd-adler32-0.3.7",
-        sha256 = "d66dc143e6b11c1eddc06d5c423cfc97062865baf299914ab64caa38182078fe",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/simd-adler32/0.3.7/download"],
-        strip_prefix = "simd-adler32-0.3.7",
-        build_file = Label("//vendor/cargo:BUILD.simd-adler32-0.3.7.bazel"),
     )
 
     maybe(

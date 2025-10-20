@@ -21,6 +21,7 @@ CREATE TABLE "user_emails" (
 CREATE TABLE "pending_user_emails" (
     "email" VARCHAR(255) NOT NULL,
     "user_id" UUID NOT NULL,
+    "codes_sent" INTEGER NOT NULL DEFAULT 0,
     "last_sent_code_at" TIMESTAMPTZ NOT NULL,
     PRIMARY KEY("email", "user_id")
 );

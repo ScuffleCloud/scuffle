@@ -13,7 +13,7 @@ pub struct MfaTotpCredential {
     pub id: MfaTotpCredentialId,
     pub user_id: UserId,
     pub name: Option<String>,
-    pub secret: Vec<u8>,
+    pub url: String,
     pub last_used_at: Option<DateTime<Utc>>,
 }
 
@@ -25,6 +25,6 @@ pub struct NewMfaTotpCredential<'a> {
     pub id: MfaTotpCredentialId,
     pub user_id: UserId,
     pub name: Option<Cow<'a, str>>,
-    pub secret: Vec<u8>,
+    pub url: String,
     pub last_used_at: Option<DateTime<Utc>>,
 }

@@ -152,11 +152,13 @@ message UserMfaTotpCredentialSetupRequest {}
 // The response for the `UserService.BeginTotpCredentialSetup` method.
 message UserMfaTotpCredentialSetupResponse {
   string totp_credential_id = 1 [(string_constraint).id = true];
+  string totp_credential_url = 2;
 }
 
 // The request for the `UserService.CompleteMfaTotpCredentialSetup` method.
 message UserMfaTotpCredentialFinalizeRequest {
   string totp_credential_id = 1 [(string_constraint).id = true];
+  string totp_generated_token = 2;
 }
 
 // The response for the `UserService.CompleteMfaTotpCredentialSetup` method.

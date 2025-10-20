@@ -14,6 +14,79 @@ pub(crate) trait AuthSessionExt {
     }
 }
 
+pub(crate) trait AuthSessionResultExt: Sized {
+    type Output;
+    fn required(self) -> tonic::Result<Self::Output>;
+}
+
+impl AuthSessionResultExt for tonic::Result<Option<AuthSession>> {
+    type Output = AuthSession;
+    fn required(self) -> tonic::Result<Self::Output> {
+        match self {
+            Ok(s) => s.required(),
+            Err(e) => Err(e),
+        }
+    }
+}
+
+impl AuthSessionResultExt for tonic::Result<AuthSession> {
+    type Output = AuthSession;
+    fn required(self) -> tonic::Result<Self::Output> {
+        match self {
+            Ok(session) => Ok(session),
+            Err(e) => Err(e),
+        }
+    }
+}
+
+impl AuthSessionResultExt for tonic::Result<Option<UserAuthSession>> {
+    type Output = UserAuthSession;
+    fn required(self) -> tonic::Result<Self::Output> {
+        match self {
+            Ok(s) => s.required(),
+            Err(e) => Err(e),
+        }
+    }
+}
+
+impl AuthSessionResultExt for tonic::Result<UserAuthSession> {
+    type Output = UserAuthSession;
+    fn required(self) -> tonic::Result<Self::Output> {
+        match self {
+            Ok(session) => Ok(session),
+            Err(e) => Err(e),
+        }
+    }
+}
+
+impl AuthSessionResultExt for Option<AuthSession> {
+    type Output = AuthSession;
+    fn required(self) -> tonic::Result<Self::Output> {
+        match self {
+            Some(session) => Ok(session),
+            None => Err(tonic::Status::with_error_details(
+                tonic::Code::Unauthenticated,
+                "authentication required",
+                ErrorDetails::new(),
+            )),
+        }
+    }
+}
+
+impl AuthSessionResultExt for Option<UserAuthSession> {
+    type Output = UserAuthSession;
+    fn required(self) -> tonic::Result<Self::Output> {
+        match self {
+            Some(session) => Ok(session),
+            None => Err(tonic::Status::with_error_details(
+                tonic::Code::Unauthenticated,
+                "user authentication required",
+                ErrorDetails::new(),
+            )),
+        }
+    }
+}
+
 #[non_exhaustive]
 pub(crate) enum AuthSession {
     User(UserAuthSession),
@@ -50,6 +123,22 @@ impl UserAuthSession {
 
     pub(crate) fn has_mfa(&self) -> bool {
         self.has_mfa
+    }
+
+    pub(crate) fn with_mfa_required(self) -> tonic::Result<Self> {
+        self.mfa_required()?;
+        Ok(self)
+    }
+
+    pub(crate) fn mfa_required(&self) -> tonic::Result<()> {
+        if !self.has_mfa {
+            return Err(tonic::Status::with_error_details(
+                tonic::Code::PermissionDenied,
+                "multi-factor authentication required",
+                ErrorDetails::with_error_info("multi-factor authentication required", "auth", HashMap::from_iter([("requires_mfa".into(), "true".into())])),
+            ));
+        }
+        Ok(())
     }
 }
 

@@ -15,7 +15,7 @@ use ext_traits::{OptionExt, RequestExt, ResultExt};
 use tonic::async_trait;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::auth_session::AuthSessionExt;
+use crate::auth_session::{AuthSessionExt, AuthSessionResultExt};
 
 fn user_to_proto(user: User) -> PbUser {
     PbUser {
@@ -47,11 +47,7 @@ impl<G: core_traits::Global> UserService for crate::services::CoreSvc<G> {
         let global = request.global::<G>()?;
 
         // Get authenticated user session
-        let auth_session = request.auth_user::<G>().await?.into_tonic_err(
-            tonic::Code::Unauthenticated,
-            "authentication required",
-            ErrorDetails::new(),
-        )?;
+        let auth_session = request.auth_user::<G>().await?.required()?;
 
         // Get user from database
         let user = global
@@ -73,37 +69,12 @@ impl<G: core_traits::Global> UserService for crate::services::CoreSvc<G> {
         let global = request.global::<G>()?;
 
         // Get authenticated user session (must be done before into_inner())
-        let auth_session = request.auth_user::<G>().await?.into_tonic_err(
-            tonic::Code::Unauthenticated,
-            "authentication required",
-            ErrorDetails::new(),
-        )?;
+        let auth_session = request.auth_user::<G>().await?.required()?;
 
         let req = request.into_inner();
 
-        if !auth_session.has_mfa() {
-            let mut violations = ErrorDetails::new();
-
-            if req.password.is_some() {
-                violations.add_bad_request_violation("password", "MFA is required to update password");
-            }
-
-            if req.primary_email.is_some() {
-                violations.add_bad_request_violation("primary_email", "MFA is required to update primary email");
-            }
-
-            if violations.has_bad_request_violations() {
-                violations.set_error_info(
-                    "multi-factor authentication required",
-                    "auth",
-                    HashMap::from_iter([("requires_mfa".into(), "true".into())]),
-                );
-                return Err(tonic::Status::with_error_details(
-                    tonic::Code::FailedPrecondition,
-                    "multi-factor authentication required",
-                    violations,
-                ));
-            }
+        if req.password.is_some() || req.primary_email.is_some() {
+            auth_session.mfa_required()?;
         }
 
         let mut db = global

@@ -37,7 +37,6 @@ rust_library(
     crate_features = [
         "default",
         "otpauth",
-        "qr",
         "url",
         "urlencoding",
     ],
@@ -71,7 +70,6 @@ rust_library(
         "@cargo_vendor__base32-0.5.1//:base32",
         "@cargo_vendor__constant_time_eq-0.3.1//:constant_time_eq",
         "@cargo_vendor__hmac-0.12.1//:hmac",
-        "@cargo_vendor__qrcodegen-image-1.5.0//:qrcodegen_image",
         "@cargo_vendor__sha1-0.10.6//:sha1",
         "@cargo_vendor__sha2-0.10.9//:sha2",
         "@cargo_vendor__url-2.5.7//:url",

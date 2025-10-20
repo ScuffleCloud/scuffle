@@ -17,7 +17,7 @@ use fred::types::Expiration;
 use tonic::async_trait;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::auth_session::{AuthSession, AuthSessionExt};
+use crate::auth_session::{AuthSession, AuthSessionExt, AuthSessionResultExt};
 
 const EMAIL_VERIFICATION_EXPIRY: i64 = 15 * 60; // 15 minutes
 const RATE_LIMIT_WINDOW: i64 = 60; // 1 minute between emails
@@ -100,15 +100,7 @@ impl<G: core_traits::Global> UserEmailService for crate::services::CoreSvc<G> {
         let global = request.global::<G>()?;
 
         // Get authenticated user session
-        let auth_session = request.auth_session::<G>().await?.into_tonic_err(
-            tonic::Code::Unauthenticated,
-            "authentication required",
-            ErrorDetails::new(),
-        )?;
-
-        let user_id = match auth_session {
-            AuthSession::User(session) => session.id(),
-        };
+        let user_session = request.auth_user::<G>().await?.required()?;
 
         // Get user emails from database
         let mut db = global
@@ -117,7 +109,7 @@ impl<G: core_traits::Global> UserEmailService for crate::services::CoreSvc<G> {
             .into_tonic_internal_err("failed to get database connection")?;
 
         let verified_emails = user_emails::table
-            .filter(user_emails::user_id.eq(user_id))
+            .filter(user_emails::user_id.eq(user_session.id()))
             .select(UserEmail::as_select())
             .load::<UserEmail>(&mut db)
             .await
@@ -125,7 +117,7 @@ impl<G: core_traits::Global> UserEmailService for crate::services::CoreSvc<G> {
 
         // Create a map of pending emails for fast lookup
         let pending_emails = pending_user_emails::table
-            .filter(pending_user_emails::user_id.eq(user_id))
+            .filter(pending_user_emails::user_id.eq(user_session.id()))
             .select(PendingUserEmail::as_select())
             .load::<PendingUserEmail>(&mut db)
             .await
@@ -150,11 +142,7 @@ impl<G: core_traits::Global> UserEmailService for crate::services::CoreSvc<G> {
         let global = request.global::<G>()?;
 
         // Get authenticated user session
-        let auth_session = request.auth_user::<G>().await?.into_tonic_err(
-            tonic::Code::Unauthenticated,
-            "authentication required",
-            ErrorDetails::new(),
-        )?;
+        let auth_session = request.auth_user::<G>().await?.required()?.with_mfa_required()?;
 
         let req = request.into_inner();
 
@@ -258,12 +246,7 @@ impl<G: core_traits::Global> UserEmailService for crate::services::CoreSvc<G> {
                 .into_tonic_err_with_field_violation("user_id", "invalid user ID")?
         } else {
             // Get from session
-            let auth_session = request.auth_user::<G>().await?.into_tonic_err(
-                tonic::Code::Unauthenticated,
-                "authentication required",
-                ErrorDetails::new(),
-            )?;
-
+            let auth_session = request.auth_user::<G>().await?.required()?;
             auth_session.id()
         };
 

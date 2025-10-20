@@ -1,6 +1,7 @@
 import { browser } from "$app/environment";
+import { goto } from "$app/navigation";
 import { authState } from "$lib/auth.svelte";
-import { error, redirect } from "@sveltejs/kit";
+import { error } from "@sveltejs/kit";
 import type { LayoutLoadEvent } from "./$types";
 
 // https://svelte.dev/tutorial/kit/route-groups
@@ -12,10 +13,10 @@ export async function load({ parent }: LayoutLoadEvent) {
 
     const auth = authState();
     if (auth.userSessionToken.state === "unauthenticated") {
-        redirect(303, "/login");
+        goto("/login", { replaceState: true });
     } else if (auth.userSessionToken.state === "authenticated" && !!auth.userSessionToken.data.mfaPending?.length) {
         // If the user has a pending MFA challenge, redirect to the MFA page
-        redirect(303, "/mfa");
+        goto("/mfa", { replaceState: true });
     } else if (auth.userSessionToken.state === "error") {
         error(500, auth.userSessionToken.error);
     }

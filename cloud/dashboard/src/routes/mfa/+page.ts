@@ -1,6 +1,6 @@
 import { browser } from "$app/environment";
+import { goto } from "$app/navigation";
 import { authState } from "$lib/auth.svelte";
-import { redirect } from "@sveltejs/kit";
 import type { PageLoadEvent } from "./$types";
 
 export async function load({ parent }: PageLoadEvent) {
@@ -15,6 +15,6 @@ export async function load({ parent }: PageLoadEvent) {
 
     // This page should only be accessible if the user is authenticated and has a pending MFA challenge
     if (!hasPendingMfa) {
-        redirect(303, "/");
+        goto("/", { replaceState: true });
     }
 }

@@ -1,0 +1,2 @@
+exports_files([".swcrc", "tsconfig.json", "dev.sh"])
+

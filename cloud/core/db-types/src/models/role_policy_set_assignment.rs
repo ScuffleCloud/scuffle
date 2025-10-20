@@ -1,4 +1,4 @@
-use crate::id::{PolicySetId, RoleId};
+use crate::models::{PolicySetId, RoleId};
 
 #[derive(Debug, Clone, diesel::Queryable, diesel::Selectable)]
 #[diesel(table_name = crate::schema::role_policy_set_assignments)]

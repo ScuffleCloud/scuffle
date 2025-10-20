@@ -1,0 +1,31 @@
+{
+    "name": "@scufflecloud/core/proto",
+    "version": "0.1.0",
+    "type": "module",
+    "description": "Protocol Buffers for the core services used by scuffle.cloud",
+    "license": "AGPL-3.0",
+    "scripts": {
+        "build": "bazel run //cloud/core/proto:pkg_dev",
+        "dev": "ibazel run //cloud/core/proto:pkg_dev"
+    },
+    "dependencies": {
+        "@protobuf-ts/runtime": "^2.11.1",
+        "@protobuf-ts/runtime-rpc": "^2.11.1"
+    },
+    "exports": {
+        "./*": {
+            "types": "./dist/types/*",
+            "import": "./dist/esm/*"
+        }
+    },
+    "typesVersions": {
+        "*": {
+            "*": ["./dist/types/*"]
+        }
+    },
+    "devDependencies": {
+        "typescript": "^5.9.2",
+        "@swc/cli": "^0.7.8",
+        "@swc/core": "^1.13.5"
+    }
+}

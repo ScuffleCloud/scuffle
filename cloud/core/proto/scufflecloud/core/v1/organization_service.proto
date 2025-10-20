@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "scufflecloud/core/v1/constraints.proto";
+import "scufflecloud/core/v1/organization.proto";
+import "tinc/annotations.proto";
+
+// Service for managing organizations and their members.
+service OrganizationService {
+  option (tinc.service).prefix = "/v1/organization";
+
+  // Create an organization.
+  //
+  // ### Authentication
+  //
+  // This method can only be called when authenticated with a user session.
+  rpc Create(OrganizationCreateRequest) returns (OrganizationCreateResponse) {
+    option (tinc.method).endpoint = {post: "/"};
+  }
+
+  // Get an organization.
+  //
+  // ### Authentication
+  //
+  // This method can only be called when authenticated with a user session.
+  rpc Get(OrganizationGetRequest) returns (OrganizationGetResponse) {
+    option (tinc.method).endpoint = {get: "/{id}"};
+  }
+
+  // Update an organization.
+  //
+  // ### Authentication
+  //
+  // This method can only be called when authenticated with a user session.
+  rpc Update(OrganizationUpdateRequest) returns (OrganizationUpdateResponse) {
+    option (tinc.method).endpoint = {patch: "/{id}"};
+  }
+
+  // List the user's organizations.
+  //
+  // ### Authentication
+  //
+  // This method can only be called when authenticated with a user session.
+  rpc List(OrganizationListRequest) returns (OrganizationListResponse) {
+    option (tinc.method).endpoint = {get: "/"};
+  }
+}
+
+message OrganizationCreateRequest {
+  string name = 1 [(tinc.field).constraint.string = {
+    min_len: 1
+    max_len: 255
+  }];
+}
+
+message OrganizationCreateResponse {
+  // The created organization.
+  Organization organization = 1;
+}
+
+message OrganizationGetRequest {
+  string id = 1 [(string_constraint).id = true];
+}
+
+message OrganizationGetResponse {
+  // The organization.
+  Organization organization = 1;
+}
+
+message OrganizationUpdateRequest {
+  // The ID of the organization to update.
+  string id = 1 [(string_constraint).id = true];
+
+  message Owner {
+    // The user ID of the new owner.
+    // This user must already be a member of the organization.
+    //
+    string owner_id = 1 [(string_constraint).id = true];
+  }
+
+  // The new owner of the organization.
+  optional Owner owner = 2;
+
+  message Name {
+    // The new name of the organization.
+    string name = 1 [(tinc.field).constraint.string = {
+      min_len: 1
+      max_len: 255
+    }];
+  }
+
+  // The new name of the organization.
+  optional Name name = 3;
+}
+
+message OrganizationUpdateResponse {
+  // The updated organization.x`
+  Organization organization = 1;
+}
+
+message OrganizationListRequest {
+  // The page number.
+  int32 page = 1;
+  // The page size.
+  int32 limit = 2;
+}
+
+message OrganizationListResponse {
+  // The user's organizations.
+  repeated Organization organizations = 1;
+  // The total number of organizations.
+  int32 total = 2;
+  // The next page number.
+  optional int32 next_page = 3;
+}

@@ -1,6 +1,8 @@
 use std::borrow::Cow;
 
-use crate::id::{OrganizationId, RoleId};
+use crate::models::OrganizationId;
+
+id::impl_id!(pub RoleId, "rl_");
 
 #[derive(Debug, Clone, diesel::Queryable, diesel::Selectable)]
 #[diesel(table_name = crate::schema::roles)]

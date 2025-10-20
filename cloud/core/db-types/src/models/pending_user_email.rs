@@ -2,7 +2,9 @@ use std::borrow::Cow;
 
 use chrono::{DateTime, Utc};
 
-use crate::id::{PendingUserEmailId, UserId};
+use crate::models::UserId;
+
+id::impl_id!(pub PendingUserEmailId, "pue_");
 
 #[derive(Debug, Clone, diesel::Queryable, diesel::Selectable)]
 #[diesel(table_name = crate::schema::pending_user_emails)]

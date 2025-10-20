@@ -13,7 +13,8 @@ deps = [
     "//crates/signal",
     "//crates/tinc",
     "//cloud/ext-traits",
-    "//cloud/proto",
+    "//cloud/core/proto",
+    "//cloud/email/proto",
     "//cloud/core/traits",
     "//cloud/core/emails",
     "//cloud/core/db-types",
@@ -22,7 +23,8 @@ deps = [
 
 aliases = {
     "//cloud/ext-traits": "ext_traits",
-    "//cloud/proto": "pb",
+    "//cloud/core/proto": "core_pb",
+    "//cloud/email/proto": "email_pb",
     "//cloud/geo-ip": "geo_ip",
     "//cloud/core/emails": "core_emails",
     "//cloud/core/traits": "core_traits",

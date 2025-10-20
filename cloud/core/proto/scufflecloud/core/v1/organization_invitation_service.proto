@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "google/protobuf/duration.proto";
+import "scufflecloud/core/v1/constraints.proto";
+import "scufflecloud/core/v1/organization.proto";
+import "tinc/annotations.proto";
+
+// Service for managing organization invitations.
+service OrganizationInvitationService {
+  option (tinc.service).prefix = "/v1/organization/{organization_id}/invite";
+
+  // Create an organization invitation.
+  //
+  // ### Authentication
+  //
+  // This method can only be called when authenticated with a user session.
+  rpc Create(OrganizationInvitationCreateRequest) returns (OrganizationInvitationCreateResponse) {
+    option (tinc.method).endpoint = {post: "/"};
+  }
+
+  // List organization invitations by organization.
+  //
+  // ### Authentication
+  //
+  // This method can only be called when authenticated with a user session.
+  rpc List(OrganizationInvitationListRequest) returns (OrganizationInvitationListResponse) {
+    option (tinc.method).endpoint = {get: "/"};
+  }
+
+  // Get an organization invitation.
+  //
+  // ### Authentication
+  //
+  // This method can only be called when authenticated with a user session.
+  rpc Get(OrganizationInvitationGetRequest) returns (OrganizationInvitationGetResponse) {
+    option (tinc.method).endpoint = {get: "/{id}"};
+  }
+
+  // Accept an organization invitation.
+  //
+  // ### Authentication
+  //
+  // This method can only be called when authenticated with a user session.
+  rpc Accept(OrganizationInvitationAcceptRequest) returns (OrganizationInvitationAcceptResponse) {
+    option (tinc.method).endpoint = {post: "/{id}/accept"};
+  }
+
+  // Decline an organization invitation.
+  //
+  // ### Authentication
+  //
+  // This method can only be called when authenticated with a user session.
+  rpc Decline(OrganizationInvitationDeclineRequest) returns (OrganizationInvitationDeclineResponse) {
+    option (tinc.method).endpoint = {post: "/{id}/decline"};
+  }
+
+  // Revoke an organization invitation.
+  //
+  // ### Authentication
+  //
+  // This method can only be called when authenticated with a user session.
+  rpc Revoke(OrganizationInvitationRevokeRequest) returns (OrganizationInvitationRevokeResponse) {
+    option (tinc.method).endpoint = {delete: "/{id}"};
+  }
+}
+
+message OrganizationInvitationCreateRequest {
+  // The organization ID.
+  string organization_id = 1 [(string_constraint).id = true];
+  // The email of the invited user.
+  string email = 2 [(tinc.field).constraint.string.email = true];
+  // In how long the invitation is valid for.
+  optional google.protobuf.Duration expires_in = 3;
+}
+
+message OrganizationInvitationCreateResponse {
+  // The created organization invitation.
+  Organization.Invitation invitation = 1;
+}
+
+message OrganizationInvitationListRequest {
+  // The organization ID.
+  string organization_id = 1 [(string_constraint).id = true];
+  // The page number.
+  optional int32 page = 2 [(tinc.field).constraint.int32 = {gte: 1}];
+  // The page size.
+  optional int32 limit = 3 [(tinc.field).constraint.int32 = {
+    gte: 1
+    lte: 100
+  }];
+}
+
+message OrganizationInvitationListResponse {
+  // The organization invitations.
+  repeated Organization.Invitation invitations = 1;
+  // The total number of organization invitations.
+  int32 total = 2;
+  // The next page number.
+  optional int32 next_page = 3;
+}
+
+message OrganizationInvitationGetRequest {
+  // The organization ID.
+  string organization_id = 1 [(string_constraint).id = true];
+  // The organization invitation ID.
+  string id = 2 [(string_constraint).id = true];
+}
+
+message OrganizationInvitationGetResponse {
+  // The organization invitation.
+  Organization.Invitation invitation = 1;
+}
+
+message OrganizationInvitationAcceptRequest {
+  // The organization ID.
+  string organization_id = 1 [(string_constraint).id = true];
+  // The organization invitation ID.
+  string id = 2 [(string_constraint).id = true];
+  // The code to accept the invitation.
+  string code = 3;
+}
+
+message OrganizationInvitationAcceptResponse {}
+
+message OrganizationInvitationDeclineRequest {
+  // The organization ID.
+  string organization_id = 1 [(string_constraint).id = true];
+  // The organization invitation ID.
+  string id = 2 [(string_constraint).id = true];
+  // The code to decline the invitation.
+  string code = 3;
+}
+
+message OrganizationInvitationDeclineResponse {}
+
+message OrganizationInvitationRevokeRequest {
+  // The organization ID.
+  string organization_id = 1 [(string_constraint).id = true];
+  // The organization invitation ID.
+  string id = 2 [(string_constraint).id = true];
+}
+
+message OrganizationInvitationRevokeResponse {}

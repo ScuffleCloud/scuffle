@@ -1,8 +1,11 @@
 packages:
   - misc/utils/protobuf/ts
+  - misc/utils/js
   - cloud/docs
   - cloud/dashboard
   - cloud/proto/ts
+  - cloud/core/proto
+  - cloud/email/proto
 
 onlyBuiltDependencies:
   - core-js

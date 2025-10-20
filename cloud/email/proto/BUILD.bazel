@@ -1,0 +1,51 @@
+load("@protobuf//bazel:proto_library.bzl", "proto_library")
+load("//misc/utils:proto_descriptor_set.bzl", "proto_descriptor_set")
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_build_script", "scuffle_package")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("//misc/utils/js:proto.bzl", "ts_proto")
+
+npm_link_all_packages()
+
+cargo_toml()
+
+proto_library(
+    name = "pb",
+    srcs = glob(["scufflecloud/email/v1/**"]),
+    strip_import_prefix = "/" + package_name(),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//crates/tinc:protobuf",
+        "@protobuf//:empty_proto",
+    ],
+)
+
+proto_descriptor_set(
+    name = "tinc_fds",
+    deps = [":pb"],
+)
+
+scuffle_build_script(
+    name = "build_script",
+    data = [":tinc_fds"],
+    env = {
+        "TINC_COMPILED_FD": "$(location :tinc_fds)",
+    },
+    deps = ["//crates/tinc/build"],
+)
+
+scuffle_package(
+    crate_name = "scufflecloud-email-proto",
+    srcs = ["lib.rs"],
+    deps = [
+        ":build_script",
+        "//crates/tinc",
+    ],
+)
+
+ts_proto(
+    name = "pkg",
+    protos = [
+        ":pb",
+    ],
+)

@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "google/protobuf/timestamp.proto";
+import "scufflecloud/core/v1/constraints.proto";
+import "tinc/annotations.proto";
+
+message Organization {
+  // A unique identifier for the organization.
+  string id = 1 [(string_constraint).id = true];
+  // The Google hosted domain for the organization.
+  optional string google_hosted_domain = 2;
+  // The name of the organization.
+  string name = 3 [(tinc.field).constraint.string = {
+    min_len: 1
+    max_len: 255
+  }];
+  // The user who owns the organization.
+  string owner_id = 4 [(string_constraint).id = true];
+  // The date and time the organization was created.
+  google.protobuf.Timestamp created_at = 5;
+
+  // A member of the organization.
+  message Member {
+    // A unique identifier for the member.
+    string id = 1 [(string_constraint).id = true];
+
+    // The member's name.
+    message Name {
+      // The member's first name.
+      string first = 1;
+      // The member's last name.
+      optional string last = 2;
+      optional string preferred = 3;
+    }
+
+    // The member's name.
+    Name name = 2;
+    // The member's email.
+    optional string email = 3 [(tinc.field).constraint.string.email = true];
+    // The user who invited the member.
+    string invited_by_id = 4 [(string_constraint).id = true];
+    // The date and time the member was created.
+    google.protobuf.Timestamp created_at = 5;
+    // The date and time the member joined the organization.
+    google.protobuf.Timestamp joined_at = 6;
+  }
+
+  // An invitation to the organization.
+  message Invitation {
+    // A unique identifier for the invitation.
+    string id = 1 [(string_constraint).id = true];
+    // The email of the invited user.
+    string email = 2 [(tinc.field).constraint.string.email = true];
+    // The user who created the invitation.
+    string created_by_id = 3 [(string_constraint).id = true];
+    // The date and time the invitation was created.
+    google.protobuf.Timestamp created_at = 4;
+    // The date and time the invitation expires.
+    google.protobuf.Timestamp expires_at = 5;
+  }
+}

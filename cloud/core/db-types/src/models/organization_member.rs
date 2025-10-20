@@ -2,7 +2,7 @@ use std::borrow::Cow;
 
 use chrono::{DateTime, Utc};
 
-use crate::id::{OrganizationId, UserId};
+use crate::models::{OrganizationId, UserId};
 
 #[derive(Debug, Clone, diesel::Queryable, diesel::Selectable)]
 #[diesel(table_name = crate::schema::organization_members)]

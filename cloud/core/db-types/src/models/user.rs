@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use crate::id::UserId;
+id::impl_id!(pub UserId, "usr_");
 
 #[derive(Debug, Clone, diesel::Queryable, diesel::Selectable)]
 #[diesel(table_name = crate::schema::users)]

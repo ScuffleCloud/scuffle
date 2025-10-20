@@ -1,6 +1,8 @@
 use std::borrow::Cow;
 
-use crate::id::{MfaRecoveryCodeId, UserId};
+use crate::models::UserId;
+
+id::impl_id!(pub MfaRecoveryCodeId, "mrc_");
 
 #[derive(Debug, Clone, diesel::Queryable, diesel::Selectable)]
 #[diesel(table_name = crate::schema::mfa_recovery_codes)]

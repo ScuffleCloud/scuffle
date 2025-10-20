@@ -1,5 +1,4 @@
-use core_db_types::id::{OrganizationId, UserId};
-use core_db_types::models::{Organization, OrganizationMember, User};
+use core_db_types::models::{Organization, OrganizationId, OrganizationMember, User, UserId};
 use scuffle_batching::DataLoaderFetcher;
 
 pub trait DataloaderInterface {

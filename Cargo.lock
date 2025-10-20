@@ -5988,10 +5988,10 @@ dependencies = [
  "scuffle-signal",
  "scufflecloud-core-db-types",
  "scufflecloud-core-emails",
+ "scufflecloud-core-proto",
  "scufflecloud-core-traits",
  "scufflecloud-ext-traits",
  "scufflecloud-geo-ip",
- "scufflecloud-proto",
  "serde",
  "serde_derive",
  "serde_json",
@@ -6030,7 +6030,6 @@ dependencies = [
  "diesel-derive-enum",
  "ipnetwork",
  "scufflecloud-id",
- "scufflecloud-proto",
  "serde",
  "serde_derive",
  "serde_json",
@@ -6051,6 +6050,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "scufflecloud-core-proto"
+version = "0.1.0"
+dependencies = [
+ "glob",
+ "prost 0.14.1",
+ "serde",
+ "tinc",
+ "tinc-build",
+]
+
+[[package]]
 name = "scufflecloud-core-traits"
 version = "0.1.0"
 dependencies = [
@@ -6062,8 +6072,8 @@ dependencies = [
  "rustls",
  "scuffle-batching",
  "scufflecloud-core-db-types",
+ "scufflecloud-email-proto",
  "scufflecloud-geo-ip",
- "scufflecloud-proto",
  "tonic",
  "tonic-types",
  "tracing",
@@ -6091,9 +6101,9 @@ dependencies = [
  "scuffle-http",
  "scuffle-settings",
  "scuffle-signal",
+ "scufflecloud-email-proto",
  "scufflecloud-email-traits",
  "scufflecloud-ext-traits",
- "scufflecloud-proto",
  "serde",
  "serde_derive",
  "serde_json",
@@ -6106,6 +6116,17 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "scufflecloud-email-proto"
+version = "0.1.0"
+dependencies = [
+ "glob",
+ "prost 0.14.1",
+ "serde",
+ "tinc",
+ "tinc-build",
 ]
 
 [[package]]
@@ -6186,17 +6207,6 @@ name = "scufflecloud-ingest-traits"
 version = "0.1.0"
 dependencies = [
  "rustls",
-]
-
-[[package]]
-name = "scufflecloud-proto"
-version = "0.1.0"
-dependencies = [
- "glob",
- "prost 0.14.1",
- "serde",
- "tinc",
- "tinc-build",
 ]
 
 [[package]]

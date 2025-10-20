@@ -36,7 +36,7 @@ geo-ip = { path = "../geo-ip", package = "scufflecloud-geo-ip" }
 hmac = "0.12"
 ipnetwork = { features = ["serde"], version = "0.21" }
 itertools = "0.14"
-pb = { package = "scufflecloud-proto", path = "../proto" }
+core-pb = { package = "scufflecloud-core-proto", path = "./proto" }
 pkcs8 = "0.10"
 prost = "0.14"
 rand = "0.8"

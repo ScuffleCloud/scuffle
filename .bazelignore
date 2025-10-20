@@ -6,11 +6,13 @@ target/
 target-bazel/
 .direnv/
 node_modules
+cloud/email/proto/node_modules
+cloud/core/proto/node_modules
 cloud/dashboard/node_modules
 cloud/docs/node_modules
 cloud/proto/ts/node_modules
 misc/utils/protobuf/ts/node_modules
-misc/utils/js/eslint/node_modules
+misc/utils/js/node_modules
 cloud/proto/ts/generated
 cloud/dashboard/.svelte-kit/
 .turbo/

@@ -1,13 +1,13 @@
 import { browser } from "$app/environment";
 import { type RpcError } from "@protobuf-ts/runtime-rpc";
-import type { Timestamp } from "@scufflecloud/proto/google/protobuf/timestamp.js";
+import type { Timestamp } from "@scufflecloud/core/proto/google/protobuf/timestamp.js";
 import {
     type Device,
     DeviceAlgorithm,
     MfaOption,
     type NewUserSessionToken,
-} from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
-import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
+} from "@scufflecloud/core/proto/scufflecloud/core/v1/sessions_service.js";
+import { User } from "@scufflecloud/core/proto/scufflecloud/core/v1/users.js";
 import { rpcErrorToString, sessionsServiceClient, usersServiceClient } from "./grpcClient";
 import { arrayBufferToBase64, base64ToArrayBuffer } from "./utils";
 

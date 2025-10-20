@@ -13,13 +13,13 @@ deps = [
     "//crates/signal",
     "//crates/tinc",
     "//cloud/ext-traits",
-    "//cloud/proto",
+    "//cloud/email/proto",
     "//cloud/email/traits",
 ]
 
 aliases = {
     "//cloud/ext-traits": "ext_traits",
-    "//cloud/proto": "pb",
+    "//cloud/email/proto": "email_pb",
     "//cloud/email/traits": "email_traits",
 }
 

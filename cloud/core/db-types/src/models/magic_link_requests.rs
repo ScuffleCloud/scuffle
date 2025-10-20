@@ -2,7 +2,9 @@ use std::borrow::Cow;
 
 use chrono::{DateTime, Utc};
 
-use crate::id::{MagicLinkRequestId, UserId};
+use crate::models::UserId;
+
+id::impl_id!(pub MagicLinkRequestId, "mlr_");
 
 #[derive(Debug, Clone, diesel::Queryable, diesel::Selectable)]
 #[diesel(table_name = crate::schema::magic_link_requests)]

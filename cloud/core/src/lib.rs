@@ -18,8 +18,8 @@
 // tonic::Status emits this warning
 #![allow(clippy::result_large_err)]
 
-mod captcha;
-mod common;
-mod google_api;
-pub mod services;
-mod totp;
+// mod captcha;
+// mod common;
+// mod google_api;
+mod services;
+// mod totp;

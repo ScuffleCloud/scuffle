@@ -515,6 +515,14 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "cloud/core/proto": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "prost": Label("@cargo_vendor//:prost-0.14.1"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
+            },
+        },
+    },
     "cloud/core/traits": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -553,6 +561,14 @@ _NORMAL_DEPENDENCIES = {
                 "tower-http": Label("@cargo_vendor//:tower-http-0.6.6"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
+            },
+        },
+    },
+    "cloud/email/proto": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "prost": Label("@cargo_vendor//:prost-0.14.1"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
             },
         },
     },
@@ -603,14 +619,6 @@ _NORMAL_DEPENDENCIES = {
                 "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
                 "ulid": Label("@cargo_vendor//:ulid-1.2.1"),
                 "uuid": Label("@cargo_vendor//:uuid-1.18.1"),
-            },
-        },
-    },
-    "cloud/proto": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "prost": Label("@cargo_vendor//:prost-0.14.1"),
-                "serde": Label("@cargo_vendor//:serde-1.0.228"),
             },
         },
     },
@@ -1459,6 +1467,12 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "cloud/core/proto": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "cloud/core/traits": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1466,6 +1480,12 @@ _NORMAL_ALIASES = {
         },
     },
     "cloud/email": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
+    "cloud/email/proto": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
@@ -1490,12 +1510,6 @@ _NORMAL_ALIASES = {
         },
     },
     "cloud/id": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
-    },
-    "cloud/proto": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
             },
@@ -1978,9 +1992,13 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "cloud/core/emails": {
     },
+    "cloud/core/proto": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/proto": {
     },
     "cloud/email/traits": {
     },
@@ -1989,8 +2007,6 @@ _NORMAL_DEV_DEPENDENCIES = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
-    },
-    "cloud/proto": {
     },
     "cloud/video/api": {
     },
@@ -2284,9 +2300,13 @@ _NORMAL_DEV_ALIASES = {
     },
     "cloud/core/emails": {
     },
+    "cloud/core/proto": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/proto": {
     },
     "cloud/email/traits": {
     },
@@ -2295,8 +2315,6 @@ _NORMAL_DEV_ALIASES = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
-    },
-    "cloud/proto": {
     },
     "cloud/video/api": {
     },
@@ -2539,6 +2557,8 @@ _PROC_MACRO_DEPENDENCIES = {
     },
     "cloud/core/emails": {
     },
+    "cloud/core/proto": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
@@ -2549,6 +2569,8 @@ _PROC_MACRO_DEPENDENCIES = {
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
             },
         },
+    },
+    "cloud/email/proto": {
     },
     "cloud/email/traits": {
     },
@@ -2562,8 +2584,6 @@ _PROC_MACRO_DEPENDENCIES = {
                 "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
-    },
-    "cloud/proto": {
     },
     "cloud/video/api": {
         _REQUIRED_FEATURE: {
@@ -2980,9 +3000,13 @@ _PROC_MACRO_ALIASES = {
     },
     "cloud/core/emails": {
     },
+    "cloud/core/proto": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/proto": {
     },
     "cloud/email/traits": {
     },
@@ -2991,8 +3015,6 @@ _PROC_MACRO_ALIASES = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
-    },
-    "cloud/proto": {
     },
     "cloud/video/api": {
     },
@@ -3139,9 +3161,13 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     },
     "cloud/core/emails": {
     },
+    "cloud/core/proto": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/proto": {
     },
     "cloud/email/traits": {
     },
@@ -3150,8 +3176,6 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
-    },
-    "cloud/proto": {
     },
     "cloud/video/api": {
     },
@@ -3303,9 +3327,13 @@ _PROC_MACRO_DEV_ALIASES = {
     },
     "cloud/core/emails": {
     },
+    "cloud/core/proto": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/proto": {
     },
     "cloud/email/traits": {
     },
@@ -3314,8 +3342,6 @@ _PROC_MACRO_DEV_ALIASES = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
-    },
-    "cloud/proto": {
     },
     "cloud/video/api": {
     },
@@ -3544,9 +3570,23 @@ _BUILD_DEPENDENCIES = {
     },
     "cloud/core/emails": {
     },
+    "cloud/core/proto": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "glob": Label("@cargo_vendor//:glob-0.3.3"),
+            },
+        },
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/proto": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "glob": Label("@cargo_vendor//:glob-0.3.3"),
+            },
+        },
     },
     "cloud/email/traits": {
     },
@@ -3555,13 +3595,6 @@ _BUILD_DEPENDENCIES = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
-    },
-    "cloud/proto": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-                "glob": Label("@cargo_vendor//:glob-0.3.3"),
-            },
-        },
     },
     "cloud/video/api": {
     },
@@ -3708,9 +3741,21 @@ _BUILD_ALIASES = {
     },
     "cloud/core/emails": {
     },
+    "cloud/core/proto": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/proto": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
     },
     "cloud/email/traits": {
     },
@@ -3719,12 +3764,6 @@ _BUILD_ALIASES = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
-    },
-    "cloud/proto": {
-        _REQUIRED_FEATURE: {
-            _COMMON_CONDITION: {
-            },
-        },
     },
     "cloud/video/api": {
     },
@@ -3867,9 +3906,13 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "cloud/core/emails": {
     },
+    "cloud/core/proto": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/proto": {
     },
     "cloud/email/traits": {
     },
@@ -3878,8 +3921,6 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
-    },
-    "cloud/proto": {
     },
     "cloud/video/api": {
     },
@@ -4014,9 +4055,13 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "cloud/core/emails": {
     },
+    "cloud/core/proto": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/proto": {
     },
     "cloud/email/traits": {
     },
@@ -4025,8 +4070,6 @@ _BUILD_PROC_MACRO_ALIASES = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
-    },
-    "cloud/proto": {
     },
     "cloud/video/api": {
     },
@@ -4161,9 +4204,13 @@ _FEATURE_FLAGS = {
     },
     "cloud/core/emails": {
     },
+    "cloud/core/proto": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/proto": {
     },
     "cloud/email/traits": {
     },
@@ -4172,8 +4219,6 @@ _FEATURE_FLAGS = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
-    },
-    "cloud/proto": {
     },
     "cloud/video/api": {
     },
@@ -4537,9 +4582,13 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "cloud/core/emails": {
     },
+    "cloud/core/proto": {
+    },
     "cloud/core/traits": {
     },
     "cloud/email": {
+    },
+    "cloud/email/proto": {
     },
     "cloud/email/traits": {
     },
@@ -4548,8 +4597,6 @@ _RESOLVED_FEATURE_FLAGS = {
     "cloud/geo-ip": {
     },
     "cloud/id": {
-    },
-    "cloud/proto": {
     },
     "cloud/video/api": {
     },
@@ -4733,13 +4780,14 @@ _VERSIONS = {
     "cloud/core/auth": "0.1.0",
     "cloud/core/db-types": "0.1.0",
     "cloud/core/emails": "0.1.0",
+    "cloud/core/proto": "0.1.0",
     "cloud/core/traits": "0.1.0",
     "cloud/email": "0.1.0",
+    "cloud/email/proto": "0.1.0",
     "cloud/email/traits": "0.1.0",
     "cloud/ext-traits": "0.1.0",
     "cloud/geo-ip": "0.1.0",
     "cloud/id": "0.1.0",
-    "cloud/proto": "0.1.0",
     "cloud/video/api": "0.1.0",
     "cloud/video/api/traits": "0.1.0",
     "cloud/video/ingest": "0.1.0",

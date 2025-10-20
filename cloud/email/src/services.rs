@@ -26,13 +26,13 @@ impl<G> Default for EmailSvc<G> {
 impl<G: email_traits::Global> scuffle_bootstrap::Service<G> for EmailSvc<G> {
     async fn run(self, global: Arc<G>, ctx: scuffle_context::Context) -> anyhow::Result<()> {
         // gRPC
-        let email_svc = pb::scufflecloud::email::v1::email_service_server::EmailServiceServer::new(EmailSvc::<G>::default());
+        let email_svc = email_pb::v1::email_service_server::EmailServiceServer::new(EmailSvc::<G>::default());
 
         let reflection_v1_svc = tonic_reflection::server::Builder::configure()
-            .register_encoded_file_descriptor_set(pb::ANNOTATIONS_PB)
+            .register_encoded_file_descriptor_set(email_pb::ANNOTATIONS_PB)
             .build_v1()?;
         let reflection_v1alpha_svc = tonic_reflection::server::Builder::configure()
-            .register_encoded_file_descriptor_set(pb::ANNOTATIONS_PB)
+            .register_encoded_file_descriptor_set(email_pb::ANNOTATIONS_PB)
             .build_v1alpha()?;
 
         let mut builder = tonic::service::Routes::builder();

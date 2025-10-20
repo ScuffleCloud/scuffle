@@ -1,6 +1,8 @@
 use std::borrow::Cow;
 
-use crate::id::{OrganizationId, PolicySetId};
+use crate::models::OrganizationId;
+
+id::impl_id!(pub PolicySetId, "ps_");
 
 #[derive(Debug, Clone, diesel::Queryable, diesel::Selectable)]
 #[diesel(table_name = crate::schema::policy_sets)]

@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package scufflecloud.core.v1;
+
+import "scufflecloud/core/v1/constraints.proto";
+import "scufflecloud/core/v1/user.proto";
+import "tinc/annotations.proto";
+
+// A service for managing the current user.
+service UserService {
+  option (tinc.service).prefix = "/v1/user";
+
+  // Get the current user.
+  //
+  // ### Authentication
+  //
+  // This method can only be called when authenticated with a user session.
+  rpc Get(UserGetRequest) returns (UserGetResponse) {
+    option (tinc.method).endpoint = {get: "/"};
+  }
+
+  // Update the current user.
+  //
+  // ### Authentication
+  //
+  // This method can only be called when authenticated with a user session.
+  rpc Update(UserUpdateRequest) returns (UserUpdateResponse) {
+    option (tinc.method).endpoint = {patch: "/"};
+  }
+}
+
+// The request for the `UserService.Get` method.
+message UserGetRequest {}
+
+// The response for the `UserService.Get` method.
+message UserGetResponse {
+  // The user.
+  User user = 1;
+}
+
+// The request for the `UserService.Update` method.
+message UserUpdateRequest {
+  // Update the user's name.
+  optional User.Name name = 1;
+
+  // Update the user's primary email.
+  // The email must first be added and verified before it can be set as the primary email.
+  optional string primary_email = 2;
+
+  message Password {
+    // The user's current password.
+    optional string current_password = 1;
+    // The user's new password.
+    string new_password = 2 [(string_constraint).password = true];
+  }
+
+  // Update the user's password.
+  // This option requires the session to have MFA enabled.
+  optional Password password = 3;
+}
+
+// The response for the `UserService.Update` method.
+message UserUpdateResponse {
+  // The updated user.
+  User user = 1;
+}

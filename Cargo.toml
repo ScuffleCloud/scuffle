@@ -1,16 +1,17 @@
 [workspace]
 members = [
     "cloud/core",
+    "cloud/core/proto",
     "cloud/core/auth",
     "cloud/core/db-types",
     "cloud/core/emails",
     "cloud/core/traits",
     "cloud/email",
+    "cloud/email/proto",
     "cloud/email/traits",
     "cloud/ext-traits",
     "cloud/geo-ip",
     "cloud/id",
-    "cloud/proto",
     "cloud/video/api",
     "cloud/video/api/traits",
     "cloud/video/ingest",

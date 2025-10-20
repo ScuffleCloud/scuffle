@@ -1,4 +1,4 @@
-use crate::id::{OrganizationId, RoleId, UserId};
+use crate::models::{OrganizationId, RoleId, UserId};
 
 #[derive(Debug, Clone, diesel::Queryable, diesel::Selectable)]
 #[diesel(table_name = crate::schema::role_member_assignments)]

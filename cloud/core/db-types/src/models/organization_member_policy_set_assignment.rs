@@ -1,4 +1,4 @@
-use crate::id::{OrganizationId, PolicySetId, UserId};
+use crate::models::{OrganizationId, PolicySetId, UserId};
 
 #[derive(Debug, Clone, diesel::Queryable, diesel::Selectable)]
 #[diesel(table_name = crate::schema::organization_member_policy_set_assignments)]

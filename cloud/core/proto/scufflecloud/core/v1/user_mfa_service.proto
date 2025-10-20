@@ -10,6 +10,15 @@ import "tinc/annotations.proto";
 service UserMfaService {
   option (tinc.service).prefix = "/v1/user/mfa";
 
+  // Get the user's MFA options.
+  //
+  // ### Authentication
+  //
+  // This method can only be called when authenticated with a user session.
+  rpc Get(UserMfaGetRequest) returns (UserMfaGetResponse) {
+    option (tinc.method).endpoint = {get: "/"};
+  }
+
   // Begin the WebAuthn credential setup.
   //
   // Webauthn is a way to login to the application without using a password.
@@ -107,6 +116,14 @@ service UserMfaService {
   }
 }
 
+// The request for the `UserService.Get` method.
+message UserMfaGetRequest {}
+
+// The response for the `UserService.Get` method.
+message UserMfaGetResponse {
+  User.Mfa mfa = 1;
+}
+
 // The request for the `UserService.GetChallenge` method.
 message UserMfaGetChallengeRequest {
   string challenge_id = 1 [(string_constraint).id = true];
@@ -187,5 +204,5 @@ message UserMfaRegenerateRecoveryCodesRequest {}
 
 // The response for the `UserService.RegenerateMfaRecoveryCodes` method.
 message UserMfaRegenerateRecoveryCodesResponse {
-  User.Mfa.RecoveryCodes recovery_codes = 1;
+  repeated string recovery_codes = 1;
 }

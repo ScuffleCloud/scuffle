@@ -1,5 +1,7 @@
 use std::borrow::Cow;
 
+use chrono::{DateTime, Utc};
+
 id::impl_id!(pub UserId, "usr_");
 
 #[derive(Debug, Clone, diesel::Queryable, diesel::Selectable)]
@@ -13,6 +15,8 @@ pub struct User {
     pub password_hash: Option<String>,
     pub primary_email: String,
     pub avatar_url: Option<String>,
+    pub mfa_recovery_codes_last_used_at: Option<DateTime<Utc>>,
+    pub mfa_recovery_codes_regenerated_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Clone, diesel::Insertable, diesel::Identifiable, diesel::AsChangeset, bon::Builder)]
@@ -27,4 +31,6 @@ pub struct NewUser<'a> {
     pub password_hash: Option<Cow<'a, str>>,
     pub primary_email: Option<Cow<'a, str>>,
     pub avatar_url: Option<Cow<'a, str>>,
+    pub mfa_recovery_codes_last_used_at: Option<DateTime<Utc>>,
+    pub mfa_recovery_codes_regenerated_at: Option<DateTime<Utc>>,
 }

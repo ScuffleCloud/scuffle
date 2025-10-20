@@ -46,3 +46,9 @@ ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
 ON DELETE CASCADE;
 
 CREATE INDEX ON "mfa_recovery_codes"("user_id");
+
+ALTER TABLE "users"
+ADD COLUMN "mfa_recovery_codes_last_used_at" TIMESTAMPTZ;
+
+ALTER TABLE "users"
+ADD COLUMN "mfa_recovery_codes_regenerated_at" TIMESTAMPTZ;

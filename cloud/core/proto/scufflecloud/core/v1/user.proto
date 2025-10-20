@@ -56,24 +56,41 @@ message User {
     message PasskeyCredential {
       // The Passkey ID.
       string id = 1 [(string_constraint).id = true];
+      // The Passkey credential name.
+      string name = 2;
       // The Passkey credential ID.
-      bytes credential_id = 2;
+      bytes credential_id = 3;
       // The date and time the Passkey was created.
-      google.protobuf.Timestamp created_at = 3;
+      google.protobuf.Timestamp created_at = 4;
+      // The date and time the Passkey was last used.
+      google.protobuf.Timestamp last_used_at = 5;
     }
 
     // A user TOTP credential.
     message TotpCredential {
       // The TOTP credential ID.
       string id = 1 [(string_constraint).id = true];
-      google.protobuf.Timestamp created_at = 2;
+      // The TOTP credential name.
+      string name = 2;
+      // The date and time the TOTP was created.
+      google.protobuf.Timestamp created_at = 3;
+      // The date and time the TOTP was last used.
+      google.protobuf.Timestamp last_used_at = 4;
     }
 
     // A user recovery codes.
     message RecoveryCodes {
-      // The recovery codes.
-      repeated string codes = 1;
+      // The number of remaining recovery codes.
+      uint32 remaining = 1;
+      // The date and time the recovery codes were created.
+      google.protobuf.Timestamp created_at = 2;
+      // The date and time the recovery codes were last used.
+      google.protobuf.Timestamp last_used_at = 3;
     }
+
+    repeated PasskeyCredential passkey_credentials = 1;
+    optional TotpCredential totp_credentials = 2;
+    RecoveryCodes recovery_codes = 3;
   }
 
   // The result of a login request.

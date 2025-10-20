@@ -1,17 +1,24 @@
-use core_db_types::models::{MfaPasskeyCredential, MfaPasskeyCredentialId, MfaTotpCredential, MfaTotpCredentialId, NewMfaPasskeyCredential, NewMfaTotpCredential};
-use core_db_types::schema::{mfa_totp_credentials, mfa_passkey_credentials};
+use argon2::password_hash::SaltString;
+use argon2::{Argon2, PasswordHasher};
+use chrono::Utc;
+use core_db_types::models::{
+    MfaPasskeyCredential, MfaPasskeyCredentialId, MfaTotpCredential, MfaTotpCredentialId, NewMfaPasskeyCredential,
+    NewMfaRecoveryCode, NewMfaTotpCredential,
+};
+use core_db_types::schema::{mfa_passkey_credentials, mfa_recovery_codes, mfa_totp_credentials, users};
 use core_pb::v1::user_mfa_service_server::UserMfaService;
 use core_pb::v1::{
-    user, UserMfaRegenerateRecoveryCodesRequest, UserMfaRegenerateRecoveryCodesResponse, UserMfaTotpCredentialFinalizeRequest,
-    UserMfaTotpCredentialFinalizeResponse, UserMfaTotpCredentialSetupRequest, UserMfaTotpCredentialSetupResponse,
-    UserMfaTotpCredentialUpdateRequest, UserMfaTotpCredentialUpdateResponse, UserMfaPasskeyCredentialFinalizeRequest,
-    UserMfaPasskeyCredentialFinalizeResponse, UserMfaPasskeyCredentialSetupRequest,
-    UserMfaPasskeyCredentialSetupResponse, UserMfaPasskeyCredentialUpdateRequest, UserMfaPasskeyCredentialUpdateResponse,
+    UserMfaGetRequest, UserMfaGetResponse, UserMfaPasskeyCredentialFinalizeRequest,
+    UserMfaPasskeyCredentialFinalizeResponse, UserMfaPasskeyCredentialSetupRequest, UserMfaPasskeyCredentialSetupResponse,
+    UserMfaPasskeyCredentialUpdateRequest, UserMfaPasskeyCredentialUpdateResponse, UserMfaRegenerateRecoveryCodesRequest,
+    UserMfaRegenerateRecoveryCodesResponse, UserMfaTotpCredentialFinalizeRequest, UserMfaTotpCredentialFinalizeResponse,
+    UserMfaTotpCredentialSetupRequest, UserMfaTotpCredentialSetupResponse, UserMfaTotpCredentialUpdateRequest,
+    UserMfaTotpCredentialUpdateResponse, user,
 };
 use core_traits::DatabaseExt;
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl, SelectableHelper};
 use diesel_async::RunQueryDsl;
-use ext_traits::{OptionExt, RequestExt, ResultExt};
+use ext_traits::{ChronoDateTimeExt, OptionExt, RequestExt, ResultExt};
 use fred::interfaces::KeysInterface;
 use fred::types::Expiration;
 use rand::RngCore;
@@ -23,6 +30,29 @@ use crate::auth_session::{AuthSessionExt, AuthSessionResultExt};
 
 const TOTP_SETUP_EXPIRY: i64 = 300; // 5 minutes
 const PASSKEY_SETUP_EXPIRY: i64 = webauthn_rs::DEFAULT_AUTHENTICATOR_TIMEOUT.as_secs() as i64;
+
+fn totp_credential_to_proto(credential: MfaTotpCredential) -> user::mfa::TotpCredential {
+    user::mfa::TotpCredential {
+        id: credential.id.to_string(),
+        name: credential.name.unwrap_or_default(),
+        created_at: Some(credential.id.datetime().into()),
+        last_used_at: credential.last_used_at.map(|d| d.to_prost_timestamp_utc()),
+    }
+}
+
+fn passkey_credential_to_proto(credential: MfaPasskeyCredential) -> user::mfa::PasskeyCredential {
+    user::mfa::PasskeyCredential {
+        id: credential.id.to_string(),
+        name: credential.name.unwrap_or_default(),
+        credential_id: credential.credential_id,
+        created_at: Some(credential.id.datetime().into()),
+        last_used_at: credential.last_used_at.map(|d| d.to_prost_timestamp_utc()),
+    }
+}
+
+fn generate_recovery_code() -> String {
+    todo!("not implemented")
+}
 
 #[async_trait]
 impl<G: core_traits::Global> UserMfaService for crate::services::CoreSvc<G> {
@@ -66,13 +96,7 @@ impl<G: core_traits::Global> UserMfaService for crate::services::CoreSvc<G> {
 
         let _: () = global
             .redis()
-            .set(
-                &redis_key,
-                &url,
-                Some(Expiration::EX(TOTP_SETUP_EXPIRY)),
-                None,
-                false,
-            )
+            .set(&redis_key, &url, Some(Expiration::EX(TOTP_SETUP_EXPIRY)), None, false)
             .await
             .into_tonic_internal_err("failed to store TOTP setup data")?;
 
@@ -110,7 +134,9 @@ impl<G: core_traits::Global> UserMfaService for crate::services::CoreSvc<G> {
 
         let totp = totp_rs::TOTP::from_url(&url).into_tonic_internal_err("failed to parse TOTP URL")?;
 
-        let is_valid = totp.check_current(&req.totp_generated_token).into_tonic_internal_err("failed to check TOTP generated token")?;
+        let is_valid = totp
+            .check_current(&req.totp_generated_token)
+            .into_tonic_internal_err("failed to check TOTP generated token")?;
         if !is_valid {
             return Err(tonic::Status::with_error_details(
                 tonic::Code::InvalidArgument,
@@ -152,10 +178,7 @@ impl<G: core_traits::Global> UserMfaService for crate::services::CoreSvc<G> {
             .await?;
 
         Ok(tonic::Response::new(UserMfaTotpCredentialFinalizeResponse {
-            totp_credential: Some(user::mfa::TotpCredential {
-                id: credential.id.to_string(),
-                created_at: Some(credential.id.datetime().into()),
-            }),
+            totp_credential: Some(totp_credential_to_proto(credential)),
         }))
     }
 
@@ -195,10 +218,7 @@ impl<G: core_traits::Global> UserMfaService for crate::services::CoreSvc<G> {
         .into_tonic_not_found("TOTP credential not found")?;
 
         Ok(tonic::Response::new(UserMfaTotpCredentialUpdateResponse {
-            totp_credential: Some(user::mfa::TotpCredential {
-                id: credential.id.to_string(),
-                created_at: Some(credential.id.datetime().into()),
-            }),
+            totp_credential: Some(totp_credential_to_proto(credential)),
         }))
     }
 
@@ -229,19 +249,22 @@ impl<G: core_traits::Global> UserMfaService for crate::services::CoreSvc<G> {
             .await
             .into_tonic_internal_err("failed to get database connection")?;
 
-        let passkey_credentials = mfa_passkey_credentials::table.filter(mfa_passkey_credentials::user_id.eq(user_session.id()))
+        let passkey_credentials = mfa_passkey_credentials::table
+            .filter(mfa_passkey_credentials::user_id.eq(user_session.id()))
             .select(mfa_passkey_credentials::credential_id)
             .load::<Vec<u8>>(&mut db)
             .await
             .into_tonic_internal_err("failed to query webauthn credentials")?;
 
-        let (options, state) = global.webauthn().start_passkey_registration(
-            user_session.id().ulid().into(),
-            &user.primary_email,
-            user_display_name.as_ref().unwrap_or(&user.primary_email),
-            Some(passkey_credentials.into_iter().map(CredentialID::from).collect()),
-        )
-        .into_tonic_internal_err("failed to start WebAuthn credential registration")?;
+        let (options, state) = global
+            .webauthn()
+            .start_passkey_registration(
+                user_session.id().ulid().into(),
+                &user.primary_email,
+                user_display_name.as_ref().unwrap_or(&user.primary_email),
+                Some(passkey_credentials.into_iter().map(CredentialID::from).collect()),
+            )
+            .into_tonic_internal_err("failed to start WebAuthn credential registration")?;
 
         let options = serde_json::to_string(&options).into_tonic_internal_err("failed to serialize WebAuthn options")?;
         let state = serde_json::to_string(&state).into_tonic_internal_err("failed to serialize WebAuthn state")?;
@@ -267,7 +290,8 @@ impl<G: core_traits::Global> UserMfaService for crate::services::CoreSvc<G> {
     }
 
     async fn passkey_credential_finalize(
-        &self, request: tonic::Request<UserMfaPasskeyCredentialFinalizeRequest>,
+        &self,
+        request: tonic::Request<UserMfaPasskeyCredentialFinalizeRequest>,
     ) -> tonic::Result<tonic::Response<UserMfaPasskeyCredentialFinalizeResponse>> {
         let global = request.global::<G>()?;
         let user_session = request.auth_user::<G>().await?.required()?.with_mfa_required()?;
@@ -286,9 +310,14 @@ impl<G: core_traits::Global> UserMfaService for crate::services::CoreSvc<G> {
             .into_tonic_internal_err("failed to retrieve Passkey setup data")?
             .into_tonic_not_found("Passkey setup not found or expired")?;
 
-        let response: RegisterPublicKeyCredential = serde_json::from_str(&req.passkey_response).into_tonic_internal_err("failed to parse Passkey response")?;
-        let state: PasskeyRegistration = serde_json::from_str(&state).into_tonic_internal_err("failed to parse Passkey setup data")?;
-        let passkey = global.webauthn().finish_passkey_registration(&response, &state).into_tonic_internal_err("failed to finish Passkey credential registration")?;
+        let response: RegisterPublicKeyCredential =
+            serde_json::from_str(&req.passkey_response).into_tonic_internal_err("failed to parse Passkey response")?;
+        let state: PasskeyRegistration =
+            serde_json::from_str(&state).into_tonic_internal_err("failed to parse Passkey setup data")?;
+        let passkey = global
+            .webauthn()
+            .finish_passkey_registration(&response, &state)
+            .into_tonic_internal_err("failed to finish Passkey credential registration")?;
 
         let passkey_json = serde_json::to_value(&passkey).into_tonic_internal_err("failed to serialize Passkey passkey")?;
 
@@ -313,11 +342,7 @@ impl<G: core_traits::Global> UserMfaService for crate::services::CoreSvc<G> {
             .into_tonic_internal_err("failed to insert Passkey credential")?;
 
         Ok(tonic::Response::new(UserMfaPasskeyCredentialFinalizeResponse {
-            passkey_credential: Some(user::mfa::PasskeyCredential {
-                id: credential.id.to_string(),
-                credential_id: credential.credential_id,
-                created_at: Some(credential.id.datetime().into()),
-            }),
+            passkey_credential: Some(passkey_credential_to_proto(credential)),
         }))
     }
 
@@ -354,11 +379,7 @@ impl<G: core_traits::Global> UserMfaService for crate::services::CoreSvc<G> {
         .into_tonic_not_found("Passkey credential not found")?;
 
         Ok(tonic::Response::new(UserMfaPasskeyCredentialUpdateResponse {
-            passkey_credential: Some(user::mfa::PasskeyCredential {
-                id: credential.id.to_string(),
-                credential_id: credential.credential_id,
-                created_at: Some(credential.id.datetime().into()),
-            }),
+            passkey_credential: Some(passkey_credential_to_proto(credential)),
         }))
     }
 
@@ -366,6 +387,106 @@ impl<G: core_traits::Global> UserMfaService for crate::services::CoreSvc<G> {
         &self,
         request: tonic::Request<UserMfaRegenerateRecoveryCodesRequest>,
     ) -> tonic::Result<tonic::Response<UserMfaRegenerateRecoveryCodesResponse>> {
-        Err(tonic::Status::unimplemented("regenerate recovery codes not implemented"))
+        let global = request.global::<G>()?;
+        let user_session = request.auth_user::<G>().await?.required()?.with_mfa_required()?;
+
+        let mut db = global
+            .db()
+            .await
+            .into_tonic_internal_err("failed to get database connection")?;
+
+        let recovery_codes = (0..10).map(|_| generate_recovery_code()).collect::<Vec<_>>();
+
+        db.tx(async |tx| {
+            diesel::delete(mfa_recovery_codes::table.filter(mfa_recovery_codes::user_id.eq(user_session.id())))
+                .execute(tx)
+                .await
+                .into_tonic_internal_err("failed to delete existing recovery codes")?;
+
+            diesel::update(users::table.filter(users::id.eq(user_session.id())))
+                .set(users::mfa_recovery_codes_regenerated_at.eq(Utc::now()))
+                .execute(tx)
+                .await
+                .into_tonic_internal_err("failed to update user recovery codes regenerated at")?;
+
+            let mut new_recovery_codes = Vec::new();
+            for code in &recovery_codes {
+                let mut hasher = Argon2::default();
+                let salt = SaltString::generate(&mut rand::rngs::OsRng);
+                let hash = hasher
+                    .hash_password(code.as_bytes(), &salt)
+                    .into_tonic_internal_err("failed to hash recovery code")?;
+                new_recovery_codes.push(
+                    NewMfaRecoveryCode::builder()
+                        .user_id(user_session.id())
+                        .code_hash(hash.to_string().into())
+                        .build(),
+                );
+            }
+
+            diesel::insert_into(mfa_recovery_codes::table)
+                .values(new_recovery_codes)
+                .execute(tx)
+                .await
+                .into_tonic_internal_err("failed to insert recovery codes")?;
+
+            Ok(())
+        })
+        .await?;
+
+        Ok(tonic::Response::new(UserMfaRegenerateRecoveryCodesResponse {
+            recovery_codes,
+        }))
+    }
+
+    async fn get(&self, request: tonic::Request<UserMfaGetRequest>) -> tonic::Result<tonic::Response<UserMfaGetResponse>> {
+        let global = request.global::<G>()?;
+        let user_session = request.auth_user::<G>().await?.required()?.with_mfa_required()?;
+
+        let user = global
+            .user_loader()
+            .load(user_session.id())
+            .await
+            .unwrap_or_default()
+            .into_tonic_internal_err("failed to query user")?;
+
+        let mut db = global
+            .db()
+            .await
+            .into_tonic_internal_err("failed to get database connection")?;
+
+        let totp_credential = mfa_totp_credentials::table
+            .filter(mfa_totp_credentials::user_id.eq(user_session.id()))
+            .select(MfaTotpCredential::as_select())
+            .first::<MfaTotpCredential>(&mut db)
+            .await
+            .optional()
+            .into_tonic_internal_err("failed to query TOTP credentials")?;
+
+        let passkey_credentials = mfa_passkey_credentials::table
+            .filter(mfa_passkey_credentials::user_id.eq(user_session.id()))
+            .select(MfaPasskeyCredential::as_select())
+            .load::<MfaPasskeyCredential>(&mut db)
+            .await
+            .into_tonic_internal_err("failed to query Passkey credentials")?;
+
+        let recovery_codes = mfa_recovery_codes::table
+            .filter(mfa_recovery_codes::user_id.eq(user_session.id()))
+            .count()
+            .get_result::<i64>(&mut db)
+            .await
+            .into_tonic_internal_err("failed to query recovery codes")?;
+
+        Ok(tonic::Response::new(UserMfaGetResponse {
+            mfa: Some(user::Mfa {
+                totp_credentials: totp_credential.map(totp_credential_to_proto),
+                passkey_credentials: passkey_credentials.into_iter().map(passkey_credential_to_proto).collect(),
+                recovery_codes: Some(user::mfa::RecoveryCodes {
+                    remaining: recovery_codes as u32,
+                    created_at: user.mfa_recovery_codes_regenerated_at.map(|d| d.to_prost_timestamp_utc()),
+                    last_used_at: user.mfa_recovery_codes_last_used_at.map(|d| d.to_prost_timestamp_utc()),
+                }),
+            }),
+        }))
     }
 }

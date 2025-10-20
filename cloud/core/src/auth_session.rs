@@ -21,6 +21,7 @@ pub(crate) trait AuthSessionResultExt: Sized {
 
 impl AuthSessionResultExt for tonic::Result<Option<AuthSession>> {
     type Output = AuthSession;
+
     fn required(self) -> tonic::Result<Self::Output> {
         match self {
             Ok(s) => s.required(),
@@ -31,6 +32,7 @@ impl AuthSessionResultExt for tonic::Result<Option<AuthSession>> {
 
 impl AuthSessionResultExt for tonic::Result<AuthSession> {
     type Output = AuthSession;
+
     fn required(self) -> tonic::Result<Self::Output> {
         match self {
             Ok(session) => Ok(session),
@@ -41,6 +43,7 @@ impl AuthSessionResultExt for tonic::Result<AuthSession> {
 
 impl AuthSessionResultExt for tonic::Result<Option<UserAuthSession>> {
     type Output = UserAuthSession;
+
     fn required(self) -> tonic::Result<Self::Output> {
         match self {
             Ok(s) => s.required(),
@@ -51,6 +54,7 @@ impl AuthSessionResultExt for tonic::Result<Option<UserAuthSession>> {
 
 impl AuthSessionResultExt for tonic::Result<UserAuthSession> {
     type Output = UserAuthSession;
+
     fn required(self) -> tonic::Result<Self::Output> {
         match self {
             Ok(session) => Ok(session),
@@ -61,6 +65,7 @@ impl AuthSessionResultExt for tonic::Result<UserAuthSession> {
 
 impl AuthSessionResultExt for Option<AuthSession> {
     type Output = AuthSession;
+
     fn required(self) -> tonic::Result<Self::Output> {
         match self {
             Some(session) => Ok(session),
@@ -75,6 +80,7 @@ impl AuthSessionResultExt for Option<AuthSession> {
 
 impl AuthSessionResultExt for Option<UserAuthSession> {
     type Output = UserAuthSession;
+
     fn required(self) -> tonic::Result<Self::Output> {
         match self {
             Some(session) => Ok(session),
@@ -135,7 +141,11 @@ impl UserAuthSession {
             return Err(tonic::Status::with_error_details(
                 tonic::Code::PermissionDenied,
                 "multi-factor authentication required",
-                ErrorDetails::with_error_info("multi-factor authentication required", "auth", HashMap::from_iter([("requires_mfa".into(), "true".into())])),
+                ErrorDetails::with_error_info(
+                    "multi-factor authentication required",
+                    "auth",
+                    HashMap::from_iter([("requires_mfa".into(), "true".into())]),
+                ),
             ));
         }
         Ok(())

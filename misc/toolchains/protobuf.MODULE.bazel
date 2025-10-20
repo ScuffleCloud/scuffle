@@ -3,6 +3,7 @@ bazel_dep(name = "toolchains_protoc", version = "0.5.0")
 bazel_dep(name = "rules_proto_grpc", version = "5.7.1")
 bazel_dep(name = "protobuf", version = "31.1")
 bazel_dep(name = "rules_buf", version = "0.5.2")
+bazel_dep(name = "googleapis", version = "0.0.0-20251003-2193a2bf")
 
 protoc = use_extension("@toolchains_protoc//protoc:extensions.bzl", "protoc")
 use_repo(protoc, "toolchains_protoc_hub")

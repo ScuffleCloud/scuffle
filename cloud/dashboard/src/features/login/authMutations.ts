@@ -97,9 +97,9 @@ export function useCompleteMagicLink() {
                 await authState().handleNewUserSessionToken(response);
 
                 if (response?.sessionMfaPending) {
-                    goto("/mfa");
+                    goto("/mfa", { replaceState: true });
                 } else {
-                    goto("/");
+                    goto("/", { replaceState: true });
                 }
             }),
     }));

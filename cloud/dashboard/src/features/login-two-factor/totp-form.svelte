@@ -1,4 +1,5 @@
 <script lang="ts">
+    import LoginFormTitle from "$features/login/login-form-title.svelte";
     import CodeInput from "$lib/components/code-input.svelte";
     import LoginOrDivider from "$lib/components/login-or-divider.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
@@ -22,11 +23,15 @@
         }
     }
     let continueRef = $state<HTMLButtonElement | null>(null);
+
+    const onBack = $derived(() => {
+        if (onModeChange) {
+            onModeChange();
+        }
+    });
 </script>
 
-<div class="header">
-    <h1 class="title">MFA Login</h1>
-</div>
+<LoginFormTitle title="MFA Login" {onBack} />
 <p class="subtitle">
     Enter the 6-digit code from your 2FA authenticator app below
 </p>
@@ -70,39 +75,6 @@
 <RecoveryCodeCollapsible onAction={onBackupCodeChange} />
 
 <style>
-    .header {
-      display: flex;
-      align-items: center;
-      position: relative;
-      margin-bottom: 1rem;
-    }
-
-    .back-button {
-      position: absolute;
-      left: 0;
-      background: none;
-      border: none;
-      color: #6b7280;
-      cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 0.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .back-button:hover {
-      background: #f3f4f6;
-    }
-
-    .title {
-      flex: 1;
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #1f2937;
-      margin: 0;
-    }
-
     .subtitle {
       color: #6b7280;
       font-size: 0.95rem;

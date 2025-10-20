@@ -11,7 +11,8 @@ export async function load({ parent }: LayoutLoadEvent) {
     await parent(); // wait for the root layout to load first
 
     const auth = authState();
-    if (auth.userSessionToken.state === "authenticated") {
+
+    if (auth.userSessionToken.state === "authenticated" && !auth.userSessionToken.data.mfaPending?.length) {
         goto("/", { replaceState: true });
     }
 }

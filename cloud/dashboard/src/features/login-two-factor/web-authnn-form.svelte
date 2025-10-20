@@ -1,4 +1,5 @@
 <script lang="ts">
+    import LoginFormTitle from "$features/login/login-form-title.svelte";
     import { authState } from "$lib/auth.svelte";
     import InlineNotification from "$lib/components/inline-notification.svelte";
     import LoginOrDivider from "$lib/components/login-or-divider.svelte";
@@ -34,9 +35,7 @@
     });
 </script>
 
-<div class="header">
-    <h1 class="title">Authentication</h1>
-</div>
+<LoginFormTitle title="Authentication" />
 <p class="subtitle">
     Plug in your security key and touch it when prompted to continue.
 </p>
@@ -70,21 +69,6 @@
 <RecoveryCodeCollapsible onAction={onBackupCodeChange} />
 
 <style>
-    .header {
-      display: flex;
-      align-items: center;
-      position: relative;
-      margin-bottom: 1rem;
-    }
-
-    .title {
-      flex: 1;
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #1f2937;
-      margin: 0;
-    }
-
     .subtitle {
       color: #6b7280;
       font-size: 0.95rem;

@@ -1,6 +1,7 @@
 <script lang="ts">
+    import LoginCard from "$features/login/login-card.svelte";
     import { authState } from "$lib/auth.svelte";
-    import LoginCard from "$lib/components/login-card.svelte";
+    import LoadingSpinner from "$lib/components/loading-spinner.svelte";
     import IconArrowDialogLink from "$lib/images/icon-arrow-dialog-link.svelte";
     import { MfaOption } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
     import RecoveryCodeForm from "./recovery-code-form.svelte";
@@ -13,24 +14,24 @@
 
     const auth = authState();
 
-    function getAvailableMfaOptions() {
-        if (
-            auth.userSessionToken.state !== "authenticated"
-            || !auth.userSessionToken.data.mfaPending
-        ) {
-            return [];
-        }
+    // Null means we are in a loading state as page cannot be accessed if there are no mfa options
+    // Can change how this looks down the line if we want
+    const mfaOptions = $derived(
+        auth.userSessionToken.state === "authenticated"
+            ? (auth.userSessionToken.data.mfaPending ?? null)
+            : null,
+    );
 
-        return auth.userSessionToken.data.mfaPending;
-    }
-
-    const mfaOptions = $derived(getAvailableMfaOptions());
+    const isLoading = $derived(mfaOptions === null);
 
     // The URL's are not updated by design
     function getInitialTwoFactorModeFromState(): TwoFactorMode {
-        if (mfaOptions.includes(MfaOption.TOTP)) return "totp";
-        if (mfaOptions.includes(MfaOption.WEB_AUTHN)) return "webauthn";
-        if (mfaOptions.includes(MfaOption.RECOVERY_CODES)) {
+        // Prioritize webauthn over totp here
+        if (mfaOptions?.includes(MfaOption.WEB_AUTHN)) {
+            return "webauthn";
+        }
+        if (mfaOptions?.includes(MfaOption.TOTP)) return "totp";
+        if (mfaOptions?.includes(MfaOption.RECOVERY_CODES)) {
             return "recovery-code";
         }
 
@@ -47,8 +48,6 @@
         previousTwoFactorMode = twoFactorMode;
         twoFactorMode = mode;
     }
-
-    let isLoading = $state<boolean>(false);
 </script>
 
 <svelte:head>
@@ -56,24 +55,28 @@
 </svelte:head>
 
 <LoginCard>
-    {#if twoFactorMode === "webauthn"}
-        <WebAuthnnForm
-            onToptModeChange={mfaOptions.includes(MfaOption.TOTP)
-            ? (() => changeTwoFactorMode("totp"))
-            : null}
-            onBackupCodeChange={() => changeTwoFactorMode("recovery-code")}
-        />
-    {:else if twoFactorMode === "totp"}
-        <TotpForm
-            onModeChange={mfaOptions.includes(MfaOption.WEB_AUTHN)
-            ? (() => changeTwoFactorMode("webauthn"))
-            : null}
-            onBackupCodeChange={() => changeTwoFactorMode("recovery-code")}
-        />
-    {:else if twoFactorMode === "recovery-code"}
-        <RecoveryCodeForm
-            onBack={() => changeTwoFactorMode(previousTwoFactorMode)}
-        />
+    {#if isLoading}
+        <LoadingSpinner />
+    {:else}
+        {#if twoFactorMode === "webauthn"}
+            <WebAuthnnForm
+                onToptModeChange={mfaOptions?.includes(MfaOption.TOTP)
+                ? (() => changeTwoFactorMode("totp"))
+                : null}
+                onBackupCodeChange={() => changeTwoFactorMode("recovery-code")}
+            />
+        {:else if twoFactorMode === "totp"}
+            <TotpForm
+                onModeChange={mfaOptions?.includes(MfaOption.WEB_AUTHN)
+                ? (() => changeTwoFactorMode("webauthn"))
+                : null}
+                onBackupCodeChange={() => changeTwoFactorMode("recovery-code")}
+            />
+        {:else if twoFactorMode === "recovery-code"}
+            <RecoveryCodeForm
+                onBack={() => changeTwoFactorMode(previousTwoFactorMode)}
+            />
+        {/if}
     {/if}
 </LoginCard>
 <div class="footer-links">

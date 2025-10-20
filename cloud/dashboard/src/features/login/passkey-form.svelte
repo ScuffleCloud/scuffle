@@ -1,6 +1,6 @@
 <!-- PasskeyForm.svelte -->
 <script lang="ts">
-    import IconArrowLeft from "$lib/images/icon-arrow-left.svelte";
+    import LoginFormTitle from "./login-form-title.svelte";
 
     interface Props {
         onSubmit: (email: string) => Promise<void>;
@@ -18,13 +18,7 @@
     }
 </script>
 
-<div class="header">
-    <button type="button" onclick={onBack} class="back-button">
-        <IconArrowLeft />
-    </button>
-    <h1 class="title">Passkey Login</h1>
-</div>
-
+<LoginFormTitle {onBack} title="Passkey Login" />
 <form onsubmit={handleSubmit} class="login-form">
     <div class="form-group">
         <label for="email" class="form-label">Email</label>
@@ -51,41 +45,6 @@
 </form>
 
 <style>
-    .header {
-      display: flex;
-      align-items: center;
-      position: relative;
-      margin-bottom: 2rem;
-    }
-
-    .back-button {
-      background: none;
-      border: none;
-      color: #6b7280;
-      cursor: pointer;
-      font-size: 0.875rem;
-      padding: 0;
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .back-button:hover {
-      color: #374151;
-    }
-
-    .title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0 auto;
-      text-align: center;
-      flex: 1;
-    }
-
     .login-form {
       margin-bottom: 0.5rem;
     }

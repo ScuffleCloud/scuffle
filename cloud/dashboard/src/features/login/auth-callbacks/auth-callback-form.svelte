@@ -1,5 +1,6 @@
 <script lang="ts">
     import InlineNotification from "$lib/components/inline-notification.svelte";
+    import LoadingSpinner from "$lib/components/loading-spinner.svelte";
     import type { CreateMutationResult } from "@tanstack/svelte-query";
 
     type Props = {
@@ -17,7 +18,7 @@
 <div class="content-container">
     <div>{message}</div>
     {#if mutation.isPending}
-        <div class="spinner"></div>
+        <LoadingSpinner />
     {/if}
     {#if mutation.error}
         <InlineNotification
@@ -33,20 +34,5 @@
       flex-direction: column;
       align-items: center;
       gap: 0.5rem;
-    }
-
-    .spinner {
-      width: 1rem;
-      height: 1rem;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top: 2px solid black;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
     }
 </style>

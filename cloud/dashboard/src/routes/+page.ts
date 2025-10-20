@@ -12,7 +12,7 @@ export async function load({ parent }: PageLoadEvent) {
     const auth = authState();
     if (auth.userSessionToken.state === "authenticated") {
         if (auth.userSessionToken.data.mfaPending?.length) {
-            goto("/mfa", { replaceState: true });
+            goto("/login", { replaceState: true });
         } else {
             goto("/projects", { replaceState: true });
         }

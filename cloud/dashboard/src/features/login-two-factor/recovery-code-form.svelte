@@ -1,4 +1,5 @@
 <script lang="ts">
+    import LoginFormTitle from "$features/login/login-form-title.svelte";
     import {
         rpcErrorToString,
         sessionsServiceClient,
@@ -50,12 +51,7 @@
     }
 </script>
 
-<div class="header">
-    <button type="button" onclick={onBack} class="back-button">
-        <IconArrowLeft />
-    </button>
-    <h1 class="title">2FA Recovery</h1>
-</div>
+<LoginFormTitle title="2FA Recovery" {onBack} />
 <p class="subtitle">
     No 2FA device available? <br>Paste your backup code below.
 </p>

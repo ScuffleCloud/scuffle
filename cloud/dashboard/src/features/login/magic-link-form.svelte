@@ -1,4 +1,6 @@
 <script lang="ts">
+    import LoginFormTitle from "./login-form-title.svelte";
+
     interface Props {
         onSubmit: (email: string) => Promise<void>;
         isLoading: boolean;
@@ -14,7 +16,7 @@
     }
 </script>
 
-<h1 class="title">Log in to Scuffle</h1>
+<LoginFormTitle title="Log in to Scuffle" />
 <form onsubmit={handleSubmit} class="login-form">
     <div class="form-group">
         <label for="email" class="form-label">Email</label>
@@ -41,12 +43,6 @@
 </form>
 
 <style>
-    .title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0 0 2rem 0;
-    }
-
     .login-form {
       margin-bottom: 0.5rem;
     }

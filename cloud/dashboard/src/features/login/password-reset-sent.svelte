@@ -1,4 +1,6 @@
 <script lang="ts">
+    import LoginFormTitle from "./login-form-title.svelte";
+
     interface Props {
         email?: string;
         onBack?: () => void;
@@ -7,7 +9,7 @@
     let { email }: Props = $props();
 </script>
 
-<h1 class="title">Check your email</h1>
+<LoginFormTitle title="Check your email" />
 <p class="subtitle">
     We've sent a password reset link to{#if email}
         <strong>{email}</strong>{:else}
@@ -22,12 +24,6 @@
 </div>
 
 <style>
-    .title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0 0 1.5rem 0;
-    }
-
     .subtitle {
       font-size: 0.875rem;
       color: #6b7280;

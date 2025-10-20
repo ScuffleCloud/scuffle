@@ -15,7 +15,7 @@ use ext_traits::{OptionExt, RequestExt, ResultExt};
 use tonic::async_trait;
 use tonic_types::{ErrorDetails, StatusExt};
 
-use crate::auth_session::{AuthSession, AuthSessionExt};
+use crate::auth_session::AuthSessionExt;
 
 fn user_to_proto(user: User) -> PbUser {
     PbUser {

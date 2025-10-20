@@ -81,7 +81,7 @@ struct Global {
 }
 
 impl core_traits::ConfigInterface for Global {
-    fn dashboard_origin(&self) -> Option<&url::Url> {
+    fn dashboard_origin(&self) -> &url::Url {
         match &self.config.dashboard_origin {
             config::DashboardOrigin::Static(url) => Some(url),
             config::DashboardOrigin::FromRequest => None,

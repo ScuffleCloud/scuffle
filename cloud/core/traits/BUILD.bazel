@@ -14,8 +14,8 @@ scuffle_package(
     deps = [
         "//cloud/core/db-types",
         "//cloud/email/proto",
-        "//cloud/geo-ip",
         "//cloud/ext-traits",
+        "//cloud/geo-ip",
         "//crates/batching",
         "//crates/bootstrap",
         "//crates/bootstrap-telemetry",

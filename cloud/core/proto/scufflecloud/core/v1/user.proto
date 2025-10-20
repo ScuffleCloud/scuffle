@@ -33,11 +33,21 @@ message User {
   message Email {
     // The email address.
     string address = 1 [(tinc.field).constraint.string.email = true];
-    // The date and time the email was verified.
-    // Optional if the email has not been verified.
-    optional google.protobuf.Timestamp verified_at = 2;
-    // The date and time the email was last sent a verification code.
-    google.protobuf.Timestamp last_sent_code_at = 3;
+    message Verified {
+      // The date and time the email was verified.
+      google.protobuf.Timestamp verified_at = 1;
+    }
+    message NotVerified {
+      // The date and time the email was last sent a verification code.
+      google.protobuf.Timestamp last_sent_code_at = 1;
+      google.protobuf.Timestamp can_resend_code_at = 2;
+    }
+    oneof status {
+      // The email is verified.
+      Verified verified = 2;
+      // The email is not verified.
+      NotVerified not_verified = 3;
+    }
   }
 
   // A user's Multi-Factor Authentication (MFA).

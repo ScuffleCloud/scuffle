@@ -6,7 +6,7 @@ pub trait ConfigInterface: Send + Sync {
     fn turnstile_secret_key(&self) -> &str;
     fn email_from_name(&self) -> &str;
     fn email_from_address(&self) -> &str;
-    fn dashboard_origin(&self) -> Option<&url::Url>;
+    fn dashboard_origin(&self) -> &url::Url;
     fn timeout_config(&self) -> TimeoutConfig;
     fn google_oauth2_config(&self) -> GoogleOAuth2Config<'_>;
 }

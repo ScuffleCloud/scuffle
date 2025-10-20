@@ -17,17 +17,20 @@ where
     T: diesel_async::AsyncConnection<Backend = diesel::pg::Pg>,
 {
     async fn tx<R>(&mut self, f: impl AsyncFnOnce(&mut Self) -> tonic::Result<R>) -> tonic::Result<R> {
-        <T::TransactionManager as diesel_async::TransactionManager<Self>>::begin_transaction(self).await
+        <T::TransactionManager as diesel_async::TransactionManager<Self>>::begin_transaction(self)
+            .await
             .into_tonic_internal_err("failed to begin transaction")?;
 
         match f(self).await {
             Ok(result) => {
-                <T::TransactionManager as diesel_async::TransactionManager<Self>>::commit_transaction(self).await
+                <T::TransactionManager as diesel_async::TransactionManager<Self>>::commit_transaction(self)
+                    .await
                     .into_tonic_internal_err("failed to commit transaction")?;
                 Ok(result)
-            },
+            }
             Err(e) => {
-                <T::TransactionManager as diesel_async::TransactionManager<Self>>::rollback_transaction(self).await
+                <T::TransactionManager as diesel_async::TransactionManager<Self>>::rollback_transaction(self)
+                    .await
                     .into_tonic_internal_err("failed to rollback transaction")?;
                 Err(e)
             }

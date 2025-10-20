@@ -10,7 +10,7 @@ ALTER TABLE "mfa_totp_credentials"
 ADD FOREIGN KEY("user_id") REFERENCES "users"("id")
 ON DELETE CASCADE;
 
-CREATE UNIQUE NDEX ON "mfa_totp_credentials"("user_id");
+CREATE UNIQUE INDEX ON "mfa_totp_credentials"("user_id");
 
 
 CREATE TABLE "mfa_webauthn_credentials" (

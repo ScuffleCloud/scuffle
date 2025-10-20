@@ -5,4 +5,14 @@
 #![deny(unreachable_pub)]
 #![deny(clippy::mod_module_files)]
 
-pub trait Global: Send + Sync + 'static {}
+mod config;
+mod database;
+mod dataloader;
+mod mtls;
+
+pub use config::*;
+pub use database::*;
+pub use dataloader::*;
+pub use mtls::*;
+
+pub trait Global: ConfigInterface + DatabaseInterface + DataloaderInterface + MtlsInterface + Send + Sync + 'static {}

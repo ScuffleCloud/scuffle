@@ -1,0 +1,7 @@
+--- a/cloud/video/api/db-types/src/schema.rs
++++ b/cloud/video/api/db-types/src/schema.unpatched.rs
+@@ -1,3 +1,4 @@
++#![cfg_attr(coverage_nightly, coverage(off))]
+ // @generated automatically by Diesel CLI.
+ 
+ diesel::table! {

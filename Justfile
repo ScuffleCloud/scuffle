@@ -124,6 +124,38 @@ generate-mtls-certs:
         -out local/mtls/scufflecloud_email_cert.pem \
         -copy_extensions copy
 
+    # Generate ingest cert signed by root CA
+    openssl genpkey -out local/mtls/scufflecloud_ingest_key.pem -algorithm ED25519
+    openssl req -new -key local/mtls/scufflecloud_ingest_key.pem \
+        -subj "/CN=scufflecloud-ingest-mtls" \
+        -addext "subjectAltName=DNS:localhost" \
+        -out local/mtls/scufflecloud_ingest_csr.pem
+
+    # Sign ingest cert with root CA
+    openssl x509 -req \
+        -in local/mtls/scufflecloud_ingest_csr.pem \
+        -CA local/mtls/root_cert.pem \
+        -CAkey local/mtls/root_key.pem \
+        -CAcreateserial -days 365 \
+        -out local/mtls/scufflecloud_ingest_cert.pem \
+        -copy_extensions copy
+
+    # Generate video api cert signed by root CA
+    openssl genpkey -out local/mtls/scufflecloud_video_api_key.pem -algorithm ED25519
+    openssl req -new -key local/mtls/scufflecloud_video_api_key.pem \
+        -subj "/CN=scufflecloud-video-api-mtls" \
+        -addext "subjectAltName=DNS:localhost" \
+        -out local/mtls/scufflecloud_video_api_csr.pem
+
+    # Sign video api cert with root CA
+    openssl x509 -req \
+        -in local/mtls/scufflecloud_video_api_csr.pem \
+        -CA local/mtls/root_cert.pem \
+        -CAkey local/mtls/root_key.pem \
+        -CAcreateserial -days 365 \
+        -out local/mtls/scufflecloud_video_api_cert.pem \
+        -copy_extensions copy
+
 alias coverage := test
 alias sync-rdme := sync-readme
 

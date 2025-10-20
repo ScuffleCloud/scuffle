@@ -1,6 +1,5 @@
 <!-- ForgotPasswordForm.svelte -->
 <script lang="ts">
-    import IconArrowLeft from "$lib/images/icon-arrow-left.svelte";
     import LoginFormTitle from "./login-form-title.svelte";
 
     interface Props {

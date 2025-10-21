@@ -33,6 +33,7 @@ impl From<User> for pb::scufflecloud::core::v1::User {
             last_name: value.last_name,
             primary_email: value.primary_email,
             avatar_url: value.avatar_url,
+            has_password: value.password_hash.is_some(),
             created_at: Some(value.id.datetime().into()),
         }
     }

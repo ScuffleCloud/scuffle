@@ -107,6 +107,8 @@ pub enum Action {
     RefreshUserSession,
     #[display("invalidate_user_session")]
     InvalidateUserSession,
+    #[display("list_user_sessions")]
+    ListUserSessions,
 
     // Organization related
     #[display("create_organization")]

@@ -219,6 +219,12 @@ when { principal.id == resource.user_id };
 
 permit (
   principal is User,
+  action == Action::"list_user_sessions",
+  resource == Application::"core"
+);
+
+permit (
+  principal is User,
   action == Action::"create_organization",
   resource is Organization
 )

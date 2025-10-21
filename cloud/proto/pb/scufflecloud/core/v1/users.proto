@@ -22,7 +22,8 @@ message User {
   }];
   optional string primary_email = 5 [(tinc.field).constraint.string.email = true];
   optional string avatar_url = 6 [(tinc.field).constraint.string.uri = true];
-  google.protobuf.Timestamp created_at = 7;
+  bool has_password = 7;
+  google.protobuf.Timestamp created_at = 8;
 }
 
 message UserEmail {

@@ -1,6 +1,6 @@
 import { sessionsServiceClient, usersServiceClient } from "$lib/grpcClient";
 import { isWebauthnSupported, parseCredentialRequestOptions, serializeCredentialAssertionResponse } from "$lib/utils";
-import { getWebAuthnErrorMessage } from "../settings/utils";
+import { getWebAuthnErrorMessage } from "../settings/manage-two-factor/utils";
 
 export async function createMfaWebauthnChallenge(userId: string): Promise<void> {
     if (!isWebauthnSupported()) {
@@ -32,8 +32,6 @@ export async function createMfaWebauthnChallenge(userId: string): Promise<void> 
 
     const responseJson = serializeCredentialAssertionResponse(credential);
 
-    // Returns a usersession that we should just consume locally but we can do that later
-
     console.log("collected credential now validating for session");
     await sessionsServiceClient.validateMfaForUserSession({
         response: {
@@ -43,6 +41,5 @@ export async function createMfaWebauthnChallenge(userId: string): Promise<void> 
             },
         },
     }).response;
-
     console.log("completely validation for session");
 }

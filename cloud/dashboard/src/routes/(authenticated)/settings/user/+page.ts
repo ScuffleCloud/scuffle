@@ -1,5 +1,8 @@
-import { redirect } from "@sveltejs/kit";
+import { browser } from "$app/environment";
+import { goto } from "$app/navigation";
 
 export function load() {
-    redirect(307, `/settings/user/common`);
+    if (!browser) return;
+
+    goto(`/settings/user/common`, { replaceState: true });
 }

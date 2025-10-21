@@ -1,6 +1,7 @@
 import { browser } from "$app/environment";
+import { goto } from "$app/navigation";
 import { authState } from "$lib/auth.svelte";
-import { error, redirect } from "@sveltejs/kit";
+import { error } from "@sveltejs/kit";
 import type { PageLoadEvent } from "./$types";
 
 export async function load({ parent }: PageLoadEvent) {
@@ -11,12 +12,12 @@ export async function load({ parent }: PageLoadEvent) {
     const auth = authState();
     if (auth.userSessionToken.state === "authenticated") {
         if (auth.userSessionToken.data.mfaPending?.length) {
-            redirect(303, "/mfa");
+            goto("/login", { replaceState: true });
         } else {
-            redirect(303, "/projects");
+            goto("/projects", { replaceState: true });
         }
     } else if (auth.userSessionToken.state === "unauthenticated") {
-        redirect(303, "/login");
+        goto("/login", { replaceState: true });
     } else if (auth.userSessionToken.state === "error") {
         error(500, auth.userSessionToken.error);
     }

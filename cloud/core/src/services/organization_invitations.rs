@@ -19,9 +19,9 @@ impl<G: core_traits::Global>
         Operation::<G>::run(req).await.map(tonic::Response::new)
     }
 
-    async fn list_orgnization_invites_by_user(
+    async fn list_organization_invites_by_user(
         &self,
-        req: tonic::Request<pb::scufflecloud::core::v1::ListOrgnizationInvitesByUserRequest>,
+        req: tonic::Request<pb::scufflecloud::core::v1::ListOrganizationInvitesByUserRequest>,
     ) -> Result<tonic::Response<pb::scufflecloud::core::v1::OrganizationInvitationList>, tonic::Status> {
         Operation::<G>::run(req).await.map(tonic::Response::new)
     }

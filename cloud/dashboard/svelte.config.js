@@ -20,6 +20,7 @@ const config = {
         alias: {
             $styles: "src/styles",
             $lib: "src/lib",
+            $features: "src/features",
         },
     },
     // Enforcing runes for external libraries https://github.com/sveltejs/svelte/issues/9632

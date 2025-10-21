@@ -21,8 +21,6 @@
         message,
     }: Props = $props();
 
-    let isVisible = $state(true);
-
     const iconComponents: Record<NotificationType, Component> = {
         error: IconAlarm,
         warning: IconInfo,
@@ -34,17 +32,15 @@
     const IconComponent = $derived(iconComponents[type]);
 </script>
 
-{#if isVisible}
-    <div class="notification notification-{type}">
-        <div class="notification-icon">
-            <IconComponent />
-        </div>
-
-        <div class="notification-message">
-            {message}
-        </div>
+<div class="notification notification-{type}">
+    <div class="notification-icon">
+        <IconComponent />
     </div>
-{/if}
+
+    <div class="notification-message">
+        {message}
+    </div>
+</div>
 
 <style>
     .notification {
@@ -94,13 +90,13 @@
       color: var(--colors-red70);
     }
     .notification-warning {
-      background-color: #fef3c7;
-      border-color: #fde68a;
-      color: #78350f;
+      background-color: var(--colors-yellow10);
+      border-color: var(--colors-yellow30);
+      color: var(--colors-yellow80);
     }
 
     .notification-warning .notification-icon {
-      background-color: #ca8a04;
+      background-color: inherit;
     }
 
     /* Success variant */

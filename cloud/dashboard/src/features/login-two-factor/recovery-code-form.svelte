@@ -1,10 +1,7 @@
 <script lang="ts">
-    import {
-        rpcErrorToString,
-        sessionsServiceClient,
-    } from "$lib/grpcClient";
-    import IconArrowLeft from "$lib/images/icon-arrow-left.svelte";
-    import { type RpcError } from "@protobuf-ts/runtime-rpc";
+    import LoginFormTitle from "$features/login/login-form-title.svelte";
+    import InlineNotification from "$lib/components/inline-notification.svelte";
+    import { useValidateMfaRecoveryCode } from "./mfaChallengeMutations";
 
     interface Props {
         onBack: () => void;
@@ -12,57 +9,24 @@
 
     let { onBack }: Props = $props();
 
-    let loading = $state(false);
-    let error = $state<string | null>(null);
+    const validateMfaRecoveryCodeMutation =
+        useValidateMfaRecoveryCode();
 
     async function handleSubmit(event: SubmitEvent): Promise<void> {
         event.preventDefault();
         const formData = new FormData(event.target as HTMLFormElement);
         const recoveryCode = (formData.get("recovery-code") as string)
-            .trim();
+            ?.trim();
+        if (!recoveryCode) return;
 
-        if (!recoveryCode) {
-            return;
-        }
-
-        loading = true;
-        error = null;
-
-        try {
-            const validateCall = sessionsServiceClient
-                .validateMfaForUserSession({
-                    response: {
-                        oneofKind: "recoveryCode",
-                        recoveryCode: {
-                            code: recoveryCode.trim(),
-                        },
-                    },
-                });
-            await validateCall.status;
-        } catch (err) {
-            const errorText = rpcErrorToString(err as RpcError);
-            // TODO: Remove later after UI on how we want to show errors
-            console.log(errorText);
-            error = "Failed to validate recovery code";
-        } finally {
-            loading = false;
-        }
+        validateMfaRecoveryCodeMutation.mutate(recoveryCode);
     }
 </script>
 
-<div class="header">
-    <button type="button" onclick={onBack} class="back-button">
-        <IconArrowLeft />
-    </button>
-    <h1 class="title">2FA Recovery</h1>
-</div>
+<LoginFormTitle title="2FA Recovery" {onBack} />
 <p class="subtitle">
     No 2FA device available? <br>Paste your backup code below.
 </p>
-
-{#if error}
-    <div class="error-message">{error}</div>
-{/if}
 
 <form onsubmit={handleSubmit} class="recovery-form">
     <div class="form-group">
@@ -72,51 +36,33 @@
             id="recovery-code"
             class="form-input"
             placeholder="Enter your recovery code"
-            disabled={loading}
+            disabled={validateMfaRecoveryCodeMutation.isPending}
             required
         />
     </div>
-    <button type="submit" class="btn-primary" disabled={loading}>
-        {loading ? "Verifying..." : "Continue"}
+    {#if validateMfaRecoveryCodeMutation.isError}
+        <div class="error-notification">
+            <InlineNotification
+                type="error"
+                message={validateMfaRecoveryCodeMutation.error?.message
+                || "Failed to validate recovery code"}
+            />
+        </div>
+    {/if}
+    <button
+        type="submit"
+        class="btn-primary"
+        disabled={validateMfaRecoveryCodeMutation.isPending}
+    >
+        {
+            validateMfaRecoveryCodeMutation.isPending
+            ? "Verifying..."
+            : "Continue"
+        }
     </button>
 </form>
 
 <style>
-    .header {
-      display: flex;
-      align-items: center;
-      position: relative;
-      margin-bottom: 2rem;
-    }
-
-    .back-button {
-      background: none;
-      border: none;
-      color: #6b7280;
-      cursor: pointer;
-      font-size: 0.875rem;
-      padding: 0;
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .back-button:hover {
-      color: #374151;
-    }
-
-    .title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0 auto;
-      text-align: center;
-      flex: 1;
-    }
-
     .subtitle {
       font-size: 1rem;
       color: #272626;
@@ -176,5 +122,9 @@
 
     .btn-primary:hover:not(:disabled) {
       background: #d97706;
+    }
+
+    .error-notification {
+      margin-bottom: 1.25rem;
     }
 </style>

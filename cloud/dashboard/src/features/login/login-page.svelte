@@ -1,7 +1,7 @@
 <script lang="ts">
     import { pushState } from "$app/navigation";
     import { page } from "$app/state";
-    import LoginCard from "$lib/components/login-card.svelte";
+    import LoginCard from "$features/login/login-card.svelte";
     import TurnstileOverlay from "$lib/components/turnstile-overlay.svelte";
     import IconArrowDialogLink from "$lib/images/icon-arrow-dialog-link.svelte";
     import { createSmartBack } from "$lib/navigation.svelte";

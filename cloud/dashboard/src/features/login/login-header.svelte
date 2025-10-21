@@ -2,7 +2,7 @@
     import ScuffleLogo from "$lib/images/scuffle-logo.svelte";
 </script>
 
-<a class="logo-container" href="/">
+<a class="logo-container" href="/" data-sveltekit-preload-data="off">
     <div class="logo-container-image">
         <ScuffleLogo />
     </div>

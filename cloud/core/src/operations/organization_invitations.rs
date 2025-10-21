@@ -125,7 +125,7 @@ impl<G: core_traits::Global> Operation<G>
 }
 
 impl<G: core_traits::Global> Operation<G>
-    for tonic::Request<pb::scufflecloud::core::v1::ListOrgnizationInvitesByUserRequest>
+    for tonic::Request<pb::scufflecloud::core::v1::ListOrganizationInvitesByUserRequest>
 {
     type Principal = User;
     type Resource = User;

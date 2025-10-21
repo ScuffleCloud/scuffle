@@ -7,7 +7,7 @@ cargo_toml()
 
 # Scuffle protos, used by both backend and frontend.
 proto_library(
-    name = "scuffle_pb",
+    name = "pb",
     srcs = glob(["pb/scufflecloud/**"]),
     strip_import_prefix = "/cloud/proto/pb",
     visibility = ["//visibility:public"],
@@ -19,23 +19,9 @@ proto_library(
     ],
 )
 
-# Google protos used by the frontend only.
-# Those proto files are copied from Google and use the Any type.
-# The Any type is not supported by Tinc, so this is a separate library definition.
-proto_library(
-    name = "google_pb",
-    srcs = glob(["pb/google/**"]),
-    strip_import_prefix = "/cloud/proto/pb",
-    visibility = ["//visibility:public"],
-    deps = [
-        "@protobuf//:any_proto",
-        "@protobuf//:duration_proto",
-    ],
-)
-
 proto_descriptor_set(
     name = "tinc_fds",
-    deps = [":scuffle_pb"],
+    deps = [":pb"],
 )
 
 scuffle_build_script(

@@ -11,8 +11,9 @@ npm_link_all_packages()
 protobuf_ts_compile(
     name = "proto",
     protos = [
-        "//cloud/proto:google_pb",
-        "//cloud/proto:scuffle_pb",
+        "//cloud/proto:pb",
+        "@googleapis//google/rpc:error_details_proto",
+        "@googleapis//google/rpc:status_proto",
     ],
 )
 

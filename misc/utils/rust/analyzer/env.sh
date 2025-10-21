@@ -18,8 +18,19 @@ _bazel__get_workspace_path() {
 }
 
 root_dir="$(_bazel__get_workspace_path)"
-bazel_env_bin_dir="${root_dir}/target-bazel/out/bazel_env-opt-ST-6691f78f59fa/bin/bazel_env/bin"
+case "$(uname -s)" in
+    Linux)
+        platform_name="linux"
+        ;;
+    Darwin)
+        platform_name="macos"
+        ;;
+    *)
+        log_error "ERROR[.envrc]: Unsupported platform: $(uname -s)"
+        ;;
+esac
 
+bazel_env_bin_dir="target-bazel/out/bazel_env-opt-ST-6691f78f59fa/bin/tools/bazel_env_${platform_name}/bin"
 if [[ ! -d ${bazel_env_bin_dir} ]]; then
     echo "bazel_env_bin_dir does not exist: ${bazel_env_bin_dir}"
     exit 1

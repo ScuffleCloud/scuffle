@@ -1,6 +1,7 @@
 <script lang="ts">
     import LoginFormTitle from "$features/login/login-form-title.svelte";
     import CodeInput from "$lib/components/code-input.svelte";
+    import InlineNotification from "$lib/components/inline-notification.svelte";
     import LoginOrDivider from "$lib/components/login-or-divider.svelte";
     import IconLoginKey from "$lib/images/icon-login-key.svelte";
     import { useValidateMfaTotp } from "./mfaChallengeMutations";
@@ -22,7 +23,6 @@
             validateMfaTotpMutation.mutate(pinValue);
         }
     }
-    let continueRef = $state<HTMLButtonElement | null>(null);
 
     const onBack = $derived(() => {
         if (onModeChange) {
@@ -44,8 +44,17 @@
     placeholder="-"
 />
 
+{#if validateMfaTotpMutation.isError}
+    <div class="error-notification">
+        <InlineNotification
+            type="error"
+            message={validateMfaTotpMutation.error?.message
+            || "Failed to validate TOTP code"}
+        />
+    </div>
+{/if}
+
 <button
-    bind:this={continueRef}
     type="button"
     onclick={handleContinue}
     class="continue-btn"
@@ -126,10 +135,7 @@
       }
     }
 
-    @media (max-width: 480px) {
-      .mfa-container {
-        padding: 1.5rem;
-        margin: 1rem;
-      }
+    .error-notification {
+      margin-bottom: 1.25rem;
     }
 </style>

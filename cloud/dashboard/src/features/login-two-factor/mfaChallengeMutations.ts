@@ -32,7 +32,6 @@ export function useValidateMfaTotp() {
                     throw new Error("Invalid TOTP code format");
                 }
 
-                console.log("validating TOTP code for session");
                 await sessionsServiceClient.validateMfaForUserSession({
                     response: {
                         oneofKind: "totp",
@@ -41,11 +40,29 @@ export function useValidateMfaTotp() {
                         },
                     },
                 }).response;
-                console.log("completed TOTP validation for session");
             }),
         onSuccess: () => {
             authState().reloadUserForMfa();
             goto("/");
         },
+    }));
+}
+
+export function useValidateMfaRecoveryCode() {
+    return createMutation(() => ({
+        mutationFn: (recoveryCode: string) =>
+            withRpcErrorHandling(async () => {
+                if (!recoveryCode || recoveryCode.trim().length === 0) {
+                    throw new Error("Recovery code is required");
+                }
+                await sessionsServiceClient.validateMfaForUserSession({
+                    response: {
+                        oneofKind: "recoveryCode",
+                        recoveryCode: {
+                            code: recoveryCode.trim(),
+                        },
+                    },
+                }).response;
+            }),
     }));
 }

@@ -21,8 +21,6 @@
         message,
     }: Props = $props();
 
-    let isVisible = $state(true);
-
     const iconComponents: Record<NotificationType, Component> = {
         error: IconAlarm,
         warning: IconInfo,
@@ -34,17 +32,15 @@
     const IconComponent = $derived(iconComponents[type]);
 </script>
 
-{#if isVisible}
-    <div class="notification notification-{type}">
-        <div class="notification-icon">
-            <IconComponent />
-        </div>
-
-        <div class="notification-message">
-            {message}
-        </div>
+<div class="notification notification-{type}">
+    <div class="notification-icon">
+        <IconComponent />
     </div>
-{/if}
+
+    <div class="notification-message">
+        {message}
+    </div>
+</div>
 
 <style>
     .notification {

@@ -409,23 +409,6 @@ export function authState() {
             if (!user) return null;
             return user.state === "authenticated" ? user.data : null;
         },
-
-        /**
-         * Checks if the user has 2FA enabled. Not including recovery codes
-         */
-        get hasPendingMfa(): boolean {
-            if (userSessionToken.state !== "authenticated") throw new Error("User not authenticated");
-
-            const mfaOptions = userSessionToken.data.mfaPending;
-
-            // No pending MFA
-            if (!mfaOptions) {
-                return false;
-            }
-
-            return mfaOptions.includes(MfaOption.TOTP)
-                || mfaOptions.includes(MfaOption.WEB_AUTHN);
-        },
     };
 }
 

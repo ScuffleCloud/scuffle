@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { goto } from "$app/navigation";
 import { rpcErrorToString } from "$lib/grpcClient";
 import type { RpcError } from "@protobuf-ts/runtime-rpc";
+import { authState } from "./auth.svelte";
 
 // Wrapper to handle RPC errors in mutations
 // Support throwing non-rpc errors too
@@ -12,7 +14,16 @@ export async function withRpcErrorHandling<T>(fn: () => Promise<T>): Promise<T> 
         if (err instanceof Error && !(err as any).meta) {
             throw err;
         }
-        throw new Error(rpcErrorToString(err as RpcError));
+
+        const rpcError = rpcErrorToString(err as RpcError);
+
+        // Handle expired session errors. Or could throw some sort of toast here too
+        if (rpcError.includes("code 16")) {
+            authState().checkValidity();
+            goto("/login?expired=true", { replaceState: true });
+        }
+
+        throw new Error(rpcError);
     }
 }
 
@@ -96,7 +107,6 @@ export function serializeCredentialCreationResponse(credential: PublicKeyCredent
  */
 export function parseCredentialRequestOptions(optionsJson: string): PublicKeyCredentialRequestOptions {
     const options = JSON.parse(optionsJson).publicKey;
-    console.log(options);
 
     return {
         ...options,
@@ -113,7 +123,6 @@ export function parseCredentialRequestOptions(optionsJson: string): PublicKeyCre
  */
 export function serializeCredentialAssertionResponse(credential: PublicKeyCredential): string {
     const response = credential.response as AuthenticatorAssertionResponse;
-    console.log(response);
     return JSON.stringify({
         id: credential.id,
         rawId: arrayBufferToBase64url(credential.rawId),

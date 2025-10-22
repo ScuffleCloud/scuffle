@@ -4,7 +4,6 @@
     import InlineNotification from "$lib/components/inline-notification.svelte";
     import LoginOrDivider from "$lib/components/login-or-divider.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
-    import { onMount } from "svelte";
     import { useCreateWebauthnChallenge } from "./mfaChallengeMutations";
     import RecoveryCodeCollapsible from "./recovery-code-collapsible.svelte";
 
@@ -29,10 +28,6 @@
         webauthnMutation.reset();
         webauthnMutation.mutate();
     }
-
-    onMount(() => {
-        webauthnMutation.mutate();
-    });
 </script>
 
 <LoginFormTitle title="Authentication" />
@@ -44,7 +39,7 @@
     onclick={handleRetry}
     class="continue-btn"
 >
-    Resend request
+    Send request
 </button>
 {#if webauthnMutation.isError}
     <InlineNotification

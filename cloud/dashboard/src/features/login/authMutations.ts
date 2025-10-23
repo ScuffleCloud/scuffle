@@ -20,6 +20,12 @@ interface CompleteMagicLinkParams {
     code: string;
 }
 
+export interface LoginWithEmailAndPasswordParams {
+    email: string;
+    password: string;
+    captchaToken: string;
+}
+
 export function useInitiateGoogleLogin() {
     return createMutation(() => ({
         mutationFn: () =>
@@ -48,7 +54,7 @@ export function useCompleteGoogleLogin() {
 
                 await authState().handleNewUserSessionToken(response.newUserSessionToken);
 
-                if (response.newUserSessionToken?.sessionMfaPending) {
+                if (response.newUserSessionToken?.mfaOptions.length) {
                     goto("/mfa");
                 } else {
                     goto("/");
@@ -96,7 +102,61 @@ export function useCompleteMagicLink() {
 
                 await authState().handleNewUserSessionToken(response);
 
-                if (response?.sessionMfaPending) {
+                if (response?.mfaOptions.length) {
+                    goto("/mfa", { replaceState: true });
+                } else {
+                    goto("/", { replaceState: true });
+                }
+            }),
+    }));
+}
+
+// //     loginWithEmailAndPassword(input: LoginWithEmailAndPasswordRequest, options?: RpcOptions): UnaryCall<LoginWithEmailAndPasswordRequest, NewUserSessionToken>;
+// export interface LoginWithEmailAndPasswordRequest {
+//     /**
+//      * @generated from protobuf field: scufflecloud.core.v1.CaptchaChallengeResponse captcha = 1
+//      */
+//     captcha?: CaptchaChallengeResponse;
+//     /**
+//      * @generated from protobuf field: string email = 2
+//      */
+//     email: string;
+//     /**
+//      * @generated from protobuf field: string password = 3
+//      */
+//     password: string;
+//     /**
+//      * @generated from protobuf field: scufflecloud.core.v1.Device device = 4
+//      */
+//     device?: Device;
+// }
+export function useLoginWithEmailAndPassword() {
+    return createMutation(() => ({
+        mutationFn: ({ email, password, captchaToken }: LoginWithEmailAndPasswordParams) =>
+            withRpcErrorHandling(async () => {
+                if (!email || !password || !captchaToken) {
+                    throw new Error("All fields are required");
+                }
+
+                const device = await authState().getDeviceOrInit();
+
+                const response = await sessionsServiceClient.loginWithEmailAndPassword({
+                    captcha: {
+                        provider: CaptchaProvider.TURNSTILE,
+                        token: captchaToken,
+                    },
+                    email,
+                    password,
+                    device,
+                }).response;
+
+                if (!response) {
+                    throw new Error("No session token received");
+                }
+
+                await authState().handleNewUserSessionToken(response);
+
+                if (response?.mfaOptions.length) {
                     goto("/mfa", { replaceState: true });
                 } else {
                     goto("/", { replaceState: true });

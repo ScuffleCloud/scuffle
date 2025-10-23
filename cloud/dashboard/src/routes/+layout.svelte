@@ -17,6 +17,7 @@
         defaultOptions: {
             queries: {
                 enabled: browser,
+                staleTime: 1000 * 60 * 5,
             },
         },
     });

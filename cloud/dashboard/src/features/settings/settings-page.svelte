@@ -42,18 +42,6 @@
         enabled: !!user,
     }));
 
-    // const passwordSettingsQuery = createQuery(() => ({
-    //     queryKey: [PASSWORD_SETTINGS_KEY],
-    //     queryFn: async () => {
-    //         const call = usersServiceClient.getPasswordSettings({
-    //             id: user!.id,
-    //         });
-    //         const response = await call.response;
-    //         return response.settings;
-    //     },
-    //     enabled: !!user,
-    // }));
-
     // Account Settings Cards
     // const accountCards = $derived<Card[]>([
     //     {
@@ -144,13 +132,9 @@
     //     },
     // ]);
 
-    const hasAnyError = $derived(
-        totpListQuery.isError || webauthnListQuery.isError,
-    );
-
     const isLoading = $derived(
         totpListQuery.isLoading || webauthnListQuery.isLoading
-            || hasAnyError,
+            || totpListQuery.isError || webauthnListQuery.isError,
     );
 
     const authCredentials: MfaCredential[] = $derived(
@@ -174,19 +158,6 @@
             return [...totpCreds, ...webauthnCreds];
         })(),
     );
-
-    // So only one error is shown on fetch errors
-    // All cards should be stuck in loading until all queries pass
-    let errorShown = $state(false);
-
-    $effect(() => {
-        if (hasAnyError && !errorShown) {
-            errorShown = true;
-        }
-        if (totpListQuery.isSuccess && webauthnListQuery.isSuccess) {
-            errorShown = false;
-        }
-    });
 </script>
 
 <div class="settings-page">
@@ -194,7 +165,10 @@
         title="Sign in methods"
         icon={IconShield}
     >
-        <PasswordSettingsCard {isLoading} />
+        <PasswordSettingsCard
+            {isLoading}
+            hasPassword={!!authState().user?.hasPassword}
+        />
         <TwoFactorSettingsCard
             methods={authCredentials}
             {isLoading}

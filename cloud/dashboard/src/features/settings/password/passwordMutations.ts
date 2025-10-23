@@ -1,3 +1,4 @@
+import { authState } from "$lib/auth.svelte";
 import { usersServiceClient } from "$lib/grpcClient";
 import { withRpcErrorHandling } from "$lib/utils";
 import { createMutation } from "@tanstack/svelte-query";
@@ -13,6 +14,7 @@ type SetPasswordParams = {
     confirmPassword: string;
 };
 
+// TODO: Can add better validation if we want
 function validateBasicPassword(password: string, confirmPassword: string): void | Error {
     if (password.length < 8) {
         throw new Error("Password must be at least 8 characters");
@@ -49,7 +51,7 @@ export function useUpdatePassword(userId: string | undefined) {
                         currentPassword: currentPassword,
                         newPassword: newPassword,
                     },
-                }).response;
+                });
             }),
     }));
 }
@@ -66,7 +68,12 @@ export function useSetPassword(userId: string | undefined) {
                     password: {
                         newPassword: password,
                     },
-                }).response;
+                });
             }),
+        onSuccess: () => {
+            authState().updateUser({
+                hasPassword: true,
+            });
+        },
     }));
 }

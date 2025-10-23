@@ -7,6 +7,7 @@
     import { createSmartBack } from "$lib/navigation.svelte";
     import {
         useInitiateGoogleLogin,
+        useLoginWithEmailAndPassword,
         useSendMagicLink,
     } from "./authMutations";
     import ForgotPasswordForm from "./forgot-password-form.svelte";
@@ -60,12 +61,6 @@
     const getToken = async () =>
         await turnstileOverlayComponent?.getToken();
 
-    const turnstileLoading = $derived(
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        (turnstileOverlayComponent as any)?.showTurnstileOverlay
-            || false,
-    );
-
     let userEmail = $state<string>("");
     let isLoading = $state<boolean>(false);
 
@@ -94,15 +89,16 @@
         email: string,
         password: string,
     ): Promise<void> {
+        isLoading = true;
         const token = await getToken();
-        if (email && password && token) {
-            try {
-                // const result: AuthResult = await authAPI.loginWithPassword(email, password);
-                console.log("Password login for:", email);
-            } catch (error) {
-                console.error("Password login error:", error);
-            }
-        }
+        if (!token) return;
+
+        loginWithEmailAndPassword.mutate({
+            email,
+            password,
+            captchaToken: token,
+        });
+        isLoading = false;
     }
 
     async function handlePasskeySubmit(email: string): Promise<void> {
@@ -138,10 +134,14 @@
 
     const initiateGoogleLogin = useInitiateGoogleLogin();
     const sendMagicLink = useSendMagicLink();
+    const loginWithEmailAndPassword = useLoginWithEmailAndPassword();
 
     // If any of these get set to true we need to wait for mutation error in order to reset it
     $effect(() => {
-        if (initiateGoogleLogin.isPending) {
+        if (
+            initiateGoogleLogin.isPending || sendMagicLink.isPending
+            || loginWithEmailAndPassword.isPending
+        ) {
             isLoading = true;
         } else {
             isLoading = false;
@@ -165,7 +165,8 @@
         <PasswordForm
             onSubmit={handlePasswordSubmit}
             onBack={() => handleBack()}
-            isLoading={isLoading || turnstileLoading}
+            {isLoading}
+            mutation={loginWithEmailAndPassword}
         />
     {:else if loginMode === "passkey"}
         <PasskeyForm

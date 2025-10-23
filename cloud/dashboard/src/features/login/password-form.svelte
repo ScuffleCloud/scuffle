@@ -1,37 +1,41 @@
 <script lang="ts">
+    import InlineNotification from "$lib/components/inline-notification.svelte";
+    import PasswordInput from "$lib/components/password-input.svelte";
+    import type { CreateMutationResult } from "@tanstack/svelte-query";
+    import type { LoginWithEmailAndPasswordParams } from "./authMutations";
     import LoginFormTitle from "./login-form-title.svelte";
 
     interface Props {
         onSubmit: (email: string, password: string) => Promise<void>;
         onBack: () => void;
         isLoading: boolean;
+        mutation: CreateMutationResult<
+            void,
+            Error,
+            LoginWithEmailAndPasswordParams,
+            unknown
+        >;
     }
 
-    let { onSubmit, onBack, isLoading }: Props = $props();
+    let { onSubmit, onBack, isLoading, mutation }: Props = $props();
+
+    let email = $state("");
+    let password = $state("");
 
     async function handleSubmit(event: SubmitEvent): Promise<void> {
         event.preventDefault();
-        const formData = new FormData(event.target as HTMLFormElement);
-        const email = formData.get("email") as string;
-        const password = formData.get("password") as string;
         await onSubmit(email, password);
     }
 </script>
 
 <LoginFormTitle {onBack} title="Password Login" />
 <form onsubmit={handleSubmit} class="login-form">
-    {#if isLoading}
-        <div class="error-message">
-            Logging in...
-        </div>
-    {/if}
-
     <div class="form-group">
         <label for="email" class="form-label">Email</label>
         <input
             type="email"
-            name="email"
             id="email"
+            bind:value={email}
             class="form-input"
             placeholder="Enter your email"
             disabled={isLoading}
@@ -39,21 +43,23 @@
             autocomplete="email"
         />
     </div>
-
     <div class="form-group">
-        <label for="password" class="form-label">Password</label>
-        <input
-            type="password"
-            name="password"
+        <PasswordInput
             id="password"
-            class="form-input"
+            label="Password"
+            bind:value={password}
             placeholder="Enter your password"
             disabled={isLoading}
-            required
-            autocomplete="current-password"
         />
     </div>
-
+    {#if mutation.error}
+        <div class="error-notification">
+            <InlineNotification
+                type="error"
+                message={mutation.error.message || "An error occurred"}
+            />
+        </div>
+    {/if}
     <button type="submit" class="btn-primary" disabled={isLoading}>
         {#if isLoading}
             <span class="loading-spinner-small"></span>
@@ -65,16 +71,6 @@
 </form>
 
 <style>
-    .error-message {
-      background-color: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #dc2626;
-      padding: 0.75rem;
-      border-radius: 0.5rem;
-      margin-bottom: 1.5rem;
-      font-size: 0.875rem;
-    }
-
     .login-form {
       margin-bottom: 0.5rem;
     }
@@ -135,5 +131,9 @@
 
     .btn-primary:hover:not(:disabled) {
       background: #d97706;
+    }
+
+    .error-notification {
+      margin-bottom: 1.25rem;
     }
 </style>

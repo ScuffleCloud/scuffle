@@ -381,6 +381,13 @@ export function authState() {
             user = await loadUser(userSessionToken);
         },
         /**
+         * Update current user data.
+         */
+        updateUser(updatedUser: Partial<User>): void {
+            if (user?.state !== "authenticated") return;
+            user = { ...user, data: { ...user.data, ...updatedUser } };
+        },
+        /**
          * Returns the device public key. If the keypair is not yet loaded or does not exist, null is returned.
          */
         get devicePublicKey(): CryptoKey | null {

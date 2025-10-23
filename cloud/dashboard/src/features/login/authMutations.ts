@@ -103,33 +103,14 @@ export function useCompleteMagicLink() {
                 await authState().handleNewUserSessionToken(response);
 
                 if (response?.mfaOptions.length) {
-                    goto("/mfa", { replaceState: true });
+                    goto("/mfa");
                 } else {
-                    goto("/", { replaceState: true });
+                    goto("/");
                 }
             }),
     }));
 }
 
-// //     loginWithEmailAndPassword(input: LoginWithEmailAndPasswordRequest, options?: RpcOptions): UnaryCall<LoginWithEmailAndPasswordRequest, NewUserSessionToken>;
-// export interface LoginWithEmailAndPasswordRequest {
-//     /**
-//      * @generated from protobuf field: scufflecloud.core.v1.CaptchaChallengeResponse captcha = 1
-//      */
-//     captcha?: CaptchaChallengeResponse;
-//     /**
-//      * @generated from protobuf field: string email = 2
-//      */
-//     email: string;
-//     /**
-//      * @generated from protobuf field: string password = 3
-//      */
-//     password: string;
-//     /**
-//      * @generated from protobuf field: scufflecloud.core.v1.Device device = 4
-//      */
-//     device?: Device;
-// }
 export function useLoginWithEmailAndPassword() {
     return createMutation(() => ({
         mutationFn: ({ email, password, captchaToken }: LoginWithEmailAndPasswordParams) =>
@@ -157,9 +138,9 @@ export function useLoginWithEmailAndPassword() {
                 await authState().handleNewUserSessionToken(response);
 
                 if (response?.mfaOptions.length) {
-                    goto("/mfa", { replaceState: true });
+                    goto("/mfa");
                 } else {
-                    goto("/", { replaceState: true });
+                    goto("/");
                 }
             }),
     }));

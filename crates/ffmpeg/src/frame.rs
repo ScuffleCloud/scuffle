@@ -376,7 +376,7 @@ impl VideoFrame {
 
     /// Returns true if the frame is a keyframe.
     pub const fn is_keyframe(&self) -> bool {
-        self.0.0.as_deref_except().key_frame != 0
+        (self.0.0.as_deref_except().flags & AV_FRAME_FLAG_KEY as i32) != 0
     }
 
     /// Returns the picture type of the frame.

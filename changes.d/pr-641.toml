@@ -1,0 +1,5 @@
+[[scuffle-ffmpeg]]
+breaking = true
+category = "feat"
+description = "Added support for FFMPEG 8.0"
+authors = ["@devilish-crow"]

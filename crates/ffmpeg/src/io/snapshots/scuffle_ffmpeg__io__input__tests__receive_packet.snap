@@ -2172,7 +2172,7 @@ expression: packets
             47104,
         ),
         duration: Some(
-            992,
+            1024,
         ),
         pos: Some(
             247025,

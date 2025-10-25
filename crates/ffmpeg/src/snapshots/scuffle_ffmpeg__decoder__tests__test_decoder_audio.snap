@@ -1118,7 +1118,7 @@ expression: audio_frames
             47104,
         ),
         duration: Some(
-            992,
+            1024,
         ),
         best_effort_timestamp: Some(
             47104,

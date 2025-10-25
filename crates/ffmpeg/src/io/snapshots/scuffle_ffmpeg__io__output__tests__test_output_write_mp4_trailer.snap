@@ -1,7 +1,6 @@
 ---
 source: crates/ffmpeg/src/io/output.rs
 expression: get_boxes!(output)
-snapshot_kind: text
 ---
 [
     Ftyp(
@@ -1123,7 +1122,7 @@ snapshot_kind: text
                         BoxHeader {
                             box_type: b"udta",
                         },
-                        b"\0\0\0Ymeta\0\0\0\0\0\0\0!hdlr\0\0\0\0\0\0\0\0mdirappl\0\0\0\0\0\0\0\0\0\0\0\0,ilst\0\0\0$\xa9too\0\0\0\x1cdata\0\0\0\x01\0\0\0\0Lavf61.7.100",
+                        b"\0\0\0Ymeta\0\0\0\0\0\0\0!hdlr\0\0\0\0\0\0\0\0mdirappl\0\0\0\0\0\0\0\0\0\0\0\0,ilst\0\0\0$\xa9too\0\0\0\x1cdata\0\0\0\x01\0\0\0\0Lavf62.3.100",
                     ),
                 ),
             ],

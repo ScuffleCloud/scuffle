@@ -69,7 +69,7 @@ rust_library(
     }),
     version = "0.8.0",
     deps = [
-        "@cargo_vendor__stable_deref_trait-1.2.0//:stable_deref_trait",
+        "@cargo_vendor__stable_deref_trait-1.2.1//:stable_deref_trait",
         "@cargo_vendor__zerofrom-0.1.6//:zerofrom",
     ],
 )

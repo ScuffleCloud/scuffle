@@ -12,6 +12,7 @@ _packages = [
     "//cloud/video/ingest/traits",
     "//cloud/video/api",
     "//cloud/video/api/traits",
+    "//cloud/video/api/db-types",
     "//cloud/id",
     "//cloud/proto",
     "//crates/aac",

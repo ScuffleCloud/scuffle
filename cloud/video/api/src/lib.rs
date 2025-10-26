@@ -14,4 +14,5 @@
 // tonic::Status emits this warning
 #![allow(clippy::result_large_err)]
 
+mod middleware;
 pub mod services;

@@ -1,0 +1,30 @@
+load("//misc/utils/rust:diesel_migration.bzl", "diesel_migration", "diesel_migration_test")
+load("//misc/utils/rust:manifest.bzl", "cargo_toml")
+load("//misc/utils/rust:package.bzl", "scuffle_package")
+
+cargo_toml()
+
+scuffle_package(
+    aliases = {
+        "//cloud/proto": "pb",
+        "//cloud/id": "id",
+        "//cloud/core/db-types": "core_db_types",
+    },
+    crate_name = "scufflecloud-video-api-db-types",
+    deps = [
+        "//cloud/core/db-types",
+        "//cloud/id",
+        "//cloud/proto",
+    ],
+)
+
+diesel_migration(
+    name = "migration",
+    config_file = "diesel.toml",
+    data = glob([
+        "migrations/**/*.sql",
+    ]),
+    database_image = "@postgres18",
+    schema_file = "src/schema.rs",
+    schema_patch_file = "src/schema.patch",
+)

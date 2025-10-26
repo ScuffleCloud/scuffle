@@ -45,7 +45,7 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2021",
     proc_macro_deps = [
-        "@cargo_vendor__document-features-0.2.11//:document_features",
+        "@cargo_vendor__document-features-0.2.12//:document_features",
     ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
@@ -72,10 +72,10 @@ rust_library(
     }),
     version = "0.29.0",
     deps = [
-        "@cargo_vendor__bitflags-2.9.4//:bitflags",
+        "@cargo_vendor__bitflags-2.10.0//:bitflags",
         "@cargo_vendor__derive_more-2.0.1//:derive_more",
         "@cargo_vendor__futures-core-0.3.31//:futures_core",
-        "@cargo_vendor__parking_lot-0.12.4//:parking_lot",
+        "@cargo_vendor__parking_lot-0.12.5//:parking_lot",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@cargo_vendor__mio-1.0.4//:mio",  # cfg(unix)

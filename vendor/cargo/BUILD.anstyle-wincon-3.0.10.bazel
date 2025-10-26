@@ -56,8 +56,8 @@ rust_library(
     }),
     version = "3.0.10",
     deps = [
-        "@cargo_vendor__anstyle-1.0.11//:anstyle",
-        "@cargo_vendor__once_cell_polyfill-1.70.1//:once_cell_polyfill",  # cfg(windows)
+        "@cargo_vendor__anstyle-1.0.13//:anstyle",
+        "@cargo_vendor__once_cell_polyfill-1.70.2//:once_cell_polyfill",  # cfg(windows)
         "@cargo_vendor__windows-sys-0.60.2//:windows_sys",  # cfg(windows)
     ],
 )

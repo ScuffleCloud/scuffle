@@ -61,6 +61,6 @@ rust_library(
     }),
     version = "0.10.4",
     deps = [
-        "@cargo_vendor__generic-array-0.14.7//:generic_array",
+        "@cargo_vendor__generic-array-0.14.9//:generic_array",
     ],
 )

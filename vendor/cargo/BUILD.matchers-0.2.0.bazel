@@ -61,6 +61,6 @@ rust_library(
     }),
     version = "0.2.0",
     deps = [
-        "@cargo_vendor__regex-automata-0.4.10//:regex_automata",
+        "@cargo_vendor__regex-automata-0.4.13//:regex_automata",
     ],
 )

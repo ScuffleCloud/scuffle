@@ -12,14 +12,13 @@
     import InlineNotification from "$lib/components/inline-notification.svelte";
     import Modal from "$lib/components/modal.svelte";
     import SettingsCard from "$lib/components/settings-card.svelte";
+    import { queryKeys } from "$lib/consts";
     import IconTrash from "$lib/images/icon-trash.svelte";
     import {
         type AuthStepType,
         DEFAULT_TOTP_AUTH_NAME,
         DEFAULT_WEBAUTHN_AUTH_NAME,
         STEP_TO_TITLE,
-        TOTP_LIST_KEY,
-        WEBAUTHN_LIST_KEY,
     } from "./consts";
     import {
         useCompleteTotpCredential,
@@ -65,7 +64,7 @@
     let modal: Modal;
     let editModal: Modal;
     let deleteModal: Modal;
-    let recoveryModal = $state<Modal | null>(null);
+    let recoveryModal = $state<Modal | undefined>();
 
     // --Mutations--
     const createWebAuthnMutation = useCreateWebauthnCredential(userId);
@@ -86,11 +85,11 @@
         if (currentStep === "success") {
             if (credentialType === "webauthn") {
                 queryClient.invalidateQueries({
-                    queryKey: [WEBAUTHN_LIST_KEY],
+                    queryKey: [queryKeys.webauthn(userId!)],
                 });
             } else {
                 queryClient.invalidateQueries({
-                    queryKey: [TOTP_LIST_KEY],
+                    queryKey: [queryKeys.totp(userId!)],
                 });
             }
         }

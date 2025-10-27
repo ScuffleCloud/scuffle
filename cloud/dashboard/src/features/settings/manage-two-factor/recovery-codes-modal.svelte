@@ -7,7 +7,7 @@
     import { createMutation } from "@tanstack/svelte-query";
 
     interface Props {
-        modal: Modal | null;
+        modal: Modal | undefined;
         hasExistingCodes: boolean;
     }
 

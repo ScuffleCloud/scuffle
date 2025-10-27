@@ -8,6 +8,8 @@ import {
     type NewUserSessionToken,
 } from "@scufflecloud/proto/scufflecloud/core/v1/sessions_service.js";
 import { User } from "@scufflecloud/proto/scufflecloud/core/v1/users.js";
+import { QueryClient, useQueryClient } from "@tanstack/svelte-query";
+import { getAuthQueryClient } from "./auth-init.svelte";
 import { rpcErrorToString, sessionsServiceClient, usersServiceClient } from "./grpcClient";
 import { arrayBufferToBase64, base64ToArrayBuffer } from "./utils";
 
@@ -306,11 +308,16 @@ export function authState() {
         async logout() {
             if (!browser) return;
 
+            const queryClient = getAuthQueryClient();
+
             if (userSessionToken.state !== "authenticated") {
                 return;
             }
 
             try {
+                // Reset query cache
+                queryClient?.clear();
+
                 const call = sessionsServiceClient.invalidateUserSession({
                     userId: userSessionToken.data.userId,
                     deviceFingerprint: new Uint8Array(userSessionToken.data.deviceFingerprint),
@@ -333,11 +340,15 @@ export function authState() {
                 return;
             }
 
+            const queryClient = getAuthQueryClient();
+
             // Check if session is expired
             if (
                 userSessionToken.data.sessionExpiresAt
                 && Date.now() > userSessionToken.data.sessionExpiresAt.getTime() - 10 * 1000
             ) {
+                // Reset query cache
+                queryClient?.clear();
                 userSessionToken = { state: "unauthenticated" };
                 window.localStorage.removeItem("userSessionToken");
                 user = { state: "unauthenticated" };

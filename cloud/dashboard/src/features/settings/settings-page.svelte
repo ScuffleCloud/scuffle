@@ -1,140 +1,66 @@
 <script lang="ts">
     import { authState } from "$lib/auth.svelte";
     import SettingsBlock from "$lib/components/settings-block.svelte";
-    import { usersServiceClient } from "$lib/grpcClient";
+    import { queryKeys } from "$lib/consts";
+    import {
+        sessionsServiceClient,
+        usersServiceClient,
+    } from "$lib/grpcClient";
+    import IconSettings2 from "$lib/images/icon-settings2.svelte";
     import IconShield from "$lib/images/icon-shield.svelte";
     import { createQuery } from "@tanstack/svelte-query";
     import {
         DEFAULT_TOTP_AUTH_NAME,
         DEFAULT_WEBAUTHN_AUTH_NAME,
     } from "./manage-two-factor/consts";
-    import {
-        TOTP_LIST_KEY,
-        WEBAUTHN_LIST_KEY,
-    } from "./manage-two-factor/consts";
     import TwoFactorSettingsCard from "./manage-two-factor/two-factor-settings-card.svelte";
     import { type MfaCredential } from "./manage-two-factor/types";
     import PasswordSettingsCard from "./password/password-settings-card.svelte";
+    import SessionsSettingsCard from "./sessions/sessions-settings-card.svelte";
 
-    const user = authState().user;
+    const userId = authState().user?.id;
 
     const totpListQuery = createQuery(() => ({
-        queryKey: [TOTP_LIST_KEY],
+        queryKey: queryKeys.totp(userId!),
         queryFn: async () => {
             const call = usersServiceClient.listTotpCredentials({
-                id: user!.id,
+                id: userId!,
             });
             const response = await call.response;
             return response.credentials;
         },
-        enabled: !!user,
+        enabled: !!userId,
     }));
 
     const webauthnListQuery = createQuery(() => ({
-        queryKey: [WEBAUTHN_LIST_KEY],
+        queryKey: queryKeys.webauthn(userId!),
         queryFn: async () => {
             const call = usersServiceClient.listWebauthnCredentials({
-                id: user!.id,
+                id: userId!,
             });
             const response = await call.response;
             return response.credentials;
         },
-        enabled: !!user,
+        enabled: !!userId,
     }));
 
-    // Account Settings Cards
-    // const accountCards = $derived<Card[]>([
-    //     {
-    //         id: "profile",
-    //         title: "Profile Information",
-    //         description:
-    //             "Update your name, email, and other profile details.",
-    //         actions: [
-    //             {
-    //                 label: "Edit Profile",
-    //                 variant: "primary",
-    //                 onClick: () => {
-    //                     console.log("Edit profile clicked");
-    //                 },
-    //             },
-    //         ],
-    //     },
-    //     {
-    //         id: "preferences",
-    //         title: "Display Preferences",
-    //         description:
-    //             "Customize your account display settings and preferences.",
-    //         actions: [
-    //             {
-    //                 variant: "toggle",
-    //                 isToggled: userSettings.preferences.darkMode,
-    //                 enabledText: "Dark Mode",
-    //                 disabledText: "Light Mode",
-    //                 onClick: () => {
-    //                     userSettings.preferences.darkMode =
-    //                         !userSettings
-    //                             .preferences
-    //                             .darkMode;
-    //                     console.log(
-    //                         "Dark mode toggled:",
-    //                         userSettings.preferences.darkMode,
-    //                     );
-    //                 },
-    //             },
-    //         ],
-    //     },
-    //     {
-    //         id: "auto-save",
-    //         title: "Auto-save Settings",
-    //         description:
-    //             "Automatically save your work as you make changes.",
-    //         actions: [
-    //             {
-    //                 variant: "toggle",
-    //                 isToggled: userSettings.preferences.autoSave,
-    //                 enabledText: "Enabled",
-    //                 disabledText: "Disabled",
-    //                 onClick: () => {
-    //                     userSettings.preferences.autoSave =
-    //                         !userSettings
-    //                             .preferences
-    //                             .autoSave;
-    //                     console.log(
-    //                         "Auto-save toggled:",
-    //                         userSettings.preferences.autoSave,
-    //                     );
-    //                 },
-    //             },
-    //         ],
-    //     },
-    // ]);
-
-    // Danger Zone Cards
-    // const dangerCards = $derived<Card[]>([
-    //     {
-    //         id: "delete-account",
-    //         title: "Delete Account",
-    //         description:
-    //             "Permanently delete your account and all associated data. This action cannot be undone.",
-    //         status: {
-    //             label: "Irreversible",
-    //             variant: "warning",
-    //         },
-    //         actions: [
-    //             {
-    //                 label: "Delete Account",
-    //                 variant: "danger",
-    //                 onClick: () => {
-    //                     console.log("Delete account clicked");
-    //                 },
-    //             },
-    //         ],
-    //     },
-    // ]);
+    const sessionsQuery = createQuery(() => ({
+        queryKey: queryKeys.sessions(userId!),
+        queryFn: async () => {
+            const call = sessionsServiceClient.list({
+                id: userId!,
+            });
+            const response = await call.response;
+            return response.sessions;
+        },
+        enabled: !!userId,
+        initialData: [],
+    }));
 
     const isLoading = $derived(
         totpListQuery.isLoading || webauthnListQuery.isLoading
-            || totpListQuery.isError || webauthnListQuery.isError,
+            || totpListQuery.isError || webauthnListQuery.isError
+            || sessionsQuery.isError || sessionsQuery.isLoading,
     );
 
     const authCredentials: MfaCredential[] = $derived(
@@ -174,87 +100,12 @@
             {isLoading}
         />
     </SettingsBlock>
-
-    <!-- Notification Settings -->
-    <!-- <SettingsBlock
-        title="Notification Settings"
-        icon={IconBell}
-    >
-        <SettingsCard
-            title="Email Notifications"
-            description="Receive notifications about important account activities via email."
-            {isLoading}
-        >
-            <Switch
-                checked={userSettings.notifications.email.enabled}
-                onchange={(checked) => {
-                    userSettings.notifications.email.enabled =
-                        checked;
-                    console.log(
-                        "Email notifications toggled:",
-                        checked,
-                    );
-                }}
-                showStateText={true}
-                size="medium"
-            />
-        </SettingsCard>
-        <SettingsCard
-            title="Marketing Communications"
-            description="Receive updates about new features and promotional offers."
-        >
-            <Switch
-                checked={userSettings.notifications.email.marketing}
-                onchange={(checked) => {
-                    userSettings.notifications.email.marketing =
-                        checked;
-                    console.log(
-                        "Marketing emails toggled:",
-                        checked,
-                    );
-                }}
-                showStateText={true}
-                size="medium"
-            />
-        </SettingsCard>
-    </SettingsBlock>
     <SettingsBlock
-        title="Security & Privacy"
-        icon={IconShield}
+        title="Sessions"
+        icon={IconSettings2}
     >
-        <SettingsCard
-            title="Critical Notifications"
-            description="Receive critical notifications about important account activities."
-        >
-            <Switch
-                checked={userSettings.notifications.email.criticalAlerts}
-                onchange={(checked) => {
-                    userSettings.notifications.email
-                        .criticalAlerts = checked;
-                    console.log(
-                        "Critical notifications toggled:",
-                        checked,
-                    );
-                }}
-                showStateText={true}
-                enabledText="On"
-                disabledText="Off"
-                size="medium"
-            />
-        </SettingsCard>
-
-        <SettingsCard
-            title="Password"
-            description="Change your password to keep your account secure."
-        >
-            <button
-                class="action-button action-secondary"
-                onclick={() => console.log("Change password clicked")}
-            >
-                Change Password
-            </button>
-        </SettingsCard>
-    </SettingsBlock> -->
+        <SessionsSettingsCard {isLoading} sessions={sessionsQuery.data || []} />
+    </SettingsBlock>
 </div>
 
 <style>

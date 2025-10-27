@@ -3,6 +3,7 @@
     import "$styles/variables.css";
     import "@fontsource-variable/archivo";
     import { browser } from "$app/environment";
+    import { setAuthQueryClient } from "$lib/auth-init.svelte";
     import { authState } from "$lib/auth.svelte";
     import {
         QueryClient,
@@ -21,6 +22,9 @@
             },
         },
     });
+
+    // Set query client for use in authstate
+    setAuthQueryClient(queryClient);
 </script>
 
 <QueryClientProvider client={queryClient}>

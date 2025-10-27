@@ -1,7 +1,7 @@
+import { queryKeys } from "$lib/consts";
 import { usersServiceClient } from "$lib/grpcClient";
 import { arrayBufferToBase64, withRpcErrorHandling } from "$lib/utils";
 import { createMutation, QueryClient, useQueryClient } from "@tanstack/svelte-query";
-import { TOTP_LIST_KEY, WEBAUTHN_LIST_KEY } from "./consts";
 import { createWebauthnCredential } from "./createWebAuthn.svelte";
 import type { MfaCredential, MfaCredentialType } from "./types";
 
@@ -104,7 +104,7 @@ export function useUpdateCredentialName(userId: string | undefined) {
                 }
             }),
         onSuccess: (_data, { id, name, type }) => {
-            const queryKey = type === "webauthn" ? WEBAUTHN_LIST_KEY : TOTP_LIST_KEY;
+            const queryKey = type === "webauthn" ? queryKeys.webauthn(userId!) : queryKeys.totp(userId!);
             const existingData = queryClient.getQueryData<MfaCredential[]>([queryKey]);
 
             // Check if the credential exists in the cache. They won't yet if the key was just added
@@ -143,7 +143,7 @@ export function useDeleteCredential(userId: string | undefined) {
                 }
             }),
         onSuccess: (_data, { id, type }) => {
-            const queryKey = type === "webauthn" ? WEBAUTHN_LIST_KEY : TOTP_LIST_KEY;
+            const queryKey = type === "webauthn" ? queryKeys.webauthn(userId!) : queryKeys.totp(userId!);
             queryClient.setQueryData<MfaCredential[]>(
                 [queryKey],
                 (old: MfaCredential[] | undefined) => old?.filter(cred => cred.id !== id),

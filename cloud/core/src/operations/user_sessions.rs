@@ -77,7 +77,9 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             .await
             .into_tonic_internal_err("failed to update user session")?;
 
-        Ok(session.into())
+        let ip_info = common::ip_to_pb(global, session.last_ip.ip())?;
+
+        Ok(session.into_pb(ip_info))
     }
 }
 
@@ -144,12 +146,14 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<RefreshUserSessionR
             vec![]
         };
 
+        let session_ip_info = common::ip_to_pb(global, session.last_ip.ip())?;
+
         let new_token = pb::scufflecloud::core::v1::NewUserSessionToken {
             id: token_id.to_string(),
             encrypted_token,
             user_id: session.user_id.to_string(),
             expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
-            session: Some(session.into()),
+            session: Some(session.into_pb(session_ip_info)),
             mfa_options: mfa_options.into_iter().map(|o| o as i32).collect(),
         };
 
@@ -234,8 +238,14 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             .await
             .into_tonic_internal_err("failed to load user sessions")?;
 
-        Ok(pb::scufflecloud::core::v1::ListUserSessionsResponse {
-            sessions: sessions.into_iter().map(Into::into).collect(),
-        })
+        let sessions = sessions
+            .into_iter()
+            .map(|s| {
+                let last_ip = common::ip_to_pb(global, s.last_ip.ip())?;
+                Ok(s.into_pb(last_ip))
+            })
+            .collect::<Result<_, tonic::Status>>()?;
+
+        Ok(pb::scufflecloud::core::v1::ListUserSessionsResponse { sessions })
     }
 }

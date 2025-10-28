@@ -101,17 +101,17 @@ pub struct UserSession {
     pub mfa_pending: bool,
 }
 
-impl From<UserSession> for pb::scufflecloud::core::v1::UserSession {
-    fn from(value: UserSession) -> Self {
+impl UserSession {
+    pub fn into_pb(self, last_ip: pb::scufflecloud::core::v1::IpAddressInfo) -> pb::scufflecloud::core::v1::UserSession {
         pb::scufflecloud::core::v1::UserSession {
-            user_id: value.user_id.to_string(),
-            device_fingerprint: value.device_fingerprint,
-            last_used_at: Some(SystemTime::from(value.last_used_at).into()),
-            last_ip: value.last_ip.to_string(),
-            token_id: value.token_id.map(|id| id.to_string()),
-            token_expires_at: value.token_expires_at.map(|t| SystemTime::from(t).into()),
-            expires_at: Some(SystemTime::from(value.expires_at).into()),
-            mfa_pending: value.mfa_pending,
+            user_id: self.user_id.to_string(),
+            device_fingerprint: self.device_fingerprint,
+            last_used_at: Some(SystemTime::from(self.last_used_at).into()),
+            last_ip: Some(last_ip),
+            token_id: self.token_id.map(|id| id.to_string()),
+            token_expires_at: self.token_expires_at.map(|t| SystemTime::from(t).into()),
+            expires_at: Some(SystemTime::from(self.expires_at).into()),
+            mfa_pending: self.mfa_pending,
         }
     }
 }

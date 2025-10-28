@@ -44,6 +44,32 @@ pub(crate) fn email_to_pb<G: core_traits::ConfigInterface>(
     }
 }
 
+pub(crate) fn ip_to_pb<G: geo_ip::GeoIpInterface>(
+    global: &Arc<G>,
+    ip_addr: std::net::IpAddr,
+) -> Result<pb::scufflecloud::core::v1::IpAddressInfo, tonic::Status> {
+    let geo_country = global
+        .geo_ip_resolver()
+        .lookup::<maxminddb::geoip2::Country>(ip_addr)
+        .into_tonic_internal_err("failed to lookup geoip info")?
+        .and_then(|c| c.country)
+        .and_then(|c| c.names)
+        .and_then(|names| names.get("en").map(|s| s.to_string()));
+    let geo_city = global
+        .geo_ip_resolver()
+        .lookup::<maxminddb::geoip2::City>(ip_addr)
+        .into_tonic_internal_err("failed to lookup geoip info")?
+        .and_then(|c| c.city)
+        .and_then(|c| c.names)
+        .and_then(|names| names.get("en").map(|s| s.to_string()));
+
+    Ok(pb::scufflecloud::core::v1::IpAddressInfo {
+        ip_address: ip_addr.to_string(),
+        geo_country,
+        geo_city,
+    })
+}
+
 pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::Error> {
     let mut token = [0u8; 32];
     rand::rngs::OsRng.try_fill_bytes(&mut token)?;
@@ -307,12 +333,14 @@ pub(crate) async fn create_session<G: core_traits::Global>(
         .await
         .into_tonic_internal_err("failed to insert user session")?;
 
+    let session_ip_info = ip_to_pb(global, ip_info.ip_address)?;
+
     let new_token = pb::scufflecloud::core::v1::NewUserSessionToken {
         id: token_id.to_string(),
         encrypted_token,
         user_id: user.id.to_string(),
         expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
-        session: Some(user_session.into()),
+        session: Some(user_session.into_pb(session_ip_info)),
         mfa_options: mfa_options.into_iter().map(|o| o as i32).collect(),
     };
 

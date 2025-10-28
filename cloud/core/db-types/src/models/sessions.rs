@@ -91,6 +91,7 @@ pub struct UserSession {
     pub device_pk_data: Vec<u8>,
     pub last_used_at: chrono::DateTime<chrono::Utc>,
     pub last_ip: ipnetwork::IpNetwork,
+    pub last_user_agent: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub token_id: Option<UserSessionTokenId>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -108,6 +109,7 @@ impl UserSession {
             device_fingerprint: self.device_fingerprint,
             last_used_at: Some(SystemTime::from(self.last_used_at).into()),
             last_ip: Some(last_ip),
+            last_user_agent: self.last_user_agent,
             token_id: self.token_id.map(|id| id.to_string()),
             token_expires_at: self.token_expires_at.map(|t| SystemTime::from(t).into()),
             expires_at: Some(SystemTime::from(self.expires_at).into()),

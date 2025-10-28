@@ -187,8 +187,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
-        let ip_info = self.ip_address_info()?;
-        let dashboard_origin = self.dashboard_origin::<G>()?;
+        let metadata = common::CreateSessionMetadata::from_req::<G, _>(&self)?;
         let state: CompleteLoginWithMagicLinkState = self
             .extensions_mut()
             .remove()
@@ -202,16 +201,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
             common::create_user(conn, &principal).await?;
         }
 
-        let new_token = common::create_session(
-            global,
-            conn,
-            &dashboard_origin,
-            &principal,
-            device,
-            &ip_info,
-            !state.create_user,
-        )
-        .await?;
+        let new_token = common::create_session(global, conn, &principal, device, metadata, !state.create_user).await?;
         Ok(new_token)
     }
 }
@@ -268,8 +258,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
-        let ip_info = self.ip_address_info()?;
-        let dashboard_origin = self.dashboard_origin::<G>()?;
+        let metadata = common::CreateSessionMetadata::from_req::<G, _>(&self)?;
         let payload = self.into_inner();
 
         let conn = driver.conn().await?;
@@ -287,7 +276,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
 
         common::verify_password(password_hash, &payload.password)?;
 
-        common::create_session(global, conn, &dashboard_origin, &principal, device, &ip_info, true).await
+        common::create_session(global, conn, &principal, device, metadata, true).await
     }
 }
 
@@ -488,8 +477,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
-        let ip_info = self.ip_address_info()?;
-        let dashboard_origin = self.dashboard_origin::<G>()?;
+        let metadata = common::CreateSessionMetadata::from_req::<G, _>(&self)?;
 
         let state = self
             .extensions_mut()
@@ -501,7 +489,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
         let conn = driver.conn().await?;
 
         // Create session
-        let token = common::create_session(global, conn, &dashboard_origin, &principal, device, &ip_info, false).await?;
+        let token = common::create_session(global, conn, &principal, device, metadata, false).await?;
 
         Ok(pb::scufflecloud::core::v1::CompleteLoginWithGoogleResponse {
             new_user_session_token: Some(token),
@@ -540,8 +528,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
         _resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
-        let ip_info = self.ip_address_info()?;
-        let dashboard_origin = self.dashboard_origin::<G>()?;
+        let metadata = common::CreateSessionMetadata::from_req::<G, _>(&self)?;
         let payload = self.into_inner();
 
         let pk_cred: webauthn_rs::prelude::PublicKeyCredential = serde_json::from_str(&payload.response_json)
@@ -553,7 +540,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
         common::finish_webauthn_authentication(global, conn, principal.id, &pk_cred).await?;
 
         // Create a new session for the user
-        let new_token = common::create_session(global, conn, &dashboard_origin, &principal, device, &ip_info, false).await?;
+        let new_token = common::create_session(global, conn, &principal, device, metadata, false).await?;
         Ok(new_token)
     }
 }

@@ -264,8 +264,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
         resource: Self::Resource,
     ) -> Result<Self::Response, tonic::Status> {
         let global = &self.global::<G>()?;
-        let ip_info = self.ip_address_info()?;
-        let dashboard_origin = self.dashboard_origin::<G>()?;
+        let metadata = common::CreateSessionMetadata::from_req::<G, _>(&self)?;
         let payload = self.into_inner();
 
         let device = payload.device.require("device")?;
@@ -281,8 +280,7 @@ impl<G: core_traits::Global> Operation<G> for tonic::Request<pb::scufflecloud::c
 
         let conn = driver.conn().await?;
 
-        let new_token =
-            common::create_session(global, conn, &dashboard_origin, &approved_by, device, &ip_info, false).await?;
+        let new_token = common::create_session(global, conn, &approved_by, device, metadata, false).await?;
         Ok(new_token)
     }
 }

@@ -22,6 +22,7 @@ use tonic::Code;
 use tonic_types::{ErrorDetails, StatusExt};
 
 use crate::chrono_ext::ChronoDateTimeExt;
+use crate::http_ext::CoreRequestExt;
 
 pub(crate) fn email_to_pb<G: core_traits::ConfigInterface>(
     global: &Arc<G>,
@@ -275,13 +276,37 @@ pub(crate) async fn mfa_options(
     Ok(mfa_options)
 }
 
+pub(crate) struct CreateSessionMetadata {
+    pub dashboard_origin: url::Url,
+    pub ip_info: IpAddressInfo,
+    pub user_agent: Option<String>,
+}
+
+impl CreateSessionMetadata {
+    pub(crate) fn from_req<
+        G: core_traits::ConfigInterface + 'static,
+        R: ext_traits::RequestExt + geo_ip::GeoIpRequestExt + CoreRequestExt,
+    >(
+        req: &R,
+    ) -> Result<Self, tonic::Status> {
+        let dashboard_origin = req.dashboard_origin::<G>()?;
+        let ip_info = req.ip_address_info()?;
+        let user_agent = req.user_agent().map(ToString::to_string);
+
+        Ok(Self {
+            dashboard_origin,
+            ip_info,
+            user_agent,
+        })
+    }
+}
+
 pub(crate) async fn create_session<G: core_traits::Global>(
     global: &Arc<G>,
     tx: &mut impl diesel_async::AsyncConnection<Backend = diesel::pg::Pg>,
-    dashboard_origin: &url::Url,
     user: &User,
     device: pb::scufflecloud::core::v1::Device,
-    ip_info: &IpAddressInfo,
+    metadata: CreateSessionMetadata,
     check_mfa: bool,
 ) -> Result<pb::scufflecloud::core::v1::NewUserSessionToken, tonic::Status> {
     let mfa_options = if check_mfa { mfa_options(tx, user.id).await? } else { vec![] };
@@ -306,7 +331,8 @@ pub(crate) async fn create_session<G: core_traits::Global>(
         device_algorithm: device.algorithm().into(),
         device_pk_data: device.public_key_data,
         last_used_at: chrono::Utc::now(),
-        last_ip: ip_info.to_network(),
+        last_ip: metadata.ip_info.to_network(),
+        last_user_agent: metadata.user_agent,
         token_id: Some(token_id),
         token: Some(token.to_vec()),
         token_expires_at: Some(token_expires_at),
@@ -333,7 +359,7 @@ pub(crate) async fn create_session<G: core_traits::Global>(
         .await
         .into_tonic_internal_err("failed to insert user session")?;
 
-    let session_ip_info = ip_to_pb(global, ip_info.ip_address)?;
+    let session_ip_info = ip_to_pb(global, metadata.ip_info.ip_address)?;
 
     let new_token = pb::scufflecloud::core::v1::NewUserSessionToken {
         id: token_id.to_string(),
@@ -345,12 +371,13 @@ pub(crate) async fn create_session<G: core_traits::Global>(
     };
 
     if let Some(primary_email) = user.primary_email.as_ref() {
-        let geo_info = ip_info
+        let geo_info = metadata
+            .ip_info
             .lookup_geoip_info::<maxminddb::geoip2::City>(&**global)
             .into_tonic_internal_err("failed to lookup geoip info")?
             .map(Into::into)
             .unwrap_or_default();
-        let email = core_emails::new_device_email(dashboard_origin, ip_info.ip_address, geo_info)
+        let email = core_emails::new_device_email(&metadata.dashboard_origin, metadata.ip_info.ip_address, geo_info)
             .into_tonic_internal_err("failed to render email")?;
         let email = email_to_pb(global, primary_email.clone(), user.preferred_name.clone(), email);
 

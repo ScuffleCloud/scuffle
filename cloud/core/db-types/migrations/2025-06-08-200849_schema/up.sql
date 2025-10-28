@@ -111,6 +111,7 @@ CREATE TABLE "user_sessions" (
     "device_pk_data" BYTEA NOT NULL, -- PKCS#8 DER SPKI
     "last_used_at" TIMESTAMPTZ NOT NULL,
     "last_ip" INET NOT NULL,
+    "last_user_agent" VARCHAR(255),
     "token_id" UUID UNIQUE,
     "token" BYTEA,
     "token_expires_at" TIMESTAMPTZ,

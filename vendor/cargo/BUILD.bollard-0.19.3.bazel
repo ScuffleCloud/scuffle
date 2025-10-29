@@ -37,6 +37,7 @@ rust_library(
     crate_features = [
         "aws-lc-rs",
         "bollard-buildkit-proto",
+        "buildkit",
         "buildkit_providerless",
         "chrono",
         "default",
@@ -53,6 +54,7 @@ rust_library(
         "rustls-native-certs",
         "rustls-pemfile",
         "rustls-pki-types",
+        "ssl",
         "ssl_providerless",
         "tokio-stream",
         "tonic",

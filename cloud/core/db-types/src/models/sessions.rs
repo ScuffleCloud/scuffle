@@ -103,13 +103,17 @@ pub struct UserSession {
 }
 
 impl UserSession {
-    pub fn into_pb(self, last_ip: pb::scufflecloud::core::v1::IpAddressInfo) -> pb::scufflecloud::core::v1::UserSession {
+    pub fn into_pb(
+        self,
+        last_ip: pb::scufflecloud::core::v1::IpAddressInfo,
+        last_user_agent: Option<pb::scufflecloud::core::v1::UserAgent>,
+    ) -> pb::scufflecloud::core::v1::UserSession {
         pb::scufflecloud::core::v1::UserSession {
             user_id: self.user_id.to_string(),
             device_fingerprint: self.device_fingerprint,
             last_used_at: Some(SystemTime::from(self.last_used_at).into()),
             last_ip: Some(last_ip),
-            last_user_agent: self.last_user_agent,
+            last_user_agent,
             token_id: self.token_id.map(|id| id.to_string()),
             token_expires_at: self.token_expires_at.map(|t| SystemTime::from(t).into()),
             expires_at: Some(SystemTime::from(self.expires_at).into()),

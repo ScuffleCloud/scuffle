@@ -71,6 +71,17 @@ pub(crate) fn ip_to_pb<G: geo_ip::GeoIpInterface>(
     })
 }
 
+pub(crate) fn ua_to_pb(ua: String) -> pb::scufflecloud::core::v1::UserAgent {
+    let ua_parser = woothee::parser::Parser::new();
+    let ua_res = ua_parser.parse(&ua);
+
+    pb::scufflecloud::core::v1::UserAgent {
+        os: ua_res.as_ref().map(|r| r.os.to_string()),
+        browser: ua_res.as_ref().map(|r| r.name.to_string()),
+        user_agent: ua,
+    }
+}
+
 pub(crate) fn generate_random_bytes() -> Result<[u8; 32], rand::Error> {
     let mut token = [0u8; 32];
     rand::rngs::OsRng.try_fill_bytes(&mut token)?;
@@ -349,6 +360,7 @@ pub(crate) async fn create_session<G: core_traits::Global>(
         .set((
             user_sessions::dsl::last_used_at.eq(user_session.last_used_at),
             user_sessions::dsl::last_ip.eq(user_session.last_ip),
+            user_sessions::dsl::last_user_agent.eq(&user_session.last_user_agent),
             user_sessions::dsl::token_id.eq(user_session.token_id),
             user_sessions::dsl::token.eq(token.to_vec()),
             user_sessions::dsl::token_expires_at.eq(user_session.token_expires_at),
@@ -360,13 +372,14 @@ pub(crate) async fn create_session<G: core_traits::Global>(
         .into_tonic_internal_err("failed to insert user session")?;
 
     let session_ip_info = ip_to_pb(global, metadata.ip_info.ip_address)?;
+    let session_user_agent = user_session.last_user_agent.clone().map(ua_to_pb);
 
     let new_token = pb::scufflecloud::core::v1::NewUserSessionToken {
         id: token_id.to_string(),
         encrypted_token,
         user_id: user.id.to_string(),
         expires_at: Some(token_expires_at.to_prost_timestamp_utc()),
-        session: Some(user_session.into_pb(session_ip_info)),
+        session: Some(user_session.into_pb(session_ip_info, session_user_agent)),
         mfa_options: mfa_options.into_iter().map(|o| o as i32).collect(),
     };
 

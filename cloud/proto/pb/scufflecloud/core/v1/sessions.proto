@@ -10,7 +10,7 @@ message UserSession {
   bytes device_fingerprint = 2;
   google.protobuf.Timestamp last_used_at = 3;
   IpAddressInfo last_ip = 4;
-  optional string last_user_agent = 5;
+  optional UserAgent last_user_agent = 5;
   optional string token_id = 6 [(string_constraint).id = true];
   optional google.protobuf.Timestamp token_expires_at = 7;
   google.protobuf.Timestamp expires_at = 8;
@@ -21,4 +21,10 @@ message IpAddressInfo {
   string ip_address = 1;
   optional string geo_country = 2;
   optional string geo_city = 3;
+}
+
+message UserAgent {
+  string user_agent = 1;
+  optional string os = 2;
+  optional string browser = 3;
 }

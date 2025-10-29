@@ -1964,3 +1964,15 @@ transition_alias_opt(
     actual = "@cargo_vendor__webauthn-rs-0.5.2//:webauthn_rs",
     tags = ["manual"],
 )
+
+transition_alias_opt(
+    name = "woothee-0.13.0",
+    actual = "@cargo_vendor__woothee-0.13.0//:woothee",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "woothee",
+    actual = "@cargo_vendor__woothee-0.13.0//:woothee",
+    tags = ["manual"],
+)

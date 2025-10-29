@@ -75,6 +75,7 @@ url = "2"
 urlencoding = "2"
 uuid = "1"
 webauthn-rs = { features = ["danger-allow-state-serialisation"], version = "0.5" }
+woothee = "0.13.0"
 
 [package.metadata.sync-readme.badges]
 docs-rs = false

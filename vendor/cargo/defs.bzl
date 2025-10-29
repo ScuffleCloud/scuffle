@@ -484,6 +484,7 @@ _NORMAL_DEPENDENCIES = {
                 "urlencoding": Label("@cargo_vendor//:urlencoding-2.1.3"),
                 "uuid": Label("@cargo_vendor//:uuid-1.18.1"),
                 "webauthn-rs": Label("@cargo_vendor//:webauthn-rs-0.5.2"),
+                "woothee": Label("@cargo_vendor//:woothee-0.13.0"),
             },
         },
     },
@@ -11669,6 +11670,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__woothee-0.13.0",
+        sha256 = "896174c6a4779d4d7d4523dd27aef7d46609eda2497e370f6c998325c6bf6971",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/woothee/0.13.0/download"],
+        strip_prefix = "woothee-0.13.0",
+        build_file = Label("//vendor/cargo:BUILD.woothee-0.13.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__writeable-0.6.1",
         sha256 = "ea2f10b9bb0928dfb1b42b65e1f9e36f7f54dbdf08457afefb38afcdec4fa2bb",
         type = "tar.gz",
@@ -11994,6 +12005,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__va_list-0.2.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__walkdir-2.5.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__webauthn-rs-0.5.2", is_dev_dep = False),
+        struct(repo = "cargo_vendor__woothee-0.13.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__criterion-0.7.0", is_dev_dep = True),
         struct(repo = "cargo_vendor__insta-1.43.2", is_dev_dep = True),
         struct(repo = "cargo_vendor__opentelemetry-stdout-0.31.0", is_dev_dep = True),

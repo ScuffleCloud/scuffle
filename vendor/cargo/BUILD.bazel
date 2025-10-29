@@ -1594,14 +1594,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "testcontainers-0.25.0",
-    actual = "@cargo_vendor__testcontainers-0.25.0//:testcontainers",
+    name = "testcontainers-0.25.2",
+    actual = "@cargo_vendor__testcontainers-0.25.2//:testcontainers",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "testcontainers",
-    actual = "@cargo_vendor__testcontainers-0.25.0//:testcontainers",
+    actual = "@cargo_vendor__testcontainers-0.25.2//:testcontainers",
     tags = ["manual"],
 )
 

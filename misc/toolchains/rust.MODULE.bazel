@@ -305,7 +305,7 @@ use_repo(
     "cargo_vendor__target-spec-3.5.2",
     "cargo_vendor__target-triple-0.1.4",
     "cargo_vendor__tempfile-3.22.0",
-    "cargo_vendor__testcontainers-0.25.0",
+    "cargo_vendor__testcontainers-0.25.2",
     "cargo_vendor__thiserror-2.0.16",
     "cargo_vendor__tokio-1.47.1",
     "cargo_vendor__tokio-rustls-0.26.2",

@@ -43,7 +43,6 @@
 //!
 //! ### Missing Features
 //!
-//! - HTTP/3 webtransport support
 //! - Upgrading to websocket connections from HTTP/3 connections (this is usually done via HTTP/1.1 anyway)
 //!
 //! ## License
@@ -61,6 +60,9 @@
 
 #[cfg(all(feature = "http3", not(feature = "tls-rustls")))]
 compile_error!("feature \"tls-rustls\" must be enabled when \"http3\" is enabled.");
+
+#[cfg(all(feature = "webtransport", not(feature = "http3")))]
+compile_error!("feature \"http3\" must be enabled when \"webtransport\" is enabled.");
 
 #[cfg(any(feature = "http1", feature = "http2", feature = "http3"))]
 pub mod backend;

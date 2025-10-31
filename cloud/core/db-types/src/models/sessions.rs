@@ -91,6 +91,7 @@ pub struct UserSession {
     pub device_pk_data: Vec<u8>,
     pub last_used_at: chrono::DateTime<chrono::Utc>,
     pub last_ip: ipnetwork::IpNetwork,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub last_user_agent: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub token_id: Option<UserSessionTokenId>,

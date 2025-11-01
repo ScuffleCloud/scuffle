@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "h3",
+    name = "h3_datagram",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,10 +34,6 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "i-implement-a-third-party-backend-and-opt-into-breaking-changes",
-        "tracing",
-    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -48,7 +44,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=h3",
+        "crate-name=h3-datagram",
         "manual",
         "noclippy",
         "norustfmt",
@@ -63,14 +59,10 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.0.8",
+    version = "0.0.2",
     deps = [
         "@cargo_vendor__bytes-1.10.1//:bytes",
-        "@cargo_vendor__fastrand-2.3.0//:fastrand",
-        "@cargo_vendor__futures-util-0.3.31//:futures_util",
-        "@cargo_vendor__http-1.3.1//:http",
+        "@cargo_vendor__h3-0.0.8//:h3",
         "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
-        "@cargo_vendor__tokio-1.47.1//:tokio",
-        "@cargo_vendor__tracing-0.1.41//:tracing",
     ],
 )

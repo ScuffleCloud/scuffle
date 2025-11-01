@@ -610,6 +610,18 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
+    name = "h3-datagram-0.0.2",
+    actual = "@cargo_vendor__h3-datagram-0.0.2//:h3_datagram",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "h3-datagram",
+    actual = "@cargo_vendor__h3-datagram-0.0.2//:h3_datagram",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
     name = "h3-quinn-0.0.10",
     actual = "@cargo_vendor__h3-quinn-0.0.10//:h3_quinn",
     tags = ["manual"],
@@ -618,6 +630,18 @@ transition_alias_opt(
 transition_alias_opt(
     name = "h3-quinn",
     actual = "@cargo_vendor__h3-quinn-0.0.10//:h3_quinn",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "h3-webtransport-0.1.2",
+    actual = "@cargo_vendor__h3-webtransport-0.1.2//:h3_webtransport",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "h3-webtransport",
+    actual = "@cargo_vendor__h3-webtransport-0.1.2//:h3_webtransport",
     tags = ["manual"],
 )
 

@@ -3,7 +3,7 @@
 # scuffle-http
 <!-- sync-readme ]] -->
 
-> [!WARNING]  
+> [!WARNING]
 > This crate is under active development and may not be stable.
 
 <!-- sync-readme badge [[ -->
@@ -32,6 +32,7 @@ See the [changelog](./CHANGELOG.md) for a full release history.
 * **`http1`** *(enabled by default)* —  Enables http1 support
 * **`http2`** *(enabled by default)* —  Enabled http2 support
 * **`http3`** —  Enables http3 support
+* **`webtransport`** —  Enables WebTransport over HTTP/3 support
 * **`tls-rustls`** —  Enables tls via rustls
 * **`http3-tls-rustls`** —  Alias for \[“http3”, “tls-rustls”\]
 * **`tower`** *(enabled by default)* —  Enables tower service support
@@ -68,7 +69,6 @@ scuffle_http::HttpServer::builder()
 
 #### Missing Features
 
-* HTTP/3 webtransport support
 * Upgrading to websocket connections from HTTP/3 connections (this is usually done via HTTP/1.1 anyway)
 
 ### License

@@ -1,0 +1,4 @@
+[[scuffle-http]]
+category = "feat"
+description = "WebTransport over HTTP/3 support"
+authors = ["@SimaoMoreira5228"]

@@ -92,7 +92,8 @@ nutype_enum! {
         /// Allows flushing of buffered data.
         /// - **Used for**: Streaming formats that support mid-stream flushing.
         /// - **Equivalent to**: `AVFMT_ALLOW_FLUSH`
-        AllowFlush = AVFMT_ALLOW_FLUSH as _,
+        /// Deprecated in FFMPEG 8.0, see https://ffmpeg.org/pipermail/ffmpeg-devel/2023-September/314836.html
+        /// AllowFlush = AVFMT_ALLOW_FLUSH as _,
 
         /// The format does not require strict timestamp ordering.
         /// - **Used for**: Formats where out-of-order timestamps are common.
@@ -231,7 +232,8 @@ nutype_enum! {
         /// - **Used for**: Ensuring synchronization in multi-stream files.
         /// - **Binary representation**: `0b0100000000000000`
         /// - **Equivalent to**: `AVFMT_FLAG_SHORTEST`
-        Shortest = AVFMT_FLAG_SHORTEST as _,
+        /// Deprecated in FFMPEG 8.0, see https://ffmpeg.org/pipermail/ffmpeg-devel/2023-August/313668.html
+        /// Shortest = AVFMT_FLAG_SHORTEST as _,
 
         /// **Automatically apply bitstream filters**.
         /// - **Used for**: Simplifying format conversions.

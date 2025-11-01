@@ -484,6 +484,7 @@ _NORMAL_DEPENDENCIES = {
                 "urlencoding": Label("@cargo_vendor//:urlencoding-2.1.3"),
                 "uuid": Label("@cargo_vendor//:uuid-1.18.1"),
                 "webauthn-rs": Label("@cargo_vendor//:webauthn-rs-0.5.2"),
+                "woothee": Label("@cargo_vendor//:woothee-0.13.0"),
             },
         },
     },
@@ -1289,7 +1290,7 @@ _NORMAL_DEPENDENCIES = {
                 "log": Label("@cargo_vendor//:log-0.4.28"),
                 "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "serde_json": Label("@cargo_vendor//:serde_json-1.0.145"),
-                "testcontainers": Label("@cargo_vendor//:testcontainers-0.25.0"),
+                "testcontainers": Label("@cargo_vendor//:testcontainers-0.25.2"),
                 "tokio": Label("@cargo_vendor//:tokio-1.47.1"),
             },
         },
@@ -4822,6 +4823,9 @@ _CONDITIONS = {
     "aarch64-apple-darwin": ["@rules_rust//rust/platform:aarch64-apple-darwin"],
     "aarch64-pc-windows-msvc": ["@rules_rust//rust/platform:aarch64-pc-windows-msvc"],
     "aarch64-unknown-linux-gnu": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu"],
+    "cfg(all(all(target_arch = \"aarch64\", target_endian = \"little\"), target_os = \"windows\"))": ["@rules_rust//rust/platform:aarch64-pc-windows-msvc"],
+    "cfg(all(all(target_arch = \"aarch64\", target_endian = \"little\"), target_vendor = \"apple\", any(target_os = \"ios\", target_os = \"macos\", target_os = \"tvos\", target_os = \"visionos\", target_os = \"watchos\")))": ["@rules_rust//rust/platform:aarch64-apple-darwin"],
+    "cfg(all(any(all(target_arch = \"aarch64\", target_endian = \"little\"), all(target_arch = \"arm\", target_endian = \"little\")), any(target_os = \"android\", target_os = \"linux\")))": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu"],
     "cfg(all(any(target_arch = \"wasm32\", target_arch = \"wasm64\"), target_os = \"unknown\"))": ["@rules_rust//rust/platform:wasm32-unknown-unknown"],
     "cfg(all(any(target_arch = \"x86_64\", target_arch = \"arm64ec\"), target_env = \"msvc\", not(windows_raw_dylib)))": ["@rules_rust//rust/platform:x86_64-pc-windows-msvc"],
     "cfg(all(any(target_os = \"linux\", target_os = \"android\"), not(any(all(target_os = \"linux\", target_env = \"\"), getrandom_backend = \"custom\", getrandom_backend = \"linux_raw\", getrandom_backend = \"rdrand\", getrandom_backend = \"rndr\"))))": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
@@ -5096,6 +5100,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/asn1-rs-impl/0.2.0/download"],
         strip_prefix = "asn1-rs-impl-0.2.0",
         build_file = Label("//vendor/cargo:BUILD.asn1-rs-impl-0.2.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "cargo_vendor__astral-tokio-tar-0.5.6",
+        sha256 = "ec179a06c1769b1e42e1e2cbe74c7dcdb3d6383c838454d063eaac5bbb7ebbe5",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/astral-tokio-tar/0.5.6/download"],
+        strip_prefix = "astral-tokio-tar-0.5.6",
+        build_file = Label("//vendor/cargo:BUILD.astral-tokio-tar-0.5.6.bazel"),
     )
 
     maybe(
@@ -10388,13 +10402,13 @@ def crate_repositories():
     )
 
     maybe(
-        new_git_repository,
-        name = "cargo_vendor__testcontainers-0.25.0",
-        commit = "6d8e248a5637a3bb8ac0bb390717f6c327ffbad1",
-        init_submodules = True,
-        remote = "https://github.com/testcontainers/testcontainers-rs.git",
-        build_file = Label("//vendor/cargo:BUILD.testcontainers-0.25.0.bazel"),
-        strip_prefix = "testcontainers",
+        http_archive,
+        name = "cargo_vendor__testcontainers-0.25.2",
+        sha256 = "3f3ac71069f20ecfa60c396316c283fbf35e6833a53dff551a31b5458da05edc",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/testcontainers/0.25.2/download"],
+        strip_prefix = "testcontainers-0.25.2",
+        build_file = Label("//vendor/cargo:BUILD.testcontainers-0.25.2.bazel"),
     )
 
     maybe(
@@ -10575,16 +10589,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/tokio-stream/0.1.17/download"],
         strip_prefix = "tokio-stream-0.1.17",
         build_file = Label("//vendor/cargo:BUILD.tokio-stream-0.1.17.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "cargo_vendor__tokio-tar-0.3.1",
-        sha256 = "9d5714c010ca3e5c27114c1cdeb9d14641ace49874aa5626d7149e47aedace75",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/tokio-tar/0.3.1/download"],
-        strip_prefix = "tokio-tar-0.3.1",
-        build_file = Label("//vendor/cargo:BUILD.tokio-tar-0.3.1.bazel"),
     )
 
     maybe(
@@ -11669,6 +11673,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__woothee-0.13.0",
+        sha256 = "896174c6a4779d4d7d4523dd27aef7d46609eda2497e370f6c998325c6bf6971",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/woothee/0.13.0/download"],
+        strip_prefix = "woothee-0.13.0",
+        build_file = Label("//vendor/cargo:BUILD.woothee-0.13.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__writeable-0.6.1",
         sha256 = "ea2f10b9bb0928dfb1b42b65e1f9e36f7f54dbdf08457afefb38afcdec4fa2bb",
         type = "tar.gz",
@@ -11966,7 +11980,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__syn-2.0.106", is_dev_dep = False),
         struct(repo = "cargo_vendor__target-spec-3.5.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__target-triple-0.1.4", is_dev_dep = False),
-        struct(repo = "cargo_vendor__testcontainers-0.25.0", is_dev_dep = False),
+        struct(repo = "cargo_vendor__testcontainers-0.25.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__thiserror-2.0.16", is_dev_dep = False),
         struct(repo = "cargo_vendor__tokio-1.47.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__tokio-rustls-0.26.2", is_dev_dep = False),
@@ -11994,6 +12008,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__va_list-0.2.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__walkdir-2.5.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__webauthn-rs-0.5.2", is_dev_dep = False),
+        struct(repo = "cargo_vendor__woothee-0.13.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__criterion-0.7.0", is_dev_dep = True),
         struct(repo = "cargo_vendor__insta-1.43.2", is_dev_dep = True),
         struct(repo = "cargo_vendor__opentelemetry-stdout-0.31.0", is_dev_dep = True),

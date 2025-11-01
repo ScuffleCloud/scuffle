@@ -23,6 +23,8 @@ const NONCE_HEADER: HeaderName = HeaderName::from_static("scuf-nonce");
 const AUTHENTICATION_METHOD_HEADER: HeaderName = HeaderName::from_static("scuf-auth-method");
 const AUTHENTICATION_HMAC_HEADER: HeaderName = HeaderName::from_static("scuf-auth-hmac");
 
+const USER_AGENT_HEADER: HeaderName = HeaderName::from_static("user-agent");
+
 pub(crate) const fn auth_headers() -> [HeaderName; 5] {
     [
         TOKEN_ID_HEADER,
@@ -57,7 +59,7 @@ pub(crate) async fn auth<G: core_traits::Global>(mut req: Request, next: Next) -
     Ok(next.run(req).await)
 }
 
-fn get_auth_header<'a, T>(headers: &'a HeaderMap, header_name: &HeaderName) -> Result<Option<T>, StatusCode>
+fn get_header_value<'a, T>(headers: &'a HeaderMap, header_name: &HeaderName) -> Result<Option<T>, StatusCode>
 where
     T: FromStr + 'a,
     T::Err: std::fmt::Display,
@@ -166,22 +168,22 @@ async fn get_and_update_active_session<G: core_traits::Global>(
     ip_info: &IpAddressInfo,
     headers: &HeaderMap,
 ) -> Result<(Option<UserSession>, Option<ExpiredSession>), StatusCode> {
-    let Some(session_token_id) = get_auth_header::<UserSessionTokenId>(headers, &TOKEN_ID_HEADER)? else {
+    let Some(session_token_id) = get_header_value::<UserSessionTokenId>(headers, &TOKEN_ID_HEADER)? else {
         return Ok((None, None));
     };
     let Some(timestamp) =
-        get_auth_header::<u64>(headers, &TIMESTAMP_HEADER)?.and_then(|t| chrono::DateTime::from_timestamp_millis(t as i64))
+        get_header_value::<u64>(headers, &TIMESTAMP_HEADER)?.and_then(|t| chrono::DateTime::from_timestamp_millis(t as i64))
     else {
         return Ok((None, None));
     };
-    let Some(nonce) = get_auth_header::<Nonce>(headers, &NONCE_HEADER)? else {
+    let Some(nonce) = get_header_value::<Nonce>(headers, &NONCE_HEADER)? else {
         return Ok((None, None));
     };
 
-    let Some(auth_method) = get_auth_header::<AuthenticationMethod>(headers, &AUTHENTICATION_METHOD_HEADER)? else {
+    let Some(auth_method) = get_header_value::<AuthenticationMethod>(headers, &AUTHENTICATION_METHOD_HEADER)? else {
         return Ok((None, None));
     };
-    let Some(auth_hmac) = get_auth_header::<AuthenticationHmac>(headers, &AUTHENTICATION_HMAC_HEADER)? else {
+    let Some(auth_hmac) = get_header_value::<AuthenticationHmac>(headers, &AUTHENTICATION_HMAC_HEADER)? else {
         return Ok((None, None));
     };
 
@@ -200,6 +202,8 @@ async fn get_and_update_active_session<G: core_traits::Global>(
         return Err(StatusCode::BAD_REQUEST);
     }
 
+    let last_user_agent = get_header_value::<String>(headers, &USER_AGENT_HEADER)?;
+
     let mut db = global.db().await.map_err(|e| {
         tracing::error!(error = %e, "failed to connect to database");
         StatusCode::INTERNAL_SERVER_ERROR
@@ -208,6 +212,7 @@ async fn get_and_update_active_session<G: core_traits::Global>(
     let Some(session) = diesel::update(user_sessions::dsl::user_sessions)
         .set((
             user_sessions::dsl::last_ip.eq(ip_info.to_network()),
+            user_sessions::dsl::last_user_agent.eq(last_user_agent),
             user_sessions::dsl::last_used_at.eq(chrono::Utc::now()),
         ))
         .filter(

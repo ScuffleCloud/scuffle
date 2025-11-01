@@ -1594,14 +1594,14 @@ transition_alias_opt(
 )
 
 transition_alias_opt(
-    name = "testcontainers-0.25.0",
-    actual = "@cargo_vendor__testcontainers-0.25.0//:testcontainers",
+    name = "testcontainers-0.25.2",
+    actual = "@cargo_vendor__testcontainers-0.25.2//:testcontainers",
     tags = ["manual"],
 )
 
 transition_alias_opt(
     name = "testcontainers",
-    actual = "@cargo_vendor__testcontainers-0.25.0//:testcontainers",
+    actual = "@cargo_vendor__testcontainers-0.25.2//:testcontainers",
     tags = ["manual"],
 )
 
@@ -1962,5 +1962,17 @@ transition_alias_opt(
 transition_alias_opt(
     name = "webauthn-rs",
     actual = "@cargo_vendor__webauthn-rs-0.5.2//:webauthn_rs",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "woothee-0.13.0",
+    actual = "@cargo_vendor__woothee-0.13.0//:woothee",
+    tags = ["manual"],
+)
+
+transition_alias_opt(
+    name = "woothee",
+    actual = "@cargo_vendor__woothee-0.13.0//:woothee",
     tags = ["manual"],
 )

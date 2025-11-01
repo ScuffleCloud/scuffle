@@ -118,6 +118,7 @@ entity UserSession {
   device_pk_data: Set<Long>,
   last_used_at: String,
   last_ip: String,
+  last_user_agent?: String,
   token_id?: String,
   token?: Set<Long>,
   token_expires_at?: String,

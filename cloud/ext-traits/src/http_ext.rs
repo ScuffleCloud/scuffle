@@ -13,6 +13,8 @@ pub trait RequestExt {
     }
 
     fn origin(&self) -> Option<url::Url>;
+
+    fn user_agent(&self) -> Option<&str>;
 }
 
 impl<T> RequestExt for tonic::Request<T> {
@@ -22,6 +24,10 @@ impl<T> RequestExt for tonic::Request<T> {
 
     fn origin(&self) -> Option<url::Url> {
         self.metadata().get("origin")?.to_str().ok()?.parse().ok()
+    }
+
+    fn user_agent(&self) -> Option<&str> {
+        self.metadata().get("user-agent")?.to_str().ok()
     }
 }
 
@@ -33,6 +39,10 @@ impl RequestExt for tonic::Extensions {
     fn origin(&self) -> Option<url::Url> {
         None
     }
+
+    fn user_agent(&self) -> Option<&str> {
+        None
+    }
 }
 
 impl<T> RequestExt for http::Request<T> {
@@ -42,5 +52,9 @@ impl<T> RequestExt for http::Request<T> {
 
     fn origin(&self) -> Option<url::Url> {
         self.headers().get("origin")?.to_str().ok()?.parse().ok()
+    }
+
+    fn user_agent(&self) -> Option<&str> {
+        self.headers().get("user-agent")?.to_str().ok()
     }
 }

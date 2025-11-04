@@ -23,10 +23,10 @@ isobmff = ["dep:isobmff", "dep:isobmff-derive"]
 byteorder = "1"
 bytes = "1"
 document-features = { optional = true, version = "0.2" }
-scuffle-bytes-util = { path = "../bytes-util", version = "0.1" }
-scuffle-changelog = { optional = true, path = "../changelog", version = "0.1" }
 isobmff = { path = "../isobmff", version = "0.1.0", optional = true }
 isobmff-derive = { path = "../isobmff/derive", version = "0.1.0", optional = true }
+scuffle-bytes-util = { path = "../bytes-util", version = "0.1" }
+scuffle-changelog = { optional = true, path = "../changelog", version = "0.1" }
 
 [dev-dependencies]
 insta = "1"

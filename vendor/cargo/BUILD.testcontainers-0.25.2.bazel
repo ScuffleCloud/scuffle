@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "tokio_tar",
+    name = "testcontainers",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -35,11 +35,13 @@ rust_library(
         ],
     ),
     crate_features = [
-        "default",
-        "xattr",
+        "aws-lc-rs",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
+    proc_macro_deps = [
+        "@cargo_vendor__async-trait-0.1.88//:async_trait",
+    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -48,7 +50,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=tokio-tar",
+        "crate-name=testcontainers",
         "manual",
         "noclippy",
         "norustfmt",
@@ -63,29 +65,27 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.3.1",
+    version = "0.25.2",
     deps = [
-        "@cargo_vendor__filetime-0.2.26//:filetime",
-        "@cargo_vendor__futures-core-0.3.31//:futures_core",
+        "@cargo_vendor__astral-tokio-tar-0.5.6//:tokio_tar",
+        "@cargo_vendor__bollard-0.19.3//:bollard",
+        "@cargo_vendor__bytes-1.10.1//:bytes",
+        "@cargo_vendor__docker_credential-1.3.2//:docker_credential",
+        "@cargo_vendor__either-1.15.0//:either",
+        "@cargo_vendor__etcetera-0.10.0//:etcetera",
+        "@cargo_vendor__futures-0.3.31//:futures",
+        "@cargo_vendor__log-0.4.27//:log",
+        "@cargo_vendor__memchr-2.7.6//:memchr",
+        "@cargo_vendor__parse-display-0.9.1//:parse_display",
+        "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
+        "@cargo_vendor__serde-1.0.228//:serde",
+        "@cargo_vendor__serde_json-1.0.145//:serde_json",
+        "@cargo_vendor__serde_with-3.15.0//:serde_with",
+        "@cargo_vendor__thiserror-2.0.17//:thiserror",
         "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__tokio-stream-0.1.17//:tokio_stream",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.176//:libc",  # cfg(unix)
-            "@cargo_vendor__xattr-1.6.1//:xattr",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.176//:libc",  # cfg(unix)
-            "@cargo_vendor__xattr-1.6.1//:xattr",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.176//:libc",  # cfg(unix)
-            "@cargo_vendor__xattr-1.6.1//:xattr",  # cfg(unix)
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.176//:libc",  # cfg(unix)
-            "@cargo_vendor__xattr-1.6.1//:xattr",  # cfg(unix)
-        ],
-        "//conditions:default": [],
-    }),
+        "@cargo_vendor__tokio-util-0.7.15//:tokio_util",
+        "@cargo_vendor__ulid-1.2.1//:ulid",
+        "@cargo_vendor__url-2.5.4//:url",
+    ],
 )

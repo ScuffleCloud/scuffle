@@ -12,5 +12,5 @@ log = "0.4"
 serde = "1"
 serde_derive = "1"
 serde_json = "1"
-testcontainers = { version = "0.25", features = ["aws-lc-rs"], default-features = false }
+testcontainers = { version = "0.25.1", features = ["aws-lc-rs"], default-features = false }
 tokio = { version = "1", features = ["full"] }

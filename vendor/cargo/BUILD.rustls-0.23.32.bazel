@@ -49,6 +49,7 @@ rust_library(
         "log",
         "logging",
         "prefer-post-quantum",
+        "ring",
         "std",
         "tls12",
     ],
@@ -82,6 +83,7 @@ rust_library(
         "@cargo_vendor__aws-lc-rs-1.14.1//:aws_lc_rs",
         "@cargo_vendor__log-0.4.27//:log",
         "@cargo_vendor__once_cell-1.21.3//:once_cell",
+        "@cargo_vendor__ring-0.17.14//:ring",
         "@cargo_vendor__rustls-0.23.32//:build_script_build",
         "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
         "@cargo_vendor__rustls-webpki-0.103.7//:webpki",
@@ -116,6 +118,7 @@ cargo_build_script(
         "log",
         "logging",
         "prefer-post-quantum",
+        "ring",
         "std",
         "tls12",
     ],
@@ -136,6 +139,7 @@ cargo_build_script(
     edition = "2021",
     link_deps = [
         "@cargo_vendor__aws-lc-rs-1.14.1//:aws_lc_rs",
+        "@cargo_vendor__ring-0.17.14//:ring",
     ],
     pkg_name = "rustls",
     rustc_env_files = [

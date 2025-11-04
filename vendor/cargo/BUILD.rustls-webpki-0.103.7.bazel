@@ -40,6 +40,7 @@ rust_library(
     crate_features = [
         "alloc",
         "aws-lc-rs",
+        "ring",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -70,6 +71,7 @@ rust_library(
     version = "0.103.7",
     deps = [
         "@cargo_vendor__aws-lc-rs-1.14.1//:aws_lc_rs",
+        "@cargo_vendor__ring-0.17.14//:ring",
         "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
         "@cargo_vendor__untrusted-0.9.0//:untrusted",
     ],

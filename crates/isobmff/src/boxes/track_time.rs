@@ -65,7 +65,7 @@ impl IsoSized for TimeToSampleBoxEntry {
 ///
 /// ISO/IEC 14496-12 - 8.6.1.3
 #[derive(IsoBox, PartialEq, Eq)]
-#[iso_box(box_type = b"ctts", skip_impl(deserialize_seed), crate_path = crate)]
+#[iso_box(box_type = b"ctts", skip_impl(deserialize_seed, serialize), crate_path = crate)]
 pub struct CompositionOffsetBox {
     /// The full box header.
     pub full_header: FullBoxHeader,
@@ -96,6 +96,23 @@ impl<'a> DeserializeSeed<'a, BoxHeader> for CompositionOffsetBox {
             entry_count,
             entries,
         })
+    }
+}
+
+impl Serialize for CompositionOffsetBox {
+    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        self.serialize_box_header(&mut writer)?;
+        self.full_header.serialize(&mut writer)?;
+        self.entry_count.serialize(&mut writer)?;
+
+        for entry in &self.entries {
+            entry.serialize(&mut writer, self)?;
+        }
+
+        Ok(())
     }
 }
 
@@ -139,20 +156,24 @@ impl<'a> DeserializeSeed<'a, u8> for CompositionOffsetBoxEntry {
     }
 }
 
-impl Serialize for CompositionOffsetBoxEntry {
-    fn serialize<W>(&self, mut writer: W) -> io::Result<()>
+impl CompositionOffsetBoxEntry {
+    fn serialize<W>(&self, mut writer: W, parent: &CompositionOffsetBox) -> io::Result<()>
     where
         W: std::io::Write,
     {
         self.sample_count.serialize(&mut writer)?;
-        self.sample_offset.serialize(&mut writer)?;
+        if parent.full_header.version == 0 {
+            (self.sample_offset as u32).serialize(&mut writer)?;
+        } else if parent.full_header.version == 1 {
+            (self.sample_offset as i32).serialize(&mut writer)?;
+        }
         Ok(())
     }
 }
 
 impl IsoSized for CompositionOffsetBoxEntry {
     fn size(&self) -> usize {
-        self.sample_count.size() + self.sample_offset.size()
+        self.sample_count.size() + 4
     }
 }
 

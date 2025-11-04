@@ -1,7 +1,6 @@
 ---
 source: crates/isobmff/src/file.rs
-expression: file
-snapshot_kind: text
+expression: og_file
 ---
 IsobmffFile {
     ftyp: Some(
@@ -2224,28 +2223,28 @@ IsobmffFile {
                             moof_offset: 1674,
                             traf_number: 1,
                             trun_number: 1,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 26000,
                             moof_offset: 94147,
                             traf_number: 1,
                             trun_number: 1,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 32000,
                             moof_offset: 113794,
                             traf_number: 1,
                             trun_number: 1,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 50000,
                             moof_offset: 131800,
                             traf_number: 1,
                             trun_number: 1,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                     ],
                 },
@@ -2267,28 +2266,28 @@ IsobmffFile {
                             moof_offset: 1674,
                             traf_number: 1,
                             trun_number: 1,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 11264,
                             moof_offset: 94147,
                             traf_number: 1,
                             trun_number: 1,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 23552,
                             moof_offset: 113794,
                             traf_number: 1,
                             trun_number: 1,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 35840,
                             moof_offset: 131800,
                             traf_number: 1,
                             trun_number: 1,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                     ],
                 },

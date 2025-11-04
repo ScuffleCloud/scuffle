@@ -18,6 +18,13 @@ copy_to_directory(
 )
 
 copy_to_directory(
+    name = "isobmff_conformance",
+    srcs = glob(["isobmff_conformance/**"]),
+    tags = ["no-cache", "manual"],
+    visibility = ["//visibility:public"],
+)
+
+copy_to_directory(
     name = "pem",
     srcs = glob(["*.pem"]),
     tags = ["no-cache", "manual"],

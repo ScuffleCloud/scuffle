@@ -1,7 +1,6 @@
 ---
 source: crates/isobmff/src/conformance_tests.rs
 expression: redeserialized_file
-snapshot_kind: text
 ---
 IsobmffFile {
     ftyp: Some(
@@ -1778,77 +1777,77 @@ IsobmffFile {
                             moof_offset: 60187,
                             traf_number: 1,
                             trun_number: 1,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 540000,
                             moof_offset: 60187,
                             traf_number: 1,
                             trun_number: 2,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 630000,
                             moof_offset: 60187,
                             traf_number: 1,
                             trun_number: 3,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 720000,
                             moof_offset: 60187,
                             traf_number: 1,
                             trun_number: 4,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 810000,
                             moof_offset: 60187,
                             traf_number: 1,
                             trun_number: 5,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 900000,
                             moof_offset: 122019,
                             traf_number: 1,
                             trun_number: 1,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 990000,
                             moof_offset: 122019,
                             traf_number: 1,
                             trun_number: 2,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 1080000,
                             moof_offset: 122019,
                             traf_number: 1,
                             trun_number: 3,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 1170000,
                             moof_offset: 122019,
                             traf_number: 1,
                             trun_number: 4,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 1260000,
                             moof_offset: 122019,
                             traf_number: 1,
                             trun_number: 5,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                         TrackFragmentRandomAccessBoxEntry {
                             time: 1350000,
                             moof_offset: 181299,
                             traf_number: 1,
                             trun_number: 1,
-                            sample_number: 1,
+                            sample_delta: 1,
                         },
                     ],
                 },

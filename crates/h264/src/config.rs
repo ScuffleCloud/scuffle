@@ -266,7 +266,6 @@ mod tests {
     use std::io::Write;
 
     use byteorder::{BigEndian, WriteBytesExt};
-    use isobmff::IsoSized;
     use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
     use scuffle_bytes_util::{BitWriter, BytesCow};
 
@@ -323,7 +322,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "isobmff")]
     fn test_config_build() {
+        use isobmff::IsoSized;
+
         // these may not be the same size due to the natural reduction from the SPS parsing.
         // in specific, the sps size function may return a lower size than the original bitstring.
         // reduction will occur from rebuilding the sps and from rebuilding the sps_ext.
@@ -350,7 +352,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "isobmff")]
     fn test_size_calculation_with_sequence_parameter_set_ext() {
+        use isobmff::IsoSized;
+
         let extended_config = AvccExtendedConfig {
             chroma_format_idc: 1,
             bit_depth_luma_minus8: 0,

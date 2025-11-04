@@ -1,7 +1,6 @@
 ---
 source: crates/isobmff/src/conformance_tests.rs
 expression: redeserialized_file
-snapshot_kind: text
 ---
 IsobmffFile {
     ftyp: Some(
@@ -336,7 +335,12 @@ IsobmffFile {
                                     },
                                     switch_group: 1,
                                     attribute_list: [
-                                        1651990899,
+                                        [
+                                            98,
+                                            119,
+                                            97,
+                                            115,
+                                        ],
                                     ],
                                 },
                             ),
@@ -718,7 +722,12 @@ IsobmffFile {
                                     },
                                     switch_group: 1,
                                     attribute_list: [
-                                        1651990899,
+                                        [
+                                            98,
+                                            119,
+                                            97,
+                                            115,
+                                        ],
                                     ],
                                 },
                             ),
@@ -981,7 +990,12 @@ IsobmffFile {
                                     },
                                     switch_group: 1,
                                     attribute_list: [
-                                        1651990899,
+                                        [
+                                            98,
+                                            119,
+                                            97,
+                                            115,
+                                        ],
                                     ],
                                 },
                             ),
@@ -1319,7 +1333,12 @@ IsobmffFile {
                                     },
                                     switch_group: 1,
                                     attribute_list: [
-                                        1651990899,
+                                        [
+                                            98,
+                                            119,
+                                            97,
+                                            115,
+                                        ],
                                     ],
                                 },
                             ),
@@ -1612,7 +1631,12 @@ IsobmffFile {
                                     },
                                     switch_group: 1,
                                     attribute_list: [
-                                        1651990899,
+                                        [
+                                            98,
+                                            119,
+                                            97,
+                                            115,
+                                        ],
                                     ],
                                 },
                             ),
@@ -1976,7 +2000,12 @@ IsobmffFile {
                                     },
                                     switch_group: 1,
                                     attribute_list: [
-                                        1651990899,
+                                        [
+                                            98,
+                                            119,
+                                            97,
+                                            115,
+                                        ],
                                     ],
                                 },
                             ),
@@ -2239,7 +2268,12 @@ IsobmffFile {
                                     },
                                     switch_group: 1,
                                     attribute_list: [
-                                        1651990899,
+                                        [
+                                            98,
+                                            119,
+                                            97,
+                                            115,
+                                        ],
                                     ],
                                 },
                             ),
@@ -2577,7 +2611,12 @@ IsobmffFile {
                                     },
                                     switch_group: 1,
                                     attribute_list: [
-                                        1651990899,
+                                        [
+                                            98,
+                                            119,
+                                            97,
+                                            115,
+                                        ],
                                     ],
                                 },
                             ),
@@ -2870,7 +2909,12 @@ IsobmffFile {
                                     },
                                     switch_group: 1,
                                     attribute_list: [
-                                        1651990899,
+                                        [
+                                            98,
+                                            119,
+                                            97,
+                                            115,
+                                        ],
                                     ],
                                 },
                             ),
@@ -3234,7 +3278,12 @@ IsobmffFile {
                                     },
                                     switch_group: 1,
                                     attribute_list: [
-                                        1651990899,
+                                        [
+                                            98,
+                                            119,
+                                            97,
+                                            115,
+                                        ],
                                     ],
                                 },
                             ),
@@ -3497,7 +3546,12 @@ IsobmffFile {
                                     },
                                     switch_group: 1,
                                     attribute_list: [
-                                        1651990899,
+                                        [
+                                            98,
+                                            119,
+                                            97,
+                                            115,
+                                        ],
                                     ],
                                 },
                             ),
@@ -3835,7 +3889,12 @@ IsobmffFile {
                                     },
                                     switch_group: 1,
                                     attribute_list: [
-                                        1651990899,
+                                        [
+                                            98,
+                                            119,
+                                            97,
+                                            115,
+                                        ],
                                     ],
                                 },
                             ),

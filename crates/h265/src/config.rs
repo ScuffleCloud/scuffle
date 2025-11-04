@@ -281,8 +281,7 @@ impl isobmff::IsoSized for HEVCDecoderConfigurationRecord<'_> {
 mod tests {
     use std::io;
 
-    use isobmff::IsoSized;
-    use scuffle_bytes_util::zero_copy::{Deserialize, Serialize, Slice};
+    use scuffle_bytes_util::zero_copy::{Deserialize, Slice};
 
     use crate::{
         ConstantFrameRate, HEVCDecoderConfigurationRecord, NALUnitType, NumTemporalLayers, ParallelismType,
@@ -336,7 +335,11 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "isobmff")]
     fn test_config_mux() {
+        use isobmff::IsoSized;
+        use scuffle_bytes_util::zero_copy::Serialize;
+
         let data = b"\x01\x01@\0\0\0\x90\0\0\0\0\0\x99\xf0\0\xfc\xfd\xf8\xf8\0\0\x0f\x03 \0\x01\0\x18@\x01\x0c\x01\xff\xff\x01@\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\x95@\x90!\0\x01\0=B\x01\x01\x01@\0\0\x03\0\x90\0\0\x03\0\0\x03\0\x99\xa0\x01@ \x05\xa1e\x95R\x90\x84d_\xf8\xc0Z\x80\x80\x80\x82\0\0\x03\0\x02\0\0\x03\x01 \xc0\x0b\xbc\xa2\0\x02bX\0\x011-\x08\"\0\x01\0\x07D\x01\xc0\x93|\x0c\xc9";
 
         let config = HEVCDecoderConfigurationRecord::deserialize(Slice::from(&data[..])).unwrap();

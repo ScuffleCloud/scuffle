@@ -119,7 +119,7 @@ mod tests {
     use crate::IsoSized;
 
     fn file_path(item: &str) -> PathBuf {
-        if let Some(env) = std::env::var_os("ASSETS_DIR") {
+        if let Some(env) = std::env::var_os("MP4_ASSETS_DIR") {
             PathBuf::from(env).join(item)
         } else {
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/{item}"))

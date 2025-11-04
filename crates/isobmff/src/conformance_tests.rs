@@ -10,10 +10,8 @@ use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
 use crate::{IsoSized, IsobmffFile};
 
 fn file_path(item: &str) -> PathBuf {
-    if let Some(env) = std::env::var_os("ASSETS_DIR") {
-        let path = PathBuf::from(env).join("iso_conformance").join(item);
-        println!("Using asset path: {}, pwd: {}", path.display());
-        path
+    if let Some(env) = std::env::var_os("CONFORMANCE_ASSETS_DIR") {
+        PathBuf::from(env).join("isobmff_conformance").join(item)
     } else {
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../assets/isobmff_conformance/{item}"))
     }

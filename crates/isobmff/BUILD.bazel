@@ -16,9 +16,11 @@ scuffle_package(
     test = scuffle_test(
         data = [
             "@scuffle_assets//:mp4",
+            "@scuffle_assets//:isobmff_conformance",
         ],
         env = {
-            "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
+            "MP4_ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
+            "CONFORMANCE_ASSETS_DIR": "$(rootpath @scuffle_assets//:isobmff_conformance)",
         },
         insta = True,
     ),

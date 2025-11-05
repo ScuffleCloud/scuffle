@@ -1,0 +1,3037 @@
+---
+source: crates/isobmff/src/conformance_tests.rs
+expression: redeserialized_file
+snapshot_kind: text
+---
+IsobmffFile {
+    ftyp: None,
+    etyp: [],
+    otyp: [],
+    pdin: None,
+    moov: None,
+    moof: [
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 8,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultBaseIsMoof,
+                        ),
+                        track_id: 3,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: None,
+                        default_sample_size: None,
+                        default_sample_flags: None,
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent | SampleDurationPresent | SampleSizePresent | SampleFlagsPresent | SampleCompositionTimeOffsetsPresent,
+                            ),
+                            sample_count: 24,
+                            data_offset: Some(
+                                2192,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        6015,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 2,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: false,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        438,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        588,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        352,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        345,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        247,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        337,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        237,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        254,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        378,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        584,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        451,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        390,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        220,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        468,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        228,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        436,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        6157,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        397,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        378,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        333,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        219,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        256,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        126,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                            ],
+                        },
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent | SampleDurationPresent | SampleSizePresent | SampleFlagsPresent | SampleCompositionTimeOffsetsPresent,
+                            ),
+                            sample_count: 24,
+                            data_offset: Some(
+                                22026,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        320,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        5573,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 2,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: false,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        514,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        442,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        266,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        224,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        162,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        183,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        189,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        192,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        442,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        483,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        319,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        234,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        237,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        165,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        81,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        262,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        5566,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        289,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        266,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        243,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        204,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        204,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                            ],
+                        },
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent | SampleDurationPresent | SampleSizePresent | SampleFlagsPresent | SampleCompositionTimeOffsetsPresent,
+                            ),
+                            sample_count: 24,
+                            data_offset: Some(
+                                39086,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        244,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        144,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        5691,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 2,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: false,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        2356,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        422,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        325,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        181,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        75,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        362,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        158,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        242,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        4953,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        266,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        265,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        125,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        203,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        299,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        90,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        109,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        5081,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        211,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        303,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        105,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        97,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                            ],
+                        },
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent | SampleDurationPresent | SampleSizePresent | SampleFlagsPresent | SampleCompositionTimeOffsetsPresent,
+                            ),
+                            sample_count: 24,
+                            data_offset: Some(
+                                61393,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        203,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        133,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        101,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        5006,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 2,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: false,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        4350,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        69,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        91,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        115,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        102,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        99,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        168,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        121,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        3975,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        280,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        270,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        203,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        54,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        110,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        149,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        177,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        5420,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        265,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        332,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        195,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                            ],
+                        },
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent | SampleDurationPresent | SampleSizePresent | SampleFlagsPresent | SampleCompositionTimeOffsetsPresent,
+                            ),
+                            sample_count: 24,
+                            data_offset: Some(
+                                83381,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        99,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        231,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        252,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        163,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        5611,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 2,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: false,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        546,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        559,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        328,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        299,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        243,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        364,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        271,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        378,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        396,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        546,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        598,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        337,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        385,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        336,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        281,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        385,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        5639,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        37500,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        437,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        18750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        317,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                            ],
+                        },
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent | SampleDurationPresent | SampleSizePresent | SampleFlagsPresent | SampleCompositionTimeOffsetsPresent,
+                            ),
+                            sample_count: 5,
+                            data_offset: Some(
+                                102382,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        239,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        275,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        284,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        11250,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        309,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        3750,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        3750,
+                                    ),
+                                    sample_size: Some(
+                                        345,
+                                    ),
+                                    sample_flags: Some(
+                                        SampleFlags {
+                                            reserved: 0,
+                                            is_leading: 0,
+                                            sample_depends_on: 0,
+                                            sample_is_depended_on: 0,
+                                            sample_has_redundancy: 0,
+                                            sample_padding_value: 0,
+                                            sample_is_non_sync_sample: true,
+                                            sample_degradation_priority: 0,
+                                        },
+                                    ),
+                                    sample_composition_time_offset: Some(
+                                        7500,
+                                    ),
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 843750,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+    ],
+    mdat: [
+        MediaDataBox {
+            data.len: 101642,
+        },
+    ],
+    imda: [],
+    meta: None,
+    styp: [
+        SegmentTypeBox {
+            major_brand: Brand([109, 115, 100, 104]),
+            minor_version: 0,
+            compatible_brands: [
+                Brand::Iso6,
+            ],
+        },
+    ],
+    sidx: [],
+    ssix: [],
+    prft: [],
+    unknown_boxes: [],
+    mfra: None,
+}

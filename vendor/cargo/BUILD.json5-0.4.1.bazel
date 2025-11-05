@@ -37,7 +37,7 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2018",
     proc_macro_deps = [
-        "@cargo_vendor__pest_derive-2.8.2//:pest_derive",
+        "@cargo_vendor__pest_derive-2.8.0//:pest_derive",
     ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
@@ -64,7 +64,7 @@ rust_library(
     }),
     version = "0.4.1",
     deps = [
-        "@cargo_vendor__pest-2.8.2//:pest",
+        "@cargo_vendor__pest-2.8.0//:pest",
         "@cargo_vendor__serde-1.0.228//:serde",
     ],
 )

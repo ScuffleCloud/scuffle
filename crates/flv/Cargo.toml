@@ -38,7 +38,6 @@ scuffle-h265 = { path = "../h265", version = "0.2" }
 
 [dev-dependencies]
 insta = "1"
-scuffle-aac = { path = "../aac", version = "0.1" }
 
 [package.metadata.docs.rs]
 all-features = true

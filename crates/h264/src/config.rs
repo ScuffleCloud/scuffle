@@ -2,16 +2,16 @@ use std::io::{
     Write, {self},
 };
 
-use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
-use bytes::{Buf, Bytes};
-use scuffle_bytes_util::{BitReader, BitWriter, BytesCursorExt};
+use byteorder::{BigEndian, WriteBytesExt};
+use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
+use scuffle_bytes_util::{BitReader, BitWriter, BytesCow, IoResultExt};
 
 use crate::sps::SpsExtended;
 
 /// The AVC (H.264) Decoder Configuration Record.
 /// ISO/IEC 14496-15:2022(E) - 5.3.2.1.2
-#[derive(Debug, Clone, PartialEq)]
-pub struct AVCDecoderConfigurationRecord {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AVCDecoderConfigurationRecord<'a> {
     /// The `configuration_version` is set to 1 (as a u8) defined by the h264 spec until further notice.
     ///
     /// ISO/IEC 14496-15:2022(E) - 5.3.2.1.2
@@ -42,7 +42,7 @@ pub struct AVCDecoderConfigurationRecord {
     /// Note that these should be ordered by ascending SPS ID.
     ///
     /// Refer to the [`crate::Sps`] struct in the SPS docs for more info.
-    pub sps: Vec<Bytes>,
+    pub sps: Vec<BytesCow<'a>>,
 
     /// The `pps` is a vec of PPS Bytes.
     ///
@@ -51,7 +51,7 @@ pub struct AVCDecoderConfigurationRecord {
     /// Note that these should be ordered by ascending PPS ID.
     ///
     /// ISO/IEC 14496-15:2022(E) - 5.3.2.1.2
-    pub pps: Vec<Bytes>,
+    pub pps: Vec<BytesCow<'a>>,
 
     /// An optional `AvccExtendedConfig`.
     ///
@@ -61,7 +61,7 @@ pub struct AVCDecoderConfigurationRecord {
 
 /// The AVC (H.264) Extended Configuration.
 /// ISO/IEC 14496-15:2022(E) - 5.3.2.1.2
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AvccExtendedConfig {
     /// The `chroma_format_idc` as a u8.
     ///
@@ -91,29 +91,30 @@ pub struct AvccExtendedConfig {
     pub sequence_parameter_set_ext: Vec<SpsExtended>,
 }
 
-impl AVCDecoderConfigurationRecord {
-    /// Parses an AVCDecoderConfigurationRecord from a byte stream.
-    /// Returns a parsed AVCDecoderConfigurationRecord.
-    pub fn parse(reader: &mut io::Cursor<Bytes>) -> io::Result<Self> {
-        let configuration_version = reader.read_u8()?;
-        let profile_indication = reader.read_u8()?;
-        let profile_compatibility = reader.read_u8()?;
-        let level_indication = reader.read_u8()?;
-        let length_size_minus_one = reader.read_u8()? & 0b00000011;
-        let num_of_sequence_parameter_sets = reader.read_u8()? & 0b00011111;
+impl<'a> Deserialize<'a> for AVCDecoderConfigurationRecord<'a> {
+    fn deserialize<R>(mut reader: R) -> io::Result<Self>
+    where
+        R: scuffle_bytes_util::zero_copy::ZeroCopyReader<'a>,
+    {
+        let configuration_version = u8::deserialize(&mut reader)?;
+        let profile_indication = u8::deserialize(&mut reader)?;
+        let profile_compatibility = u8::deserialize(&mut reader)?;
+        let level_indication = u8::deserialize(&mut reader)?;
+        let length_size_minus_one = u8::deserialize(&mut reader)? & 0b00000011;
+        let num_of_sequence_parameter_sets = u8::deserialize(&mut reader)? & 0b00011111;
 
         let mut sps = Vec::with_capacity(num_of_sequence_parameter_sets as usize);
         for _ in 0..num_of_sequence_parameter_sets {
-            let sps_length = reader.read_u16::<BigEndian>()?;
-            let sps_data = reader.extract_bytes(sps_length as usize)?;
+            let sps_length = u16::deserialize(&mut reader)?;
+            let sps_data = reader.try_read(sps_length as usize)?;
             sps.push(sps_data);
         }
 
-        let num_of_picture_parameter_sets = reader.read_u8()?;
+        let num_of_picture_parameter_sets = u8::deserialize(&mut reader)?;
         let mut pps = Vec::with_capacity(num_of_picture_parameter_sets as usize);
         for _ in 0..num_of_picture_parameter_sets {
-            let pps_length = reader.read_u16::<BigEndian>()?;
-            let pps_data = reader.extract_bytes(pps_length as usize)?;
+            let pps_length = u16::deserialize(&mut reader)?;
+            let pps_data = reader.try_read(pps_length as usize)?;
             pps.push(pps_data);
         }
 
@@ -123,16 +124,17 @@ impl AVCDecoderConfigurationRecord {
         let extended_config = match profile_indication {
             66 | 77 | 88 => None,
             _ => {
-                if reader.has_remaining() {
-                    let chroma_format_idc = reader.read_u8()? & 0b00000011; // 2 bits (6 bits reserved)
-                    let bit_depth_luma_minus8 = reader.read_u8()? & 0b00000111; // 3 bits (5 bits reserved)
-                    let bit_depth_chroma_minus8 = reader.read_u8()? & 0b00000111; // 3 bits (5 bits reserved)
-                    let number_of_sequence_parameter_set_ext = reader.read_u8()?; // 8 bits
+                let chroma_format_idc = u8::deserialize(&mut reader).eof_to_none()?;
+                if let Some(chroma_format_idc) = chroma_format_idc {
+                    let chroma_format_idc = chroma_format_idc & 0b00000011; // 2 bits (6 bits reserved)
+                    let bit_depth_luma_minus8 = u8::deserialize(&mut reader)? & 0b00000111; // 3 bits (5 bits reserved)
+                    let bit_depth_chroma_minus8 = u8::deserialize(&mut reader)? & 0b00000111; // 3 bits (5 bits reserved)
+                    let number_of_sequence_parameter_set_ext = u8::deserialize(&mut reader)?; // 8 bits
 
                     let mut sequence_parameter_set_ext = Vec::with_capacity(number_of_sequence_parameter_set_ext as usize);
                     for _ in 0..number_of_sequence_parameter_set_ext {
-                        let sps_ext_length = reader.read_u16::<BigEndian>()?;
-                        let sps_ext_data = reader.extract_bytes(sps_ext_length as usize)?;
+                        let sps_ext_length = u16::deserialize(&mut reader)?;
+                        let sps_ext_data = reader.try_read(sps_ext_length as usize)?;
 
                         let mut bit_reader = BitReader::new_from_slice(sps_ext_data);
                         let sps_ext_parsed = SpsExtended::parse(&mut bit_reader)?;
@@ -164,42 +166,13 @@ impl AVCDecoderConfigurationRecord {
             extended_config,
         })
     }
+}
 
-    /// Returns the total byte size of the AVCDecoderConfigurationRecord.
-    pub fn size(&self) -> u64 {
-        1 // configuration_version
-        + 1 // avc_profile_indication
-        + 1 // profile_compatibility
-        + 1 // avc_level_indication
-        + 1 // length_size_minus_one
-        + 1 // num_of_sequence_parameter_sets (5 bits reserved, 3 bits)
-        + self.sps.iter().map(|sps| {
-            2 // sps_length
-            + sps.len() as u64
-        }).sum::<u64>() // sps
-        + 1 // num_of_picture_parameter_sets
-        + self.pps.iter().map(|pps| {
-            2 // pps_length
-            + pps.len() as u64
-        }).sum::<u64>() // pps
-        + match &self.extended_config {
-            Some(config) => {
-                1 // chroma_format_idc (6 bits reserved, 2 bits)
-                + 1 // bit_depth_luma_minus8 (5 bits reserved, 3 bits)
-                + 1 // bit_depth_chroma_minus8 (5 bits reserved, 3 bits)
-                + 1 // number_of_sequence_parameter_set_ext
-                + config.sequence_parameter_set_ext.iter().map(|sps_ext| {
-                    2 // sps_ext_length
-                    + sps_ext.bytesize() // sps_ext
-                }).sum::<u64>()
-            }
-            None => 0,
-        }
-    }
-
-    /// Builds the AVCDecoderConfigurationRecord into a byte stream.
-    /// Returns a built byte stream.
-    pub fn build<T: io::Write>(&self, writer: &mut T) -> io::Result<()> {
+impl Serialize for AVCDecoderConfigurationRecord<'_> {
+    fn serialize<W>(&self, writer: W) -> io::Result<()>
+    where
+        W: std::io::Write,
+    {
         let mut bit_writer = BitWriter::new(writer);
 
         bit_writer.write_u8(self.configuration_version)?;
@@ -213,13 +186,13 @@ impl AVCDecoderConfigurationRecord {
         bit_writer.write_bits(self.sps.len() as u64, 5)?;
         for sps in &self.sps {
             bit_writer.write_u16::<BigEndian>(sps.len() as u16)?;
-            bit_writer.write_all(sps)?;
+            bit_writer.write_all(sps.as_bytes())?;
         }
 
         bit_writer.write_bits(self.pps.len() as u64, 8)?;
         for pps in &self.pps {
             bit_writer.write_u16::<BigEndian>(pps.len() as u16)?;
-            bit_writer.write_all(pps)?;
+            bit_writer.write_all(pps.as_bytes())?;
         }
 
         if let Some(config) = &self.extended_config {
@@ -252,14 +225,49 @@ impl AVCDecoderConfigurationRecord {
     }
 }
 
+#[cfg(feature = "isobmff")]
+impl isobmff::IsoSized for AVCDecoderConfigurationRecord<'_> {
+    /// Returns the total byte size of the AVCDecoderConfigurationRecord.
+    fn size(&self) -> usize {
+        1 // configuration_version
+        + 1 // avc_profile_indication
+        + 1 // profile_compatibility
+        + 1 // avc_level_indication
+        + 1 // length_size_minus_one
+        + 1 // num_of_sequence_parameter_sets (5 bits reserved, 3 bits)
+        + self.sps.iter().map(|sps| {
+            2 // sps_length
+            + sps.len()
+        }).sum::<usize>() // sps
+        + 1 // num_of_picture_parameter_sets
+        + self.pps.iter().map(|pps| {
+            2 // pps_length
+            + pps.len()
+        }).sum::<usize>() // pps
+        + match &self.extended_config {
+            Some(config) => {
+                1 // chroma_format_idc (6 bits reserved, 2 bits)
+                + 1 // bit_depth_luma_minus8 (5 bits reserved, 3 bits)
+                + 1 // bit_depth_chroma_minus8 (5 bits reserved, 3 bits)
+                + 1 // number_of_sequence_parameter_set_ext
+                + config.sequence_parameter_set_ext.iter().map(|sps_ext| {
+                    2 // sps_ext_length
+                    + sps_ext.bytesize() as usize // sps_ext
+                }).sum::<usize>()
+            }
+            None => 0,
+        }
+    }
+}
+
 #[cfg(test)]
 #[cfg_attr(all(test, coverage_nightly), coverage(off))]
 mod tests {
-    use std::io::{self, Write};
+    use std::io::Write;
 
     use byteorder::{BigEndian, WriteBytesExt};
-    use bytes::Bytes;
-    use scuffle_bytes_util::BitWriter;
+    use scuffle_bytes_util::zero_copy::{Deserialize, Serialize};
+    use scuffle_bytes_util::{BitWriter, BytesCow};
 
     use crate::config::{AVCDecoderConfigurationRecord, AvccExtendedConfig};
     use crate::sps::SpsExtended;
@@ -305,40 +313,49 @@ mod tests {
         writer.write_bits(0, 8).unwrap();
         writer.finish().unwrap();
 
-        let result = AVCDecoderConfigurationRecord::parse(&mut io::Cursor::new(data.into())).unwrap();
+        let result =
+            AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&data[..])).unwrap();
 
         let sps = &result.sps[0];
 
-        assert_eq!(**sps, *sample_sps);
+        assert_eq!(sps.as_bytes(), *sample_sps);
     }
 
     #[test]
+    #[cfg(feature = "isobmff")]
     fn test_config_build() {
+        use isobmff::IsoSized;
+
         // these may not be the same size due to the natural reduction from the SPS parsing.
         // in specific, the sps size function may return a lower size than the original bitstring.
         // reduction will occur from rebuilding the sps and from rebuilding the sps_ext.
-        let data = Bytes::from(b"\x01d\0\x1f\xff\xe1\0\x19\x67\x64\x00\x1F\xAC\xD9\x41\xE0\x6D\xF9\xE6\xA0\x20\x20\x28\x00\x00\x03\x00\x08\x00\x00\x03\x01\xE0\x01\0\x06h\xeb\xe3\xcb\"\xc0\xfd\xf8\xf8\0".to_vec());
+        let data = b"\x01d\0\x1f\xff\xe1\0\x19\x67\x64\x00\x1F\xAC\xD9\x41\xE0\x6D\xF9\xE6\xA0\x20\x20\x28\x00\x00\x03\x00\x08\x00\x00\x03\x01\xE0\x01\0\x06h\xeb\xe3\xcb\"\xc0\xfd\xf8\xf8\0";
 
-        let config = AVCDecoderConfigurationRecord::parse(&mut io::Cursor::new(data.clone())).unwrap();
+        let config =
+            AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&data[..])).unwrap();
 
-        assert_eq!(config.size(), data.len() as u64);
+        assert_eq!(config.size(), data.len());
 
         let mut buf = Vec::new();
-        config.build(&mut buf).unwrap();
+        config.serialize(&mut buf).unwrap();
 
         assert_eq!(buf, data.to_vec());
     }
 
     #[test]
     fn test_no_ext_cfg_for_profiles_66_77_88() {
-        let data = Bytes::from(b"\x01B\x00\x1F\xFF\xE1\x00\x1Dgd\x00\x1F\xAC\xD9A\xE0m\xF9\xE6\xA0  (\x00\x00\x03\x00\x08\x00\x00\x03\x01\xE0x\xC1\x8C\xB0\x01\x00\x06h\xEB\xE3\xCB\"\xC0\xFD\xF8\xF8\x00".to_vec());
-        let config = AVCDecoderConfigurationRecord::parse(&mut io::Cursor::new(data)).unwrap();
+        let data = b"\x01B\x00\x1F\xFF\xE1\x00\x1Dgd\x00\x1F\xAC\xD9A\xE0m\xF9\xE6\xA0  (\x00\x00\x03\x00\x08\x00\x00\x03\x01\xE0x\xC1\x8C\xB0\x01\x00\x06h\xEB\xE3\xCB\"\xC0\xFD\xF8\xF8\x00";
+        let config =
+            AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&data[..])).unwrap();
 
         assert_eq!(config.extended_config, None);
     }
 
     #[test]
+    #[cfg(feature = "isobmff")]
     fn test_size_calculation_with_sequence_parameter_set_ext() {
+        use isobmff::IsoSized;
+
         let extended_config = AvccExtendedConfig {
             chroma_format_idc: 1,
             bit_depth_luma_minus8: 0,
@@ -358,10 +375,10 @@ mod tests {
             profile_compatibility: 0,
             level_indication: 31,
             length_size_minus_one: 3,
-            sps: vec![Bytes::from_static(
+            sps: vec![BytesCow::from_static(
                 b"\x67\x64\x00\x1F\xAC\xD9\x41\xE0\x6D\xF9\xE6\xA0\x20\x20\x28\x00\x00\x00\x08\x00\x00\x01\xE0",
             )],
-            pps: vec![Bytes::from_static(b"ppsdata")],
+            pps: vec![BytesCow::from_static(b"ppsdata")],
             extended_config: Some(extended_config),
         };
 
@@ -421,17 +438,18 @@ mod tests {
             profile_compatibility: 0,
             level_indication: 31,
             length_size_minus_one: 3,
-            sps: vec![Bytes::from_static(
+            sps: vec![BytesCow::from_static(
                 b"gd\0\x1f\xac\xd9A\xe0m\xf9\xe6\xa0  (\0\0\x03\0\x08\0\0\x03\x01\xe0x\xc1\x8c\xb0",
             )],
-            pps: vec![Bytes::from_static(b"ppsdata")],
+            pps: vec![BytesCow::from_static(b"ppsdata")],
             extended_config: Some(extended_config),
         };
 
         let mut buf = Vec::new();
-        config.build(&mut buf).unwrap();
+        config.serialize(&mut buf).unwrap();
 
-        let parsed = AVCDecoderConfigurationRecord::parse(&mut io::Cursor::new(buf.into())).unwrap();
+        let parsed =
+            AVCDecoderConfigurationRecord::deserialize(scuffle_bytes_util::zero_copy::Slice::from(&buf[..])).unwrap();
         assert_eq!(parsed.extended_config.unwrap().sequence_parameter_set_ext.len(), 1);
         insta::assert_debug_snapshot!(config, @r#"
         AVCDecoderConfigurationRecord {

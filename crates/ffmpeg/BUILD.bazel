@@ -30,7 +30,11 @@ scuffle_package(
             "ASSETS_DIR": "$(rootpath @scuffle_assets//:mp4)",
         },
         insta = True,
-        deps = ["//crates/mp4"],
+        deps = [
+            "//crates/bytes-util",
+            "//crates/isobmff",
+            "//crates/mp4",
+        ],
     ),
     deps = ["//crates/nutype-enum"],
 )

@@ -61,8 +61,8 @@ rust_library(
     }),
     version = "0.5.2",
     deps = [
-        "@cargo_vendor__hyper-1.7.0//:hyper",
-        "@cargo_vendor__hyper-util-0.1.16//:hyper_util",
+        "@cargo_vendor__hyper-1.6.0//:hyper",
+        "@cargo_vendor__hyper-util-0.1.13//:hyper_util",
         "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
         "@cargo_vendor__tokio-1.47.1//:tokio",
         "@cargo_vendor__tower-service-0.3.3//:tower_service",

@@ -42,7 +42,7 @@ rust_proc_macro(
     crate_root = "src/lib.rs",
     edition = "2021",
     proc_macro_deps = [
-        "@cargo_vendor__rustversion-1.0.22//:rustversion",
+        "@cargo_vendor__rustversion-1.0.21//:rustversion",
     ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
@@ -70,9 +70,9 @@ rust_proc_macro(
     deps = [
         "@cargo_vendor__darling-0.21.3//:darling",
         "@cargo_vendor__ident_case-1.0.1//:ident_case",
-        "@cargo_vendor__prettyplease-0.2.37//:prettyplease",
-        "@cargo_vendor__proc-macro2-1.0.101//:proc_macro2",
+        "@cargo_vendor__prettyplease-0.2.33//:prettyplease",
+        "@cargo_vendor__proc-macro2-1.0.95//:proc_macro2",
         "@cargo_vendor__quote-1.0.40//:quote",
-        "@cargo_vendor__syn-2.0.106//:syn",
+        "@cargo_vendor__syn-2.0.101//:syn",
     ],
 )

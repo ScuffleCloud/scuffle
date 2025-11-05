@@ -67,30 +67,38 @@ component_management:
       name: scuffle-future-ext
       paths:
         - crates/future-ext/**
-    - component_id: nutype-enum
-      name: nutype-enum
-      paths:
-        - crates/nutype_enum/**
     - component_id: scuffle-h264
       name: scuffle-h264
       paths:
         - crates/h264/**
-    # - component_id: scuffle-h265
-    #   name: scuffle-h265
-    #   paths:
-    #     - crates/h265/**
+    - component_id: scuffle-h265
+      name: scuffle-h265
+      paths:
+        - crates/h265/**
     - component_id: scuffle-http
       name: scuffle-http
       paths:
         - crates/http/**
+    - component_id: isobmff
+      name: isobmff
+      paths:
+        - crates/isobmff/**
     - component_id: scuffle-metrics
       name: scuffle-metrics
       paths:
         - crates/metrics/**
-    # - component_id: scuffle-mp4
-    #   name: scuffle-mp4
-    #   paths:
-    #     - crates/mp4/**
+    - component_id: scuffle-mp4
+      name: scuffle-mp4
+      paths:
+        - crates/mp4/**
+    - component_id: nutype-enum
+      name: nutype-enum
+      paths:
+        - crates/nutype_enum/**
+    - component_id: scuffle-opus
+      name: scuffle-opus
+      paths:
+        - crates/opus/**
     - component_id: postcompile
       name: postcompile
       paths:
@@ -111,7 +119,15 @@ component_management:
       name: scuffle-signal
       paths:
         - crates/signal/**
-    # - component_id: scuffle-transmuxer
-    #   name: scuffle-transmuxer
-    #   paths:
-    #     - crates/transmuxer/**
+    - component_id: scuffle-transmuxer
+      name: scuffle-transmuxer
+      paths:
+        - crates/transmuxer/**
+    - component_id: tinc
+      name: tinc
+      paths:
+        - crates/tinc/**
+    - component_id: openapiv3_1
+      name: openapiv3_1
+      paths:
+        - crates/openapiv3_1/**

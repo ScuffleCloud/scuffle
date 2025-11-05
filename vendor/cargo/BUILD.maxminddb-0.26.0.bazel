@@ -65,9 +65,9 @@ rust_library(
     version = "0.26.0",
     deps = [
         "@cargo_vendor__ipnetwork-0.21.1//:ipnetwork",
-        "@cargo_vendor__log-0.4.28//:log",
-        "@cargo_vendor__memchr-2.7.5//:memchr",
+        "@cargo_vendor__log-0.4.27//:log",
+        "@cargo_vendor__memchr-2.7.6//:memchr",
         "@cargo_vendor__serde-1.0.228//:serde",
-        "@cargo_vendor__thiserror-2.0.16//:thiserror",
+        "@cargo_vendor__thiserror-2.0.17//:thiserror",
     ],
 )

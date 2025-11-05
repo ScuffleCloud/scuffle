@@ -1,0 +1,1825 @@
+---
+source: crates/isobmff/src/conformance_tests.rs
+expression: redeserialized_file
+snapshot_kind: text
+---
+IsobmffFile {
+    ftyp: Some(
+        FileTypeBox {
+            major_brand: Brand::Iso6,
+            minor_version: 0,
+            compatible_brands: [
+                Brand::IsoM,
+                Brand::Iso6,
+                Brand([100, 97, 115, 104]),
+            ],
+        },
+    ),
+    etyp: [],
+    otyp: [],
+    pdin: None,
+    moov: Some(
+        MovieBox {
+            mvhd: MovieHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 1,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                creation_time: 3494827136,
+                modification_time: 3494827136,
+                timescale: 10000000,
+                duration: 320000000,
+                rate: 1,
+                volume: 1,
+                reserved1: 0,
+                reserved2: 0,
+                matrix: [
+                    65536,
+                    0,
+                    0,
+                    0,
+                    65536,
+                    0,
+                    0,
+                    0,
+                    1073741824,
+                ],
+                pre_defined: [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                ],
+                next_track_id: 2,
+            },
+            meta: None,
+            trak: [
+                TrackBox {
+                    tkhd: TrackHeaderBox {
+                        version: 1,
+                        flags: TrackHeaderBoxFlags(
+                            TrackEnabled | TrackInMovie | TrackInPreview,
+                        ),
+                        creation_time: 3494827136,
+                        modification_time: 3494827136,
+                        track_id: 1,
+                        reserved1: 0,
+                        duration: 320000000,
+                        reserved2: 0,
+                        layer: 0,
+                        alternate_group: 0,
+                        volume: 0,
+                        reserved3: 0,
+                        matrix: [
+                            65536,
+                            0,
+                            0,
+                            0,
+                            65536,
+                            0,
+                            0,
+                            0,
+                            1073741824,
+                        ],
+                        width: 768,
+                        height: 432,
+                    },
+                    tref: None,
+                    trgr: None,
+                    edts: None,
+                    ttyp: None,
+                    meta: None,
+                    mdia: MediaBox {
+                        mdhd: MediaHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 1,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            creation_time: 3494827136,
+                            modification_time: 3494827136,
+                            timescale: 10000000,
+                            duration: 320000000,
+                            language: Langauge(
+                                [
+                                    21,
+                                    14,
+                                    4,
+                                ],
+                            ),
+                            pre_defined: 0,
+                        },
+                        hdlr: HandlerBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            pre_defined: 0,
+                            handler_type: HandlerType::Video,
+                            reserved: [
+                                0,
+                                0,
+                                0,
+                            ],
+                            name: Utf8String(
+                                "",
+                            ),
+                        },
+                        elng: None,
+                        minf: MediaInformationBox {
+                            vmhd: Some(
+                                VideoMediaHeaderBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            1,
+                                        ),
+                                    },
+                                    graphicsmode: 0,
+                                    opcolor: [
+                                        0,
+                                        0,
+                                        0,
+                                    ],
+                                },
+                            ),
+                            smhd: None,
+                            hmhd: None,
+                            sthd: None,
+                            vvhd: None,
+                            unknown_boxes: [],
+                            dinf: DataInformationBox {
+                                dref: DataReferenceBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    url: [
+                                        DataEntryUrlBox {
+                                            full_header: FullBoxHeader {
+                                                version: 0,
+                                                flags: U24Be(
+                                                    1,
+                                                ),
+                                            },
+                                            location: None,
+                                        },
+                                    ],
+                                    urn: [],
+                                    imda: [],
+                                    snim: [],
+                                    unknown_boxes: [],
+                                },
+                            },
+                            stbl: SampleTableBox {
+                                stsd: SampleDescriptionBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 1,
+                                    boxes: [
+                                        UnknownBox {
+                                            header: BoxHeader {
+                                                size: Short(
+                                                    135,
+                                                ),
+                                                box_type: FourCc(
+                                                    "avc1",
+                                                ),
+                                            },
+                                            data.len: 127,
+                                        },
+                                    ],
+                                },
+                                stts: TimeToSampleBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 0,
+                                    entries: [],
+                                },
+                                ctts: Some(
+                                    CompositionOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 0,
+                                        entries.len: 0,
+                                    },
+                                ),
+                                cslg: None,
+                                stsc: SampleToChunkBox {
+                                    full_header: FullBoxHeader {
+                                        version: 0,
+                                        flags: U24Be(
+                                            0,
+                                        ),
+                                    },
+                                    entry_count: 0,
+                                    entries.len: 0,
+                                },
+                                stsz: Some(
+                                    SampleSizeBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        sample_size: 0,
+                                        sample_count: 0,
+                                        entry_size.len: 0,
+                                    },
+                                ),
+                                stz2: None,
+                                stco: Some(
+                                    ChunkOffsetBox {
+                                        full_header: FullBoxHeader {
+                                            version: 0,
+                                            flags: U24Be(
+                                                0,
+                                            ),
+                                        },
+                                        entry_count: 0,
+                                        chunk_offset.len: 0,
+                                    },
+                                ),
+                                co64: None,
+                                stss: None,
+                                stsh: None,
+                                padb: None,
+                                stdp: None,
+                                sdtp: None,
+                                sbgp: [],
+                                sgpd: [],
+                                subs: [],
+                                saiz: [],
+                                saio: [],
+                                csgp: [],
+                            },
+                        },
+                        unknown_boxes: [],
+                    },
+                    unknown_boxes: [],
+                    udta: None,
+                },
+            ],
+            mvex: Some(
+                MovieExtendsBox {
+                    mehd: Some(
+                        MovieExtendsHeaderBox {
+                            full_header: FullBoxHeader {
+                                version: 1,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            fragment_duration: 320000000,
+                        },
+                    ),
+                    trex: [
+                        TrackExtendsBox {
+                            full_header: FullBoxHeader {
+                                version: 0,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            track_id: 1,
+                            default_sample_description_index: 1,
+                            default_sample_duration: 0,
+                            default_sample_size: 0,
+                            default_sample_flags: SampleFlags {
+                                reserved: 0,
+                                is_leading: 0,
+                                sample_depends_on: 0,
+                                sample_is_depended_on: 0,
+                                sample_has_redundancy: 0,
+                                sample_padding_value: 0,
+                                sample_is_non_sync_sample: false,
+                                sample_degradation_priority: 0,
+                            },
+                        },
+                    ],
+                    leva: None,
+                },
+            ),
+            unknown_boxes: [],
+            udta: None,
+        },
+    ),
+    moof: [
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 1,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleDurationPresent | DefaultSampleSizePresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: Some(
+                            0,
+                        ),
+                        default_sample_size: Some(
+                            0,
+                        ),
+                        default_sample_flags: None,
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent | SampleDurationPresent | SampleSizePresent | SampleCompositionTimeOffsetsPresent,
+                            ),
+                            sample_count: 50,
+                            data_offset: Some(
+                                704,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        47933,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        25872,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        17821,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        6511,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5944,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        21024,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        10186,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5449,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        4540,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        24143,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        12511,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        4603,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5444,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        27039,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        13266,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        6079,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        6228,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        26643,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        14892,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5941,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5753,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        31510,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        14504,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        6382,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        7609,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        28105,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        15332,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        6631,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        6333,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        43874,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        11969,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5619,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        4763,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        22041,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        13208,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5339,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5595,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        22267,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        11832,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5680,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        4672,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        22009,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        11386,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5544,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        4770,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        21694,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        12449,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5104,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5409,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        15441,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 1,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 0,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+        MovieFragmentBox {
+            mfhd: MovieFragmentHeaderBox {
+                full_header: FullBoxHeader {
+                    version: 0,
+                    flags: U24Be(
+                        0,
+                    ),
+                },
+                sequence_number: 2,
+            },
+            meta: None,
+            traf: [
+                TrackFragmentBox {
+                    tfhd: TrackFragmentHeaderBox {
+                        version: 0,
+                        flags: TfFlags(
+                            DefaultSampleDurationPresent | DefaultSampleSizePresent | DefaultBaseIsMoof,
+                        ),
+                        track_id: 1,
+                        base_data_offset: None,
+                        sample_description_index: None,
+                        default_sample_duration: Some(
+                            0,
+                        ),
+                        default_sample_size: Some(
+                            0,
+                        ),
+                        default_sample_flags: None,
+                    },
+                    trun: [
+                        TrackRunBox {
+                            version: 0,
+                            flags: TrFlags(
+                                DataOffsetPresent | SampleDurationPresent | SampleSizePresent | SampleCompositionTimeOffsetsPresent,
+                            ),
+                            sample_count: 50,
+                            data_offset: Some(
+                                704,
+                            ),
+                            first_sample_flags: None,
+                            samples: [
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        39204,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        19925,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        12587,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        6326,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        6942,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        26148,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        12204,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5191,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        4991,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        21280,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        12602,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5349,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5139,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        20888,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        13004,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5413,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5193,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        21705,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        11432,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        4678,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        4780,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        27841,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        13737,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5378,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5355,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        32101,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        12088,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5456,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5652,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        58190,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        17587,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        7103,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        7310,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        27047,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        4000000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        19518,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2000000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        11433,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        4627,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5318,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        10700,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5807,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5039,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        32041,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        4000000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        13957,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        2000000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        9867,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5075,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        0,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        5026,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        9404,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        4552,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        400000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        4181,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        800000,
+                                    ),
+                                },
+                                TrackRunBoxSample {
+                                    sample_duration: Some(
+                                        400000,
+                                    ),
+                                    sample_size: Some(
+                                        17655,
+                                    ),
+                                    sample_flags: None,
+                                    sample_composition_time_offset: Some(
+                                        1200000,
+                                    ),
+                                },
+                            ],
+                        },
+                    ],
+                    sbgp: [],
+                    sgpd: [],
+                    subs: [],
+                    saiz: [],
+                    saio: [],
+                    tfdt: Some(
+                        TrackFragmentBaseMediaDecodeTimeBox {
+                            full_header: FullBoxHeader {
+                                version: 1,
+                                flags: U24Be(
+                                    0,
+                                ),
+                            },
+                            base_media_decode_time: 20000000,
+                        },
+                    ),
+                    meta: None,
+                    udta: None,
+                },
+            ],
+            udta: None,
+        },
+    ],
+    mdat: [
+        MediaDataBox {
+            data.len: 674893,
+        },
+        MediaDataBox {
+            data.len: 353416,
+        },
+    ],
+    imda: [],
+    meta: None,
+    styp: [],
+    sidx: [
+        SegmentIndexBox {
+            full_header: FullBoxHeader {
+                version: 1,
+                flags: U24Be(
+                    0,
+                ),
+            },
+            reference_id: 1,
+            timescale: 10000000,
+            earliest_presentation_time: 1200000,
+            first_offset: 0,
+            reserved: 0,
+            reference_count: 16,
+            references: [
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 675597,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 654730,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 635517,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 639079,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 600396,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 643179,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 580556,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 625861,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 627444,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 627953,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 634627,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 655214,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 619323,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 611832,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 601783,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+                SegmentIndexBoxReference {
+                    reference_type: false,
+                    referenced_size: 676242,
+                    subsegment_duration: 20000000,
+                    starts_with_sap: true,
+                    sap_type: 1,
+                    sap_delta_time: 0,
+                },
+            ],
+        },
+    ],
+    ssix: [],
+    prft: [],
+    unknown_boxes: [],
+    mfra: None,
+}

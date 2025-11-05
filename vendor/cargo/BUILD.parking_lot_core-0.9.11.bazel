@@ -70,22 +70,22 @@ rust_library(
         "@cargo_vendor__smallvec-1.15.1//:smallvec",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.176//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
             "@cargo_vendor__windows-targets-0.52.6//:windows_targets",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.176//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.176//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
             "@cargo_vendor__windows-targets-0.52.6//:windows_targets",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.176//:libc",  # cfg(unix)
         ],
         "//conditions:default": [],
     }),

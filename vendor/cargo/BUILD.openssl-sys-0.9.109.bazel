@@ -65,7 +65,7 @@ rust_library(
     }),
     version = "0.9.109",
     deps = [
-        "@cargo_vendor__libc-0.2.175//:libc",
+        "@cargo_vendor__libc-0.2.176//:libc",
         "@cargo_vendor__openssl-sys-0.9.109//:build_script_main",
     ],
 )
@@ -131,7 +131,7 @@ cargo_build_script(
     version = "0.9.109",
     visibility = ["//visibility:private"],
     deps = [
-        "@cargo_vendor__cc-1.2.37//:cc",
+        "@cargo_vendor__cc-1.2.40//:cc",
         "@cargo_vendor__pkg-config-0.3.32//:pkg_config",
         "@cargo_vendor__vcpkg-0.2.15//:vcpkg",
     ],

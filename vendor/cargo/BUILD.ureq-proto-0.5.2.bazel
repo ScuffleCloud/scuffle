@@ -67,6 +67,6 @@ rust_library(
         "@cargo_vendor__base64-0.22.1//:base64",
         "@cargo_vendor__http-1.3.1//:http",
         "@cargo_vendor__httparse-1.10.1//:httparse",
-        "@cargo_vendor__log-0.4.28//:log",
+        "@cargo_vendor__log-0.4.27//:log",
     ],
 )

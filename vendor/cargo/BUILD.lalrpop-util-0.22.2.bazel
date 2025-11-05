@@ -44,7 +44,7 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2021",
     proc_macro_deps = [
-        "@cargo_vendor__rustversion-1.0.22//:rustversion",
+        "@cargo_vendor__rustversion-1.0.21//:rustversion",
     ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
@@ -71,6 +71,6 @@ rust_library(
     }),
     version = "0.22.2",
     deps = [
-        "@cargo_vendor__regex-automata-0.4.10//:regex_automata",
+        "@cargo_vendor__regex-automata-0.4.13//:regex_automata",
     ],
 )

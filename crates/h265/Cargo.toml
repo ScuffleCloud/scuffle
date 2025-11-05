@@ -16,12 +16,16 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage_nightly)'] }
 [features]
 ## Enables changelog and documentation of feature flags
 docs = ["dep:scuffle-changelog", "dep:document-features"]
+## Enables isobmff boxes
+isobmff = ["dep:isobmff", "dep:isobmff-derive"]
 
 [dependencies]
 bitflags = "2"
 byteorder = "1"
 bytes = "1"
 document-features = { optional = true, version = "0.2" }
+isobmff = { path = "../isobmff", version = "0.1", optional = true }
+isobmff-derive = { path = "../isobmff/derive", version = "0.1", optional = true }
 nutype-enum = { path = "../nutype-enum", version = "0.1" }
 scuffle-bytes-util = { path = "../bytes-util", version = "0.1" }
 scuffle-changelog = { optional = true, path = "../changelog", version = "0.1" }

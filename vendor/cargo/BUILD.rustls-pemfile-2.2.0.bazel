@@ -23,7 +23,7 @@ rust_library(
         allow_empty = True,
     ),
     aliases = {
-        "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types": "pki_types",
+        "@cargo_vendor__rustls-pki-types-1.13.0//:rustls_pki_types": "pki_types",
     },
     compile_data = glob(
         include = ["**"],
@@ -68,6 +68,6 @@ rust_library(
     }),
     version = "2.2.0",
     deps = [
-        "@cargo_vendor__rustls-pki-types-1.12.0//:rustls_pki_types",
+        "@cargo_vendor__rustls-pki-types-1.13.0//:rustls_pki_types",
     ],
 )

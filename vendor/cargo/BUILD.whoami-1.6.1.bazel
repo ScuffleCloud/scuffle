@@ -67,7 +67,7 @@ rust_library(
     version = "1.6.1",
     deps = select({
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@cargo_vendor__web-sys-0.3.78//:web_sys",  # cfg(all(target_arch = "wasm32", not(target_os = "wasi"), not(daku)))
+            "@cargo_vendor__web-sys-0.3.82//:web_sys",  # cfg(all(target_arch = "wasm32", not(target_os = "wasi"), not(daku)))
         ],
         "//conditions:default": [],
     }),

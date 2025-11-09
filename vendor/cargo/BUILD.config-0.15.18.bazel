@@ -78,7 +78,7 @@ rust_library(
     }),
     version = "0.15.18",
     deps = [
-        "@cargo_vendor__indexmap-2.11.4//:indexmap",
+        "@cargo_vendor__indexmap-2.12.0//:indexmap",
         "@cargo_vendor__json5-0.4.1//:json5",
         "@cargo_vendor__pathdiff-0.2.3//:pathdiff",
         "@cargo_vendor__ron-0.8.1//:ron",

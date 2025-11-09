@@ -65,6 +65,6 @@ rust_library(
     }),
     version = "0.9.3",
     deps = [
-        "@cargo_vendor__getrandom-0.3.3//:getrandom",
+        "@cargo_vendor__getrandom-0.3.4//:getrandom",
     ],
 )

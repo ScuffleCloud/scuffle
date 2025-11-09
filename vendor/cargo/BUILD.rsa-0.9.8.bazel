@@ -23,7 +23,7 @@ rust_library(
         allow_empty = True,
     ),
     aliases = {
-        "@cargo_vendor__num-bigint-dig-0.8.4//:num_bigint_dig": "num_bigint",
+        "@cargo_vendor__num-bigint-dig-0.8.5//:num_bigint_dig": "num_bigint",
     },
     compile_data = glob(
         include = ["**"],
@@ -73,7 +73,7 @@ rust_library(
     deps = [
         "@cargo_vendor__const-oid-0.9.6//:const_oid",
         "@cargo_vendor__digest-0.10.7//:digest",
-        "@cargo_vendor__num-bigint-dig-0.8.4//:num_bigint_dig",
+        "@cargo_vendor__num-bigint-dig-0.8.5//:num_bigint_dig",
         "@cargo_vendor__num-integer-0.1.46//:num_integer",
         "@cargo_vendor__num-traits-0.2.19//:num_traits",
         "@cargo_vendor__pkcs1-0.7.5//:pkcs1",
@@ -83,6 +83,6 @@ rust_library(
         "@cargo_vendor__signature-2.2.0//:signature",
         "@cargo_vendor__spki-0.7.3//:spki",
         "@cargo_vendor__subtle-2.6.1//:subtle",
-        "@cargo_vendor__zeroize-1.8.1//:zeroize",
+        "@cargo_vendor__zeroize-1.8.2//:zeroize",
     ],
 )

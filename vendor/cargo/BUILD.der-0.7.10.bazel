@@ -70,6 +70,6 @@ rust_library(
     deps = [
         "@cargo_vendor__const-oid-0.9.6//:const_oid",
         "@cargo_vendor__pem-rfc7468-0.7.0//:pem_rfc7468",
-        "@cargo_vendor__zeroize-1.8.1//:zeroize",
+        "@cargo_vendor__zeroize-1.8.2//:zeroize",
     ],
 )

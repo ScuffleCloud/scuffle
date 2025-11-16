@@ -63,7 +63,7 @@ rust_library(
     version = "0.10.2",
     deps = [
         "@cargo_vendor__findshlibs-0.10.2//:build_script_build",
-        "@cargo_vendor__libc-0.2.175//:libc",
+        "@cargo_vendor__libc-0.2.177//:libc",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@cargo_vendor__lazy_static-1.5.0//:lazy_static",  # cfg(any(target_os = "macos", target_os = "ios"))
@@ -126,7 +126,7 @@ cargo_build_script(
     version = "0.10.2",
     visibility = ["//visibility:private"],
     deps = [
-        "@cargo_vendor__cc-1.2.37//:cc",
+        "@cargo_vendor__cc-1.2.46//:cc",
     ],
 )
 

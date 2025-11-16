@@ -67,7 +67,7 @@ rust_library(
     deps = [
         "@cargo_vendor__cel-parser-0.8.1//:build_script_build",
         "@cargo_vendor__lalrpop-util-0.22.2//:lalrpop_util",
-        "@cargo_vendor__regex-1.11.2//:regex",
+        "@cargo_vendor__regex-1.12.2//:regex",
         "@cargo_vendor__thiserror-1.0.69//:thiserror",
     ],
 )

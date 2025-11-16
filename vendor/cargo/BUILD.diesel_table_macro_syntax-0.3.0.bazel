@@ -60,6 +60,6 @@ rust_library(
     }),
     version = "0.3.0",
     deps = [
-        "@cargo_vendor__syn-2.0.106//:syn",
+        "@cargo_vendor__syn-2.0.110//:syn",
     ],
 )

@@ -78,11 +78,11 @@ rust_library(
         "@cargo_vendor__futures-core-0.3.31//:futures_core",
         "@cargo_vendor__futures-sink-0.3.31//:futures_sink",
         "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
-        "@cargo_vendor__thiserror-2.0.16//:thiserror",
+        "@cargo_vendor__thiserror-2.0.17//:thiserror",
         "@cargo_vendor__tracing-0.1.41//:tracing",
     ] + select({
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@cargo_vendor__js-sys-0.3.78//:js_sys",  # cfg(all(target_arch = "wasm32", not(target_os = "wasi")))
+            "@cargo_vendor__js-sys-0.3.82//:js_sys",  # cfg(all(target_arch = "wasm32", not(target_os = "wasi")))
         ],
         "//conditions:default": [],
     }),

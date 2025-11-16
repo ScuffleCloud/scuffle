@@ -64,7 +64,7 @@ rust_library(
     }),
     version = "0.12.6",
     deps = [
-        "@cargo_vendor__bytes-1.10.1//:bytes",
+        "@cargo_vendor__bytes-1.11.0//:bytes",
         "@cargo_vendor__heck-0.5.0//:heck",
         "@cargo_vendor__itertools-0.12.1//:itertools",
         "@cargo_vendor__log-0.4.28//:log",
@@ -74,8 +74,8 @@ rust_library(
         "@cargo_vendor__prettyplease-0.2.37//:prettyplease",
         "@cargo_vendor__prost-0.12.6//:prost",
         "@cargo_vendor__prost-types-0.12.6//:prost_types",
-        "@cargo_vendor__regex-1.11.2//:regex",
-        "@cargo_vendor__syn-2.0.106//:syn",
-        "@cargo_vendor__tempfile-3.22.0//:tempfile",
+        "@cargo_vendor__regex-1.12.2//:regex",
+        "@cargo_vendor__syn-2.0.110//:syn",
+        "@cargo_vendor__tempfile-3.23.0//:tempfile",
     ],
 )

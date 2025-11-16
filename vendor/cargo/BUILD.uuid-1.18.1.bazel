@@ -71,22 +71,22 @@ rust_library(
         "@cargo_vendor__serde-1.0.228//:serde",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
+            "@cargo_vendor__getrandom-0.3.4//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
+            "@cargo_vendor__getrandom-0.3.4//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
+            "@cargo_vendor__getrandom-0.3.4//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
+            "@cargo_vendor__getrandom-0.3.4//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
+            "@cargo_vendor__getrandom-0.3.4//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@cargo_vendor__getrandom-0.3.3//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
+            "@cargo_vendor__getrandom-0.3.4//:getrandom",  # cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))
         ],
         "//conditions:default": [],
     }),

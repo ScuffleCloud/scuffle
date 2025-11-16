@@ -67,7 +67,7 @@ rust_library(
     deps = [
         "@cargo_vendor__prost-0.14.1//:prost",
         "@cargo_vendor__prost-types-0.14.1//:prost_types",
-        "@cargo_vendor__tokio-1.47.1//:tokio",
+        "@cargo_vendor__tokio-1.48.0//:tokio",
         "@cargo_vendor__tokio-stream-0.1.17//:tokio_stream",
         "@cargo_vendor__tonic-0.14.2//:tonic",
         "@cargo_vendor__tonic-prost-0.14.2//:tonic_prost",

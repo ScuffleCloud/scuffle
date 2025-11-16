@@ -75,7 +75,7 @@ rust_library(
         "@cargo_vendor__prost-types-0.14.1//:prost_types",
         "@cargo_vendor__tonic-0.14.2//:tonic",
         "@cargo_vendor__tonic-prost-0.14.2//:tonic_prost",
-        "@cargo_vendor__ureq-3.1.2//:ureq",
+        "@cargo_vendor__ureq-3.1.4//:ureq",
     ],
 )
 

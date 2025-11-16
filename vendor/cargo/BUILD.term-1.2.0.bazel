@@ -64,10 +64,10 @@ rust_library(
     version = "1.2.0",
     deps = select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@cargo_vendor__windows-sys-0.61.0//:windows_sys",  # cfg(windows)
+            "@cargo_vendor__windows-sys-0.61.2//:windows_sys",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@cargo_vendor__windows-sys-0.61.0//:windows_sys",  # cfg(windows)
+            "@cargo_vendor__windows-sys-0.61.2//:windows_sys",  # cfg(windows)
         ],
         "//conditions:default": [],
     }),

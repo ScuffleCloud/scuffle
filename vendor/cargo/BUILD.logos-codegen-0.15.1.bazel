@@ -68,10 +68,10 @@ rust_library(
         "@cargo_vendor__fnv-1.0.7//:fnv",
         "@cargo_vendor__lazy_static-1.5.0//:lazy_static",
         "@cargo_vendor__logos-codegen-0.15.1//:build_script_build",
-        "@cargo_vendor__proc-macro2-1.0.101//:proc_macro2",
-        "@cargo_vendor__quote-1.0.40//:quote",
-        "@cargo_vendor__regex-syntax-0.8.6//:regex_syntax",
-        "@cargo_vendor__syn-2.0.106//:syn",
+        "@cargo_vendor__proc-macro2-1.0.103//:proc_macro2",
+        "@cargo_vendor__quote-1.0.42//:quote",
+        "@cargo_vendor__regex-syntax-0.8.8//:regex_syntax",
+        "@cargo_vendor__syn-2.0.110//:syn",
     ],
 )
 

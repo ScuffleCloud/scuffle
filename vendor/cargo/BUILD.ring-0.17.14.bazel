@@ -42,12 +42,8 @@ rust_library(
         "alloc",
         "default",
         "dev_urandom_fallback",
-    ] + select({
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "wasm32_unknown_unknown_js",
-        ],
-        "//conditions:default": [],
-    }),
+        "wasm32_unknown_unknown_js",
+    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -64,33 +60,16 @@ rust_library(
         "norustfmt",
     ],
     target_compatible_with = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.17.14",
     deps = [
-        "@cargo_vendor__cfg-if-1.0.3//:cfg_if",
+        "@cargo_vendor__cfg-if-1.0.4//:cfg_if",
         "@cargo_vendor__getrandom-0.2.16//:getrandom",
         "@cargo_vendor__ring-0.17.14//:build_script_build",
         "@cargo_vendor__untrusted-0.9.0//:untrusted",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(all(all(target_arch = "aarch64", target_endian = "little"), target_vendor = "apple", any(target_os = "ios", target_os = "macos", target_os = "tvos", target_os = "visionos", target_os = "watchos")))
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@cargo_vendor__windows-sys-0.52.0//:windows_sys",  # cfg(all(all(target_arch = "aarch64", target_endian = "little"), target_os = "windows"))
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(all(any(all(target_arch = "aarch64", target_endian = "little"), all(target_arch = "arm", target_endian = "little")), any(target_os = "android", target_os = "linux")))
-        ],
-        "//conditions:default": [],
-    }),
+    ],
 )
 
 cargo_build_script(
@@ -116,12 +95,8 @@ cargo_build_script(
         "alloc",
         "default",
         "dev_urandom_fallback",
-    ] + select({
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "wasm32_unknown_unknown_js",
-        ],
-        "//conditions:default": [],
-    }),
+        "wasm32_unknown_unknown_js",
+    ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
@@ -155,7 +130,7 @@ cargo_build_script(
     version = "0.17.14",
     visibility = ["//visibility:private"],
     deps = [
-        "@cargo_vendor__cc-1.2.37//:cc",
+        "@cargo_vendor__cc-1.2.46//:cc",
     ],
 )
 

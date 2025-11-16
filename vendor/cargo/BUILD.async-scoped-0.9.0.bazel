@@ -67,6 +67,6 @@ rust_library(
     deps = [
         "@cargo_vendor__futures-0.3.31//:futures",
         "@cargo_vendor__pin-project-1.1.10//:pin_project",
-        "@cargo_vendor__tokio-1.47.1//:tokio",
+        "@cargo_vendor__tokio-1.48.0//:tokio",
     ],
 )

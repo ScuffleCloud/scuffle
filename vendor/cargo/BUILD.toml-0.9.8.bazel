@@ -69,7 +69,7 @@ rust_library(
     }),
     version = "0.9.8",
     deps = [
-        "@cargo_vendor__indexmap-2.11.4//:indexmap",
+        "@cargo_vendor__indexmap-2.12.0//:indexmap",
         "@cargo_vendor__serde_core-1.0.228//:serde_core",
         "@cargo_vendor__serde_spanned-1.0.3//:serde_spanned",
         "@cargo_vendor__toml_datetime-0.7.3//:toml_datetime",

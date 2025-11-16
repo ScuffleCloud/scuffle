@@ -64,7 +64,7 @@ rust_library(
     }),
     version = "0.1.2",
     deps = [
-        "@cargo_vendor__unicode-normalization-0.1.24//:unicode_normalization",
+        "@cargo_vendor__unicode-normalization-0.1.25//:unicode_normalization",
         "@cargo_vendor__unicode-script-0.5.7//:unicode_script",
     ],
 )

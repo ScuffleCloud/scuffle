@@ -34,27 +34,6 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "all",
-        ],
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "all",
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "all",
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "all",
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "all",
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "all",
-        ],
-        "//conditions:default": [],
-    }),
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -83,22 +62,22 @@ rust_library(
     version = "0.5.10",
     deps = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.177//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
             "@cargo_vendor__windows-sys-0.52.0//:windows_sys",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.177//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.177//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
             "@cargo_vendor__windows-sys-0.52.0//:windows_sys",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.177//:libc",  # cfg(unix)
         ],
         "//conditions:default": [],
     }),

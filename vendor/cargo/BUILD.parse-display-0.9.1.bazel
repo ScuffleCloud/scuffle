@@ -70,7 +70,7 @@ rust_library(
     }),
     version = "0.9.1",
     deps = [
-        "@cargo_vendor__regex-1.11.2//:regex",
-        "@cargo_vendor__regex-syntax-0.8.6//:regex_syntax",
+        "@cargo_vendor__regex-1.12.2//:regex",
+        "@cargo_vendor__regex-syntax-0.8.8//:regex_syntax",
     ],
 )

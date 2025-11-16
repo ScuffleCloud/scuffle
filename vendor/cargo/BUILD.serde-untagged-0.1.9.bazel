@@ -61,7 +61,7 @@ rust_library(
     }),
     version = "0.1.9",
     deps = [
-        "@cargo_vendor__erased-serde-0.4.6//:erased_serde",
+        "@cargo_vendor__erased-serde-0.4.9//:erased_serde",
         "@cargo_vendor__serde_core-1.0.228//:serde_core",
         "@cargo_vendor__typeid-1.0.3//:typeid",
     ],

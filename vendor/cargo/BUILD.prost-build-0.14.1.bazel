@@ -74,8 +74,8 @@ rust_library(
         "@cargo_vendor__prettyplease-0.2.37//:prettyplease",
         "@cargo_vendor__prost-0.14.1//:prost",
         "@cargo_vendor__prost-types-0.14.1//:prost_types",
-        "@cargo_vendor__regex-1.11.2//:regex",
-        "@cargo_vendor__syn-2.0.106//:syn",
-        "@cargo_vendor__tempfile-3.22.0//:tempfile",
+        "@cargo_vendor__regex-1.12.2//:regex",
+        "@cargo_vendor__syn-2.0.110//:syn",
+        "@cargo_vendor__tempfile-3.23.0//:tempfile",
     ],
 )

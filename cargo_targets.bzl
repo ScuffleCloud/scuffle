@@ -32,6 +32,7 @@ _packages = [
     "//crates/future-ext",
     "//crates/h264",
     "//crates/h265",
+    "//crates/hls",
     "//crates/http",
     "//crates/metrics",
     "//crates/metrics/derive",

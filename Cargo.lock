@@ -5771,6 +5771,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "scuffle-hls"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "document-features",
+ "scuffle-changelog",
+ "thiserror 2.0.16",
+ "url",
+]
+
+[[package]]
 name = "scuffle-http"
 version = "0.3.2"
 dependencies = [

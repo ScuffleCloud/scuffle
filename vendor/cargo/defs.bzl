@@ -445,7 +445,7 @@ _NORMAL_DEPENDENCIES = {
     "cloud/core": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "argon2": Label("@cargo_vendor//:argon2-0.5.3"),
                 "axum": Label("@cargo_vendor//:axum-0.8.4"),
                 "base64": Label("@cargo_vendor//:base64-0.22.1"),
@@ -528,7 +528,7 @@ _NORMAL_DEPENDENCIES = {
     "cloud/core/traits": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "diesel": Label("@cargo_vendor//:diesel-2.3.2"),
                 "diesel-async": Label("@cargo_vendor//:diesel-async-0.7.3"),
                 "fred": Label("@cargo_vendor//:fred-10.1.0"),
@@ -545,7 +545,7 @@ _NORMAL_DEPENDENCIES = {
     "cloud/email": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "axum": Label("@cargo_vendor//:axum-0.8.4"),
                 "base64": Label("@cargo_vendor//:base64-0.22.1"),
                 "http": Label("@cargo_vendor//:http-1.3.1"),
@@ -569,7 +569,7 @@ _NORMAL_DEPENDENCIES = {
     "cloud/email/traits": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "reqsign": Label("@cargo_vendor//:reqsign-0.18.0"),
                 "reqwest": Label("@cargo_vendor//:reqwest-0.12.23"),
                 "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
@@ -625,19 +625,45 @@ _NORMAL_DEPENDENCIES = {
     "cloud/video/api": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
+                "axum": Label("@cargo_vendor//:axum-0.8.4"),
+                "diesel": Label("@cargo_vendor//:diesel-2.3.2"),
+                "diesel-async": Label("@cargo_vendor//:diesel-async-0.7.3"),
+                "petname": Label("@cargo_vendor//:petname-2.0.2"),
+                "rustls": Label("@cargo_vendor//:rustls-0.23.32"),
                 "serde": Label("@cargo_vendor//:serde-1.0.228"),
+                "swagger-ui-dist": Label("@cargo_vendor//:swagger-ui-dist-5.29.0"),
+                "tonic": Label("@cargo_vendor//:tonic-0.14.2"),
+                "tonic-reflection": Label("@cargo_vendor//:tonic-reflection-0.14.2"),
+                "tonic-types": Label("@cargo_vendor//:tonic-types-0.14.2"),
+                "tonic-web": Label("@cargo_vendor//:tonic-web-0.14.2"),
+                "tower-http": Label("@cargo_vendor//:tower-http-0.6.6"),
                 "tracing": Label("@cargo_vendor//:tracing-0.1.41"),
                 "tracing-subscriber": Label("@cargo_vendor//:tracing-subscriber-0.3.20"),
             },
         },
     },
+    "cloud/video/api/db-types": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "diesel": Label("@cargo_vendor//:diesel-2.3.2"),
+                "serde": Label("@cargo_vendor//:serde-1.0.228"),
+            },
+        },
+    },
     "cloud/video/api/traits": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
+                "diesel": Label("@cargo_vendor//:diesel-2.3.2"),
+                "diesel-async": Label("@cargo_vendor//:diesel-async-0.7.3"),
+            },
+        },
     },
     "cloud/video/ingest": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "serde": Label("@cargo_vendor//:serde-1.0.228"),
                 "tokio": Label("@cargo_vendor//:tokio-1.47.1"),
                 "tokio-rustls": Label("@cargo_vendor//:tokio-rustls-0.26.2"),
@@ -696,7 +722,7 @@ _NORMAL_DEPENDENCIES = {
     "crates/bootstrap": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "futures": Label("@cargo_vendor//:futures-0.3.31"),
                 "pin-project-lite": Label("@cargo_vendor//:pin-project-lite-0.2.16"),
                 "tokio": Label("@cargo_vendor//:tokio-1.47.1"),
@@ -706,7 +732,7 @@ _NORMAL_DEPENDENCIES = {
     "crates/bootstrap-telemetry": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "bytes": Label("@cargo_vendor//:bytes-1.10.1"),
                 "http": Label("@cargo_vendor//:http-1.3.1"),
                 "http-body": Label("@cargo_vendor//:http-body-1.0.1"),
@@ -1052,7 +1078,7 @@ _NORMAL_DEPENDENCIES = {
         },
         "anyhow": {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
             },
         },
         "clap": {
@@ -1074,7 +1100,7 @@ _NORMAL_DEPENDENCIES = {
         },
         "anyhow": {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
             },
         },
     },
@@ -1116,7 +1142,7 @@ _NORMAL_DEPENDENCIES = {
     "crates/tinc/build": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "base64": Label("@cargo_vendor//:base64-0.22.1"),
                 "bytes": Label("@cargo_vendor//:bytes-1.10.1"),
                 "cel-parser": Label("@cargo_vendor//:cel-parser-0.8.1"),
@@ -1195,7 +1221,7 @@ _NORMAL_DEPENDENCIES = {
     "dev-tools/xtask": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "cargo-platform": Label("@cargo_vendor//:cargo-platform-0.3.1"),
                 "cargo_metadata": Label("@cargo_vendor//:cargo_metadata-0.23.0"),
                 "chrono": Label("@cargo_vendor//:chrono-0.4.42"),
@@ -1218,14 +1244,14 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/protobuf/file_concat": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
             },
         },
     },
     "misc/utils/rust/analyzer/check": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "serde": Label("@cargo_vendor//:serde-1.0.228"),
@@ -1236,7 +1262,7 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/rust/analyzer/discover": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "env_logger": Label("@cargo_vendor//:env_logger-0.10.2"),
@@ -1259,7 +1285,7 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/rust/diesel_migration/copy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "serde": Label("@cargo_vendor//:serde-1.0.228"),
@@ -1270,7 +1296,7 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/rust/diesel_migration/patcher": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "env_logger": Label("@cargo_vendor//:env_logger-0.11.8"),
@@ -1283,7 +1309,7 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/rust/diesel_migration/runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "env_logger": Label("@cargo_vendor//:env_logger-0.11.8"),
@@ -1298,7 +1324,7 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/rust/diesel_migration/test": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "console": Label("@cargo_vendor//:console-0.16.1"),
@@ -1360,7 +1386,7 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/rust/sync_readme": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "cargo_toml": Label("@cargo_vendor//:cargo_toml-0.22.3"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
@@ -1385,7 +1411,7 @@ _NORMAL_DEPENDENCIES = {
     "misc/utils/rust/sync_readme/test_runner": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "console": Label("@cargo_vendor//:console-0.16.1"),
@@ -1422,7 +1448,7 @@ _NORMAL_DEPENDENCIES = {
     "tools/cargo/clippy": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "env_logger": Label("@cargo_vendor//:env_logger-0.11.8"),
@@ -1435,7 +1461,7 @@ _NORMAL_DEPENDENCIES = {
     "tools/cargo/sync-readme": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
-                "anyhow": Label("@cargo_vendor//:anyhow-1.0.99"),
+                "anyhow": Label("@cargo_vendor//:anyhow-1.0.100"),
                 "camino": Label("@cargo_vendor//:camino-1.2.1"),
                 "clap": Label("@cargo_vendor//:clap-4.5.47"),
                 "env_logger": Label("@cargo_vendor//:env_logger-0.11.8"),
@@ -1519,7 +1545,17 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "cloud/video/api/db-types": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "cloud/video/api/traits": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
     },
     "cloud/video/ingest": {
         _REQUIRED_FEATURE: {
@@ -2006,6 +2042,8 @@ _NORMAL_DEV_DEPENDENCIES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -2312,6 +2350,8 @@ _NORMAL_DEV_ALIASES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -2586,6 +2626,13 @@ _PROC_MACRO_DEPENDENCIES = {
             _COMMON_CONDITION: {
                 "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
                 "smart-default": Label("@cargo_vendor//:smart-default-0.7.1"),
+            },
+        },
+    },
+    "cloud/video/api/db-types": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "serde_derive": Label("@cargo_vendor//:serde_derive-1.0.228"),
             },
         },
     },
@@ -3012,6 +3059,8 @@ _PROC_MACRO_ALIASES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -3170,6 +3219,8 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "cloud/proto": {
     },
     "cloud/video/api": {
+    },
+    "cloud/video/api/db-types": {
     },
     "cloud/video/api/traits": {
     },
@@ -3334,6 +3385,8 @@ _PROC_MACRO_DEV_ALIASES = {
     "cloud/proto": {
     },
     "cloud/video/api": {
+    },
+    "cloud/video/api/db-types": {
     },
     "cloud/video/api/traits": {
     },
@@ -3581,6 +3634,8 @@ _BUILD_DEPENDENCIES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -3744,6 +3799,8 @@ _BUILD_ALIASES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -3899,6 +3956,8 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -4046,6 +4105,8 @@ _BUILD_PROC_MACRO_ALIASES = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -4192,6 +4253,8 @@ _FEATURE_FLAGS = {
     "cloud/proto": {
     },
     "cloud/video/api": {
+    },
+    "cloud/video/api/db-types": {
     },
     "cloud/video/api/traits": {
     },
@@ -4569,6 +4632,8 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "cloud/video/api": {
     },
+    "cloud/video/api/db-types": {
+    },
     "cloud/video/api/traits": {
     },
     "cloud/video/ingest": {
@@ -4757,6 +4822,7 @@ _VERSIONS = {
     "cloud/id": "0.1.0",
     "cloud/proto": "0.1.0",
     "cloud/video/api": "0.1.0",
+    "cloud/video/api/db-types": "0.1.0",
     "cloud/video/api/traits": "0.1.0",
     "cloud/video/ingest": "0.1.0",
     "cloud/video/ingest/traits": "0.1.0",
@@ -5014,12 +5080,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "cargo_vendor__anyhow-1.0.99",
-        sha256 = "b0674a1ddeecb70197781e945de4b3b8ffb61fa939a5597bcf48503737663100",
+        name = "cargo_vendor__anyhow-1.0.100",
+        sha256 = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/anyhow/1.0.99/download"],
-        strip_prefix = "anyhow-1.0.99",
-        build_file = Label("//vendor/cargo:BUILD.anyhow-1.0.99.bazel"),
+        urls = ["https://static.crates.io/crates/anyhow/1.0.100/download"],
+        strip_prefix = "anyhow-1.0.100",
+        build_file = Label("//vendor/cargo:BUILD.anyhow-1.0.100.bazel"),
     )
 
     maybe(
@@ -8634,6 +8700,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "cargo_vendor__petname-2.0.2",
+        sha256 = "9cd31dcfdbbd7431a807ef4df6edd6473228e94d5c805e8cf671227a21bad068",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/petname/2.0.2/download"],
+        strip_prefix = "petname-2.0.2",
+        build_file = Label("//vendor/cargo:BUILD.petname-2.0.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "cargo_vendor__phf-0.11.3",
         sha256 = "1fd6780a80ae0c52cc120a26a1a42c1ae51b247a253e4e06113d23d2c2edd078",
         type = "tar.gz",
@@ -11853,7 +11929,7 @@ def crate_repositories():
 
     return [
         struct(repo = "cargo_vendor__aliasable-0.1.3", is_dev_dep = False),
-        struct(repo = "cargo_vendor__anyhow-1.0.99", is_dev_dep = False),
+        struct(repo = "cargo_vendor__anyhow-1.0.100", is_dev_dep = False),
         struct(repo = "cargo_vendor__arc-swap-1.7.1", is_dev_dep = False),
         struct(repo = "cargo_vendor__argon2-0.5.3", is_dev_dep = False),
         struct(repo = "cargo_vendor__async-trait-0.1.89", is_dev_dep = False),
@@ -11937,6 +12013,7 @@ def crate_repositories():
         struct(repo = "cargo_vendor__ordered-float-5.0.0", is_dev_dep = False),
         struct(repo = "cargo_vendor__parking_lot-0.12.4", is_dev_dep = False),
         struct(repo = "cargo_vendor__paste-1.0.15", is_dev_dep = False),
+        struct(repo = "cargo_vendor__petname-2.0.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__pin-project-lite-0.2.16", is_dev_dep = False),
         struct(repo = "cargo_vendor__pkcs8-0.10.2", is_dev_dep = False),
         struct(repo = "cargo_vendor__pprof-0.15.0", is_dev_dep = False),

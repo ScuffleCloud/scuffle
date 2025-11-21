@@ -12,6 +12,7 @@ members = [
     "cloud/id",
     "cloud/proto",
     "cloud/video/api",
+    "cloud/video/api/db-types",
     "cloud/video/api/traits",
     "cloud/video/ingest",
     "cloud/video/ingest/traits",

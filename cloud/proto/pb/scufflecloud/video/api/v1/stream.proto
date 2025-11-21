@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package scufflecloud.video.api.v1;
+
+import "scufflecloud/constraints.proto";
+
+// Represents a video stream.
+message Stream {
+  // The unique identifier of the stream.
+  string id = 1 [(string_constraint).id = true];
+  // The ID of the project this stream belongs to.
+  string project_id = 2 [(string_constraint).id = true];
+  // The human readable name of the stream.
+  string name = 3;
+}

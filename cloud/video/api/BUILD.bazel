@@ -8,12 +8,21 @@ deps = [
     "//crates/bootstrap-telemetry",
     "//crates/context",
     "//crates/settings",
+    "//crates/batching",
     "//crates/signal",
     "//cloud/video/api/traits",
+    "//cloud/video/api/db-types",
+    "//cloud/proto",
+    "//cloud/ext-traits",
+    "//crates/tinc",
+    "//crates/http",
 ]
 
 aliases = {
     "//cloud/video/api/traits": "video_api_traits",
+    "//cloud/video/api/db-types": "db_types",
+    "//cloud/proto": "pb",
+    "//cloud/ext-traits": "ext_traits",
 }
 
 scuffle_package(

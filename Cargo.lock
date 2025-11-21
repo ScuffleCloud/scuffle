@@ -127,9 +127,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.99"
+version = "1.0.100"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0674a1ddeecb70197781e945de4b3b8ffb61fa939a5597bcf48503737663100"
+checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 
 [[package]]
 name = "arc-swap"
@@ -4161,6 +4161,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "petname"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9cd31dcfdbbd7431a807ef4df6edd6473228e94d5c805e8cf671227a21bad068"
+dependencies = [
+ "anyhow",
+ "itertools 0.14.0",
+ "proc-macro2",
+ "quote",
+ "rand 0.8.5",
+]
+
+[[package]]
 name = "phf"
 version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6205,22 +6218,58 @@ name = "scufflecloud-video-api"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "axum",
+ "diesel",
+ "diesel-async",
+ "petname",
+ "rustls",
+ "scuffle-batching",
  "scuffle-bootstrap",
  "scuffle-bootstrap-telemetry",
  "scuffle-context",
+ "scuffle-http",
  "scuffle-settings",
  "scuffle-signal",
+ "scufflecloud-ext-traits",
+ "scufflecloud-proto",
+ "scufflecloud-video-api-db-types",
  "scufflecloud-video-api-traits",
  "serde",
  "serde_derive",
  "smart-default",
+ "swagger-ui-dist",
+ "tinc",
+ "tonic",
+ "tonic-reflection",
+ "tonic-types",
+ "tonic-web",
+ "tower-http",
  "tracing",
  "tracing-subscriber",
 ]
 
 [[package]]
+name = "scufflecloud-video-api-db-types"
+version = "0.1.0"
+dependencies = [
+ "diesel",
+ "scufflecloud-core-db-types",
+ "scufflecloud-id",
+ "scufflecloud-proto",
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
 name = "scufflecloud-video-api-traits"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "diesel",
+ "diesel-async",
+ "scuffle-batching",
+ "scufflecloud-video-api-db-types",
+]
 
 [[package]]
 name = "security-framework"

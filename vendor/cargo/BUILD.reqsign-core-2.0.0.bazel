@@ -64,7 +64,7 @@ rust_library(
     }),
     version = "2.0.0",
     deps = [
-        "@cargo_vendor__anyhow-1.0.99//:anyhow",
+        "@cargo_vendor__anyhow-1.0.100//:anyhow",
         "@cargo_vendor__base64-0.22.1//:base64",
         "@cargo_vendor__bytes-1.10.1//:bytes",
         "@cargo_vendor__form_urlencoded-1.2.2//:form_urlencoded",

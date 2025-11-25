@@ -895,6 +895,15 @@ _NORMAL_DEPENDENCIES = {
             },
         },
     },
+    "crates/hls": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+                "chrono": Label("@cargo_vendor//:chrono-0.4.42"),
+                "thiserror": Label("@cargo_vendor//:thiserror-2.0.16"),
+                "url": Label("@cargo_vendor//:url-2.5.7"),
+            },
+        },
+    },
     "crates/http": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -1689,6 +1698,12 @@ _NORMAL_ALIASES = {
             },
         },
     },
+    "crates/hls": {
+        _REQUIRED_FEATURE: {
+            _COMMON_CONDITION: {
+            },
+        },
+    },
     "crates/http": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -2118,6 +2133,8 @@ _NORMAL_DEV_DEPENDENCIES = {
             },
         },
     },
+    "crates/hls": {
+    },
     "crates/http": {
         _REQUIRED_FEATURE: {
             _COMMON_CONDITION: {
@@ -2397,6 +2414,8 @@ _NORMAL_DEV_ALIASES = {
             _COMMON_CONDITION: {
             },
         },
+    },
+    "crates/hls": {
     },
     "crates/http": {
         _REQUIRED_FEATURE: {
@@ -2734,6 +2753,13 @@ _PROC_MACRO_DEPENDENCIES = {
             },
         },
     },
+    "crates/hls": {
+        "docs": {
+            _COMMON_CONDITION: {
+                "document-features": Label("@cargo_vendor//:document-features-0.2.11"),
+            },
+        },
+    },
     "crates/http": {
         "docs": {
             _COMMON_CONDITION: {
@@ -3062,6 +3088,8 @@ _PROC_MACRO_ALIASES = {
     },
     "crates/h265": {
     },
+    "crates/hls": {
+    },
     "crates/http": {
     },
     "crates/metrics": {
@@ -3223,6 +3251,8 @@ _PROC_MACRO_DEV_DEPENDENCIES = {
     "crates/h264": {
     },
     "crates/h265": {
+    },
+    "crates/hls": {
     },
     "crates/http": {
     },
@@ -3420,6 +3450,8 @@ _PROC_MACRO_DEV_ALIASES = {
             _COMMON_CONDITION: {
             },
         },
+    },
+    "crates/hls": {
     },
     "crates/http": {
         _REQUIRED_FEATURE: {
@@ -3623,6 +3655,8 @@ _BUILD_DEPENDENCIES = {
     },
     "crates/h265": {
     },
+    "crates/hls": {
+    },
     "crates/http": {
     },
     "crates/metrics": {
@@ -3786,6 +3820,8 @@ _BUILD_ALIASES = {
     },
     "crates/h265": {
     },
+    "crates/hls": {
+    },
     "crates/http": {
     },
     "crates/metrics": {
@@ -3941,6 +3977,8 @@ _BUILD_PROC_MACRO_DEPENDENCIES = {
     },
     "crates/h265": {
     },
+    "crates/hls": {
+    },
     "crates/http": {
     },
     "crates/metrics": {
@@ -4087,6 +4125,8 @@ _BUILD_PROC_MACRO_ALIASES = {
     "crates/h264": {
     },
     "crates/h265": {
+    },
+    "crates/hls": {
     },
     "crates/http": {
     },
@@ -4328,6 +4368,10 @@ _FEATURE_FLAGS = {
         ],
     },
     "crates/h265": {
+        "docs": [
+        ],
+    },
+    "crates/hls": {
         "docs": [
         ],
     },
@@ -4622,6 +4666,8 @@ _RESOLVED_FEATURE_FLAGS = {
     },
     "crates/h265": {
     },
+    "crates/hls": {
+    },
     "crates/http": {
         _COMMON_CONDITION: [
             "default",
@@ -4778,6 +4824,7 @@ _VERSIONS = {
     "crates/future-ext": "0.1.4",
     "crates/h264": "0.2.2",
     "crates/h265": "0.2.2",
+    "crates/hls": "0.1.0",
     "crates/http": "0.3.2",
     "crates/metrics": "0.4.2",
     "crates/metrics/derive": "0.4.2",

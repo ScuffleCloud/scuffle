@@ -1,6 +1,8 @@
 use std::io;
 
-use crate::{Tag, basic::ExtVersion, media_segment::ByteRange};
+use crate::Tag;
+use crate::basic::Version;
+use crate::media_segment::ByteRange;
 
 #[derive(Debug)]
 pub struct Map {
@@ -11,7 +13,7 @@ pub struct Map {
 impl Tag for Map {
     const NAME: &'static str = "EXT-X-MAP";
 
-    fn min_version(&self) -> ExtVersion {
+    fn min_version(&self) -> Version {
         // TODO: Check if 5 is sufficient
 
         // Use of the EXT-X-MAP tag in a Media Playlist that contains the EXT-X-I-FRAMES-ONLY
@@ -19,7 +21,7 @@ impl Tag for Map {
         // Use of the EXT-X-MAP tag in a Media Playlist that DOES NOT
         // contain the EXT-X-I-FRAMES-ONLY tag REQUIRES a compatibility version
         // number of 6 or greater.
-        ExtVersion(6)
+        Version(6)
     }
 
     fn write_value(&self, mut writer: impl io::Write) -> Result<(), io::Error> {

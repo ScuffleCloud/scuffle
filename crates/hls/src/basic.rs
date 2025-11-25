@@ -9,15 +9,15 @@ impl Tag for ExtM3u {
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
-pub struct ExtVersion(pub u64);
+pub struct Version(pub u64);
 
-impl Default for ExtVersion {
+impl Default for Version {
     fn default() -> Self {
         Self(1)
     }
 }
 
-impl Tag for ExtVersion {
+impl Tag for Version {
     const NAME: &'static str = "EXT-X-VERSION";
 
     fn write_value(&self, mut writer: impl io::Write) -> Result<(), io::Error> {

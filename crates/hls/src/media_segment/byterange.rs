@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
-use crate::{Tag, basic::ExtVersion};
+use crate::Tag;
+use crate::basic::Version;
 
 #[derive(Debug)]
 pub struct ByteRange {
@@ -22,8 +23,8 @@ impl Display for ByteRange {
 impl Tag for ByteRange {
     const NAME: &'static str = "EXT-X-BYTERANGE";
 
-    fn min_version(&self) -> ExtVersion {
-        ExtVersion(4)
+    fn min_version(&self) -> Version {
+        Version(4)
     }
 
     fn write_value(&self, mut writer: impl std::io::Write) -> Result<(), std::io::Error> {

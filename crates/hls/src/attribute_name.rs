@@ -1,4 +1,5 @@
-use std::{fmt::Display, str::FromStr};
+use std::fmt::Display;
+use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct AttributeName(String);

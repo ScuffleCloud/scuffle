@@ -1,6 +1,8 @@
-use std::{fmt::Display, io};
+use std::fmt::Display;
+use std::io;
 
-use crate::{Tag, basic::ExtVersion};
+use crate::Tag;
+use crate::basic::Version;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum KeyMethod {
@@ -51,15 +53,15 @@ pub enum Key {
 impl Tag for Key {
     const NAME: &'static str = "EXT-X-KEY";
 
-    fn min_version(&self) -> ExtVersion {
-        let mut version = ExtVersion::default();
+    fn min_version(&self) -> Version {
+        let mut version = Version::default();
 
         if let Key::Aes(aes) = self {
             if aes.iv.is_some() {
-                version = ExtVersion(2);
+                version = Version(2);
             }
             if aes.key_format.is_some() || aes.key_format_versions.is_some() {
-                version = version.max(ExtVersion(5));
+                version = version.max(Version(5));
             }
         }
 

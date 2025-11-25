@@ -1,4 +1,5 @@
-use std::{collections::HashMap, io};
+use std::collections::HashMap;
+use std::io;
 
 use crate::{AttributeName, Tag};
 

@@ -1,6 +1,7 @@
 use std::fmt::Display;
 
-use crate::{Tag, basic::ExtVersion};
+use crate::Tag;
+use crate::basic::Version;
 
 #[derive(Debug)]
 pub enum InfDuration {
@@ -38,10 +39,10 @@ pub struct Inf {
 impl Tag for Inf {
     const NAME: &'static str = "EXTINF";
 
-    fn min_version(&self) -> ExtVersion {
+    fn min_version(&self) -> Version {
         match self.duration {
-            InfDuration::Float(_) => ExtVersion(3),
-            InfDuration::Int(_) => ExtVersion::default(),
+            InfDuration::Float(_) => Version(3),
+            InfDuration::Int(_) => Version::default(),
         }
     }
 

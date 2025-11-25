@@ -17,11 +17,12 @@
 
 use std::io;
 
-use crate::basic::ExtVersion;
+use crate::basic::Version;
 
+pub mod any_playlist;
 pub mod attribute_name;
 pub mod basic;
-// pub mod master_playlist;
+pub mod master_playlist;
 pub mod media_playlist;
 pub mod media_segment;
 
@@ -30,8 +31,8 @@ pub use attribute_name::AttributeName;
 pub trait Tag {
     const NAME: &'static str;
 
-    fn min_version(&self) -> ExtVersion {
-        ExtVersion::default()
+    fn min_version(&self) -> Version {
+        Version::default()
     }
 
     fn write_value(&self, writer: impl io::Write) -> Result<(), io::Error> {

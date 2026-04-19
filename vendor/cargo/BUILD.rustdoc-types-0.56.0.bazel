@@ -68,7 +68,7 @@ rust_library(
     }),
     version = "0.56.0",
     deps = [
-        "@cargo_vendor__rustc-hash-2.1.1//:rustc_hash",
+        "@cargo_vendor__rustc-hash-2.1.2//:rustc_hash",
         "@cargo_vendor__serde-1.0.228//:serde",
     ],
 )

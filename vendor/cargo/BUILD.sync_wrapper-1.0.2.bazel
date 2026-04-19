@@ -65,6 +65,6 @@ rust_library(
     }),
     version = "1.0.2",
     deps = [
-        "@cargo_vendor__futures-core-0.3.31//:futures_core",
+        "@cargo_vendor__futures-core-0.3.32//:futures_core",
     ],
 )

@@ -61,8 +61,8 @@ rust_library(
     }),
     version = "0.10.0",
     deps = [
-        "@cargo_vendor__cfg-if-1.0.3//:cfg_if",
-        "@cargo_vendor__home-0.5.11//:home",
+        "@cargo_vendor__cfg-if-1.0.4//:cfg_if",
+        "@cargo_vendor__home-0.5.12//:home",
     ] + select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
             "@cargo_vendor__windows-sys-0.59.0//:windows_sys",  # cfg(windows)

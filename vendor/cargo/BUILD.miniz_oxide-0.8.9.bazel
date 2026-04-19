@@ -68,6 +68,6 @@ rust_library(
     version = "0.8.9",
     deps = [
         "@cargo_vendor__adler2-2.0.1//:adler2",
-        "@cargo_vendor__simd-adler32-0.3.7//:simd_adler32",
+        "@cargo_vendor__simd-adler32-0.3.9//:simd_adler32",
     ],
 )

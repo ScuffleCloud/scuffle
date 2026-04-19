@@ -64,6 +64,6 @@ rust_library(
     }),
     version = "0.7.0",
     deps = [
-        "@cargo_vendor__base64ct-1.8.0//:base64ct",
+        "@cargo_vendor__base64ct-1.8.3//:base64ct",
     ],
 )

@@ -34,15 +34,10 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = select({
-        "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "std",
-        ],
-        "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "std",
-        ],
-        "//conditions:default": [],
-    }),
+    crate_features = [
+        "default",
+        "std",
+    ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_env_files = [
@@ -60,23 +55,25 @@ rust_library(
     ],
     target_compatible_with = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.3.14",
     deps = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.185//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.185//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.185//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@cargo_vendor__libc-0.2.175//:libc",  # cfg(unix)
+            "@cargo_vendor__libc-0.2.185//:libc",  # cfg(unix)
         ],
         "//conditions:default": [],
     }),

@@ -68,6 +68,6 @@ rust_library(
     }),
     version = "0.2.15",
     deps = [
-        "@cargo_vendor__typewit-1.14.2//:typewit",
+        "@cargo_vendor__typewit-1.15.2//:typewit",
     ],
 )

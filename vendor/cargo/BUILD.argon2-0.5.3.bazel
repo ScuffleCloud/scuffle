@@ -68,7 +68,7 @@ rust_library(
     }),
     version = "0.5.3",
     deps = [
-        "@cargo_vendor__base64ct-1.8.0//:base64ct",
+        "@cargo_vendor__base64ct-1.8.3//:base64ct",
         "@cargo_vendor__blake2-0.10.6//:blake2",
         "@cargo_vendor__password-hash-0.5.0//:password_hash",
     ] + select({

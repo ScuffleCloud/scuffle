@@ -70,10 +70,10 @@ rust_library(
     }),
     version = "2.6.1",
     deps = [
-        "@cargo_vendor__fastrand-2.3.0//:fastrand",
-        "@cargo_vendor__futures-core-0.3.31//:futures_core",
-        "@cargo_vendor__futures-io-0.3.31//:futures_io",
+        "@cargo_vendor__fastrand-2.4.1//:fastrand",
+        "@cargo_vendor__futures-core-0.3.32//:futures_core",
+        "@cargo_vendor__futures-io-0.3.32//:futures_io",
         "@cargo_vendor__parking-2.2.1//:parking",
-        "@cargo_vendor__pin-project-lite-0.2.16//:pin_project_lite",
+        "@cargo_vendor__pin-project-lite-0.2.17//:pin_project_lite",
     ],
 )

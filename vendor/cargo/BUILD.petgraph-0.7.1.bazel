@@ -53,7 +53,6 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
@@ -62,6 +61,6 @@ rust_library(
     version = "0.7.1",
     deps = [
         "@cargo_vendor__fixedbitset-0.5.7//:fixedbitset",
-        "@cargo_vendor__indexmap-2.11.4//:indexmap",
+        "@cargo_vendor__indexmap-2.14.0//:indexmap",
     ],
 )

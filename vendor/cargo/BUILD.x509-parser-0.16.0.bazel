@@ -65,13 +65,13 @@ rust_library(
     version = "0.16.0",
     deps = [
         "@cargo_vendor__asn1-rs-0.6.2//:asn1_rs",
-        "@cargo_vendor__data-encoding-2.9.0//:data_encoding",
+        "@cargo_vendor__data-encoding-2.10.0//:data_encoding",
         "@cargo_vendor__der-parser-9.0.0//:der_parser",
         "@cargo_vendor__lazy_static-1.5.0//:lazy_static",
         "@cargo_vendor__nom-7.1.3//:nom",
         "@cargo_vendor__oid-registry-0.7.1//:oid_registry",
         "@cargo_vendor__rusticata-macros-4.1.0//:rusticata_macros",
         "@cargo_vendor__thiserror-1.0.69//:thiserror",
-        "@cargo_vendor__time-0.3.43//:time",
+        "@cargo_vendor__time-0.3.47//:time",
     ],
 )

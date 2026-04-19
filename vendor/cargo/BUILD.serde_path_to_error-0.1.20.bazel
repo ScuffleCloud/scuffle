@@ -61,7 +61,7 @@ rust_library(
     }),
     version = "0.1.20",
     deps = [
-        "@cargo_vendor__itoa-1.0.15//:itoa",
+        "@cargo_vendor__itoa-1.0.18//:itoa",
         "@cargo_vendor__serde_core-1.0.228//:serde_core",
     ],
 )

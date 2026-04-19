@@ -62,6 +62,6 @@ rust_library(
     version = "0.2.2",
     deps = [
         "@cargo_vendor__ciborium-io-0.2.2//:ciborium_io",
-        "@cargo_vendor__half-2.6.0//:half",
+        "@cargo_vendor__half-2.7.1//:half",
     ],
 )

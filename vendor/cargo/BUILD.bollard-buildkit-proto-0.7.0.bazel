@@ -71,11 +71,11 @@ rust_library(
     version = "0.7.0",
     deps = [
         "@cargo_vendor__bollard-buildkit-proto-0.7.0//:build_script_build",
-        "@cargo_vendor__prost-0.14.1//:prost",
-        "@cargo_vendor__prost-types-0.14.1//:prost_types",
-        "@cargo_vendor__tonic-0.14.2//:tonic",
-        "@cargo_vendor__tonic-prost-0.14.2//:tonic_prost",
-        "@cargo_vendor__ureq-3.1.2//:ureq",
+        "@cargo_vendor__prost-0.14.3//:prost",
+        "@cargo_vendor__prost-types-0.14.3//:prost_types",
+        "@cargo_vendor__tonic-0.14.5//:tonic",
+        "@cargo_vendor__tonic-prost-0.14.5//:tonic_prost",
+        "@cargo_vendor__ureq-3.3.0//:ureq",
     ],
 )
 
